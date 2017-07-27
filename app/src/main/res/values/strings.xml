@@ -4,5 +4,5 @@
     <string name="login_welcome">Welcome to tinychat</string>
     <string name="login_intro">Quick and simple messaging app</string>
     <string name="signup">SIGN UP FOR AN ACCOUNT</string>
-    <string name="server">http://13.124.71.217/</string>
+    <string name="server">http://52.79.114.182/</string>
 </resources>

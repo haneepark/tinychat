@@ -1,5 +1,6 @@
 package com.parkhanee.tinychat;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,8 +18,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -32,13 +33,22 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
     String appendUrl = "login.php";
     public static final String TAG = "Login";
     RequestQueue queue;
+    MyPreferences pref=null;
+    Context context; // Activity context
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // TODO: 2017. 7. 24.  check if !logged in ? finish() : setContentView
-        // login check with shared preference
+        // check if !logged in ? finish() : setContentView
+        context = LoginActivity.this;
+        if (pref==null){
+            pref = MyPreferences.getInstance(context);
+        }
+        if (pref.ifLoggedIn()){
+            Intent i = new Intent(context,MainActivity.class);
+            startActivity(i);
+            finish();
+        }
 
         setContentView(R.layout.activity_login);
 
@@ -49,11 +59,13 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
         btn_ok.setOnClickListener(this);
         tv = (TextView) findViewById(R.id.textView6);
         tv.setOnClickListener(this);
+
+
     }
 
-    public void onRequested (final String nid, final String pwd) {
+    public void onLoginRequested (final String nid, final String pwd) {
 
-        RequestQueue queue = MySingleton.getInstance(this.getApplicationContext()).
+        RequestQueue queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
 
         String url = getString(R.string.server)+appendUrl;
@@ -61,13 +73,31 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                String t = "Response: " + response;
-                tv.setText(t);
+                String t = "login response: " + response;
                 Log.d(TAG, t);
+
+                // TODO: 2017. 7. 27.  result를 jsonObject로 변환
+                // TODO: 2017. 7. 27.  result code 100인지 확인 --> 아니면 로그인 실패 처리 경고
+
+                // TODO: 2017. 7. 26. 로그인에 성공 했습니다 알림
+
+                // sharedPreference에 로그인 성공 저장
+                pref.login();
+
+                // TODO: 2017. 7. 26. 유저 정보도 SP에 저장
+
+
+                // TODO: 2017. 7. 26. 친구정보, 방정보 불러오기 어느 액티비티에서 언제?
+                // TODO: 2017. 7. 26. 불러와서 Sp에 저장 얼마나 어떻게 ? --> 설계 필요
+
+                Intent i = new Intent(context,MainActivity.class);
+                startActivity(i);
+                finish();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                // TODO: 2017. 7. 26. 로그인에 실패했습니다 아이디와 비밀번호를 확인해주세요 경고
                 tv.setText("That didn't work!");
                 Log.d(TAG, "onErrorResponse: "+error.getMessage());
             }
@@ -103,7 +133,7 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
 
     // TODO: 2017. 7. 24. onCancelButtonClicked --> queue.cancelAll(LoginTag)
     // 사용자가 취소버튼 눌렀을 때 디폴트동작은 뭐지? 여기서 이 요청을 캔슬 해주는게 필요한가 ???
-    // 종료하시겠습니까 ? <-- 어디서 나오게 할지 ? 이게 로그인activity, 메인 activiy에서 할수있는 액션이니까 singleton 구현 ?
+    // 종료하시겠습니까 ? <-- 어디서 나오게 할지 ? 이게 로그인activity, 메인 activiy 에서 할 수 있는 액션이니까 singleton 구현 ?
 
 
     @Override
@@ -118,8 +148,9 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
                 String nid = et_nid.getText().toString();
                 String pwd = et_pwd.getText().toString();
                 if (IsReadyToLogin(nid,pwd)) {
+                    // TODO: 2017. 7. 27. json? string ?
                     // make http request
-                    onRequested(nid,pwd);
+                    makeJsonObjectRequest(nid,pwd);
                 }
                 break;
         }
@@ -161,5 +192,53 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
             if(!Character.isDigit(s.charAt(i))) return false;
         }
         return true;
+    }
+
+    private void makeJsonObjectRequest(String nid, String pwd) {
+
+        RequestQueue queue = MyVolley.getInstance(this.getApplicationContext()).
+                getRequestQueue();
+
+        String url = getString(R.string.server)+appendUrl+"?nid="+nid+"&pwd="+pwd;
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET,
+                url, null, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    // Parsing json object response
+                    // response will be a json object
+//                    String name = response.getString("name");
+                    String resultCode = response.getString("resultCode");
+//                    String id = response.getString("id");
+//                    String created = response.getString("mobile");
+
+                    String jsonResponse = "";
+                    jsonResponse += "resultCode: " + resultCode + "\n\n";
+//                    jsonResponse += "name: " + resultCode + "\n\n";
+//                    jsonResponse += "id: " + id + "\n\n";
+//                    jsonResponse += "created: " + created + "\n\n";
+
+                    Log.d(TAG, "onResponse: "+jsonResponse);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(),
+                            "Error: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                tv.setText("That didn't work!");
+                Log.d(TAG, "onErrorResponse: "+ error.getMessage());
+            }
+        });
+
+        jsonObjReq.setTag(TAG);
+        queue.add(jsonObjReq);
     }
 }
