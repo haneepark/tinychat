@@ -10,17 +10,17 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     MyPreferences pref=null;
-    Context context;
+    Context context=this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context = MainActivity.this;
         if (pref==null){
             pref = MyPreferences.getInstance(context);
         }
 
+        // TODO: 2017. 8. 1.   로그아웃 버튼과 이름보이는 텍스트뷰 분리
         TextView logout = (TextView) findViewById(R.id.logout);
         logout.setText("name "+pref.getString("name"));
         logout.setOnClickListener(new View.OnClickListener() {

@@ -6,9 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -27,13 +25,12 @@ import java.util.Map;
 public class LoginActivity extends AppCompatActivity  implements View.OnClickListener{
 
     EditText et_nid, et_pwd;
-    Button btn_ok;
-    TextView tv;
     String appendUrl = "login.php";
     public static final String TAG = "LoginActivity";
     RequestQueue queue;
     MyPreferences pref=null;
     Context context=this; // Activity context
+    String nid,pwd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +57,7 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
 
     }
 
-    public void onLoginRequested (final String nid, final String pwd) {
+    public void onLoginRequested () {
 
         queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
@@ -75,10 +72,11 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     String resultCode = jsonObject.getString("resultCode");
+                    String result = jsonObject.getString("result");
                     // result code 확인
                     if (!resultCode.equals("100")){
                         // TODO: 2017. 7. 29. 로그인 실패 처리 경고
-                        Toast.makeText(LoginActivity.this,"로그인 실패, code : " + resultCode, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this,"로그인 실패, code : " + resultCode+", result : "+result, Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -168,11 +166,11 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
                 // 회원가입 하고나서 로그인 액티비티로 다시 돌아올 거니까 finish() 안함
                 break;
             case R.id.button : // 로그인
-                String nid = et_nid.getText().toString();
-                String pwd = et_pwd.getText().toString();
-                if (IsReadyToLogin(nid,pwd)) {
+                nid = et_nid.getText().toString();
+                pwd = et_pwd.getText().toString();
+                if (IsReadyToLogin()) {
                     // make http request
-                    onLoginRequested(nid,pwd);
+                    onLoginRequested();
                 }
                 break;
         }
@@ -184,14 +182,14 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
     * 입력받은 아이디와 비밀번호의 형식을 확인하고
     * 불리언 결과 리턴
     * */
-    public boolean IsReadyToLogin (String nid, String pwd) {
-        if (!Util.IsNetworkConnected(this)) {
+    public boolean IsReadyToLogin () {
+        if (!MyUtil.IsNetworkConnected(this)) {
             // TODO: 2017. 7. 21. network 연결안됨 경고
             // TODO: 2017. 8. 1. 근데 이거는 백그라운드에서 따로 확인해서 로그인 누르는 것과 관계없이, 그 전에도 경고 나와야 하지 않나
             Toast.makeText(this, "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
             return false;
         }
-        if (!Util.nidFormChecker(nid)) {
+        if (!MyUtil.nidFormChecker(nid)) {
             // TODO: 2017. 7. 21. 경고 ?
             Toast.makeText(this, "아이디 형식 틀림", Toast.LENGTH_SHORT).show();
             return false;

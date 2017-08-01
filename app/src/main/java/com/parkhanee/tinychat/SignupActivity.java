@@ -1,14 +1,11 @@
 package com.parkhanee.tinychat;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -31,7 +28,7 @@ public class SignupActivity extends AppCompatActivity  implements View.OnClickLi
     public static final String TAG = "SignupActivity";
     RequestQueue queue;
     EditText et_nid,et_pwd, et_pwd2, et_name;
-
+    String nid, name, pwd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +45,7 @@ public class SignupActivity extends AppCompatActivity  implements View.OnClickLi
 
     }
 
-    public void onSignupRequested (final String nid, final String name, final String pwd){
+    public void onSignupRequested (){
         queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
         String url = getString(R.string.server)+appendUrl;
@@ -113,13 +110,13 @@ public class SignupActivity extends AppCompatActivity  implements View.OnClickLi
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.signup_btn : // create account 버튼
-                String nid = et_nid.getText().toString();
-                String name = et_name.getText().toString();
-                String pwd = et_pwd.getText().toString();
+                nid = et_nid.getText().toString();
+                name = et_name.getText().toString();
+                pwd = et_pwd.getText().toString();
                 String pwd2 = et_pwd2.getText().toString();
-                if (IsReadyToSignup(nid,name,pwd,pwd2)) {
+                if (IsReadyToSignup(pwd2)) {
                     // make http request
-                    onSignupRequested(nid,name,pwd);
+                    onSignupRequested();
                 }
                 break;
             case R.id.textView9 : // 로그인 액티비티로 돌아가기 버튼
@@ -135,14 +132,14 @@ public class SignupActivity extends AppCompatActivity  implements View.OnClickLi
     * 입력받은 아이디, 이름, 비밀번호의 형식을 확인하고
     * 불리언 결과 리턴
     * */
-    public boolean IsReadyToSignup (String nid, String name, String pwd, String pwd2) {
-        if (!Util.IsNetworkConnected(this)) {
+    public boolean IsReadyToSignup (String pwd2) {
+        if (!MyUtil.IsNetworkConnected(this)) {
             // TODO: 2017. 7. 21. 경고
             // TODO: 2017. 8. 1. 근데 이거는 백그라운드에서 따로 확인해서 로그인 누르는 것과 관계없이, 그 전에도 경고 나와야 하지 않나
             Toast.makeText(this, "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
             return false;
         }
-        if (!Util.nidFormChecker(nid)) {
+        if (!MyUtil.nidFormChecker(nid)) {
             // TODO: 2017. 7. 21. 경고 ?
             Toast.makeText(this, "아이디 형식 틀림", Toast.LENGTH_SHORT).show();
             return false;
