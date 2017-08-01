@@ -29,13 +29,14 @@ public class MainActivity extends AppCompatActivity {
 
                 if (pref.logout()){
                     // TODO: 2017. 7. 27. 로그아웃 되었습니다 알림
+                    Toast.makeText(context, "로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
                     Intent i = new Intent(context,LoginActivity.class);
                     startActivity(i);
                     finish();
                     return;
                 }
                 // TODO: 2017. 7. 29. 한번 로그아웃 누르고 화면 넘어가기 전에 누르면 이쪽으로 옴. 아예 안눌리도록 처리.
-                Toast.makeText(context, "로그아웃 실패??", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "SP 로그아웃 실패??", Toast.LENGTH_SHORT).show();
             }
         });
     }

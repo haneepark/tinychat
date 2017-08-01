@@ -81,12 +81,12 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
                     // result code 확인
                     if (!resultCode.equals("100")){
                         // TODO: 2017. 7. 29. 로그인 실패 처리 경고
-                        Toast.makeText(LoginActivity.this,"code " + resultCode, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this,"로그인 실패, code : " + resultCode, Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     // TODO: 2017. 7. 26. 로그인에 성공 했습니다 알림
-                    Toast.makeText(LoginActivity.this, "100", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "로그인에 성공 했습니다", Toast.LENGTH_SHORT).show();
                     // sharedPreference에 로그인 성공 저장
                     pref.login();
 
@@ -113,12 +113,6 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
                     e.printStackTrace();
                 }
 
-
-
-
-
-
-
                 // TODO: 2017. 7. 26. 친구정보, 방정보 불러오기 어느 액티비티에서 언제?
                 // TODO: 2017. 7. 26. 불러와서 Sp에 저장 얼마나 어떻게 ? --> 설계 필요
 
@@ -130,7 +124,7 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
             @Override
             public void onErrorResponse(VolleyError error) {
                 // TODO: 2017. 7. 26. 로그인에 실패했습니다 아이디와 비밀번호를 확인해주세요 경고
-                tv.setText("That didn't work!");
+                Toast.makeText(LoginActivity.this, "로그인에 실패 했습니다 서버 에러?", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "onErrorResponse: "+error.getMessage());
             }
         }){
@@ -174,13 +168,12 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
             case R.id.textView6 : // 회원가입
                 Intent i = new Intent(LoginActivity.this,SignupActivity.class);
                 startActivity(i);
-                finish();
+                // 회원가입 하고나서 로그인 액티비티로 다시 돌아올 거니까 finish() 안함
                 break;
             case R.id.button : // 로그인
                 String nid = et_nid.getText().toString();
                 String pwd = et_pwd.getText().toString();
                 if (IsReadyToLogin(nid,pwd)) {
-                    // TODO: 2017. 7. 27. json? string ?
                     // make http request
                     onLoginRequested(nid,pwd);
                 }
@@ -197,6 +190,7 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
     public boolean IsReadyToLogin (String nid, String pwd) {
         if (!Util.IsNetworkConnected(this)) {
             // TODO: 2017. 7. 21. network 연결안됨 경고
+            // TODO: 2017. 8. 1. 근데 이거는 백그라운드에서 따로 확인해서 로그인 누르는 것과 관계없이, 그 전에도 경고 나와야 하지 않나
             Toast.makeText(this, "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
             return false;
         }
