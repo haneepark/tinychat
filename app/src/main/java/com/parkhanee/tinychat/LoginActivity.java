@@ -30,16 +30,15 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
     Button btn_ok;
     TextView tv;
     String appendUrl = "login.php";
-    public static final String TAG = "Login";
+    public static final String TAG = "LoginActivity";
     RequestQueue queue;
     MyPreferences pref=null;
-    Context context; // Activity context
+    Context context=this; // Activity context
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // check if !logged in ? finish() : setContentView
-        context = LoginActivity.this;
+
         if (pref==null){
             pref = MyPreferences.getInstance(context);
         }
@@ -49,22 +48,21 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
             finish();
         }
 
+        // 로그인 확인하고 나서 setContentView
         setContentView(R.layout.activity_login);
 
         et_nid = (EditText) findViewById(R.id.nid);
         et_nid.requestFocus();
         et_pwd = (EditText) findViewById(R.id.pwd);
-        btn_ok = (Button) findViewById(R.id.button);
-        btn_ok.setOnClickListener(this);
-        tv = (TextView) findViewById(R.id.textView6);
-        tv.setOnClickListener(this);
 
+        (findViewById(R.id.button)).setOnClickListener(this);
+        (findViewById(R.id.textView6)).setOnClickListener(this);
 
     }
 
     public void onLoginRequested (final String nid, final String pwd) {
 
-        RequestQueue queue = MyVolley.getInstance(this.getApplicationContext()).
+        queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
 
         String url = getString(R.string.server)+appendUrl;
@@ -72,8 +70,7 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                String t = "login response: " + response;
-                Log.d(TAG, t);
+                Log.d(TAG, response);
 
                 try {
                     JSONObject jsonObject = new JSONObject(response);
@@ -90,16 +87,16 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
                     // sharedPreference에 로그인 성공 저장
                     pref.login();
 
-                    String name = jsonObject.getString("name");
-                    String id = jsonObject.getString("id");
-                    String created = jsonObject.getString("created");
-
-                    String jsonString = "";
-                    jsonString += "name: " + name + "\n\n";
-                    jsonString += "id: " + id + "\n\n";
-                    jsonString += "created: " + created + "\n\n";
-
-                    Log.d(TAG, "onResponse:"+jsonString);
+//                    String name = jsonObject.getString("name");
+//                    String id = jsonObject.getString("id");
+//                    String created = jsonObject.getString("created");
+//
+//                    String jsonString = "";
+//                    jsonString += "name: " + name + "\n\n";
+//                    jsonString += "id: " + id + "\n\n";
+//                    jsonString += "created: " + created + "\n\n";
+//
+//                    Log.d(TAG, "onResponse:"+jsonString);
 
 
                     // 유저 정보 SP에 저장
@@ -183,9 +180,9 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
 
     /*
     * LoginHandler
-    * 입력받은 아이디와 비밀번호의 형식을 확인하고
     * 인터넷 연결 확인하고
-    * 서버에 로그인 시도
+    * 입력받은 아이디와 비밀번호의 형식을 확인하고
+    * 불리언 결과 리턴
     * */
     public boolean IsReadyToLogin (String nid, String pwd) {
         if (!Util.IsNetworkConnected(this)) {
@@ -194,7 +191,7 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
             Toast.makeText(this, "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
             return false;
         }
-        if (!nidFormChecker(nid)) {
+        if (!Util.nidFormChecker(nid)) {
             // TODO: 2017. 7. 21. 경고 ?
             Toast.makeText(this, "아이디 형식 틀림", Toast.LENGTH_SHORT).show();
             return false;
@@ -202,20 +199,6 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
             // TODO: 2017. 7. 21. 경고
             Toast.makeText(this, "비밀번호 입력 안함", Toast.LENGTH_SHORT).show();
             return false;
-        }
-        return true;
-    }
-
-    public static boolean nidFormChecker (String s) {
-        if(s.isEmpty()) return false;
-        int len = s.length();
-        if (len!=11&&len!=10) return false;
-        for(int i = 0; i < len; i++) {
-            if(i == 0 && s.charAt(i) == '-') {
-                if(s.length() == 1) return false;
-                else continue;
-            }
-            if(!Character.isDigit(s.charAt(i))) return false;
         }
         return true;
     }
