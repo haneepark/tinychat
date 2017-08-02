@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.util.Log;
 
+import com.parkhanee.tinychat.classbox.Friend;
+
 import java.util.ArrayList;
 
 /**
@@ -80,63 +82,90 @@ public final class MySQLite {
     * friend table 의 상수들 정의.
     * 테이블 이름과 컬럼들의 이름을 정의한다.
     */
-    public static final class Friend implements BaseColumns {
-        // TODO: 2017. 8. 2. BaseColumns 는 뭐지 !! 왜여기들어갔지 !!
-        // TODO: 2017. 8. 2. 클래스말고 ENUM인가 그걸로 처리할수도 있을 것 같은데
-        // TODO: 2017. 8. 2. 근데 친구 클래스가 있으면 친구정보 관리하기 편한데 ....  그건 따로 또 만들어야하나
+    public static final class FriendTable implements BaseColumns {
+        // TODO: 2017. 8. 2. 이거 .. 클래스말고 ENUM인가 그걸로 처리할수도 있을 것 같은데
         public static final String TABLE_NAME = "friend";
         public static final String ID = "id";
         public static final String NID = "nid";
         public static final String NAME = "name";
-        // TODO: 2017. 8. 2.  여기에는 큰이미지의 서버url저장하고 썸네일은 따로 blob로 저장해야 하나?
         public static final String IMG = "img";
         public static final String CREATED = "created";
+        // TODO: 2017. 8. 2. save Thumbnail image into a new column with blob type
     }
 
-    public boolean addFriend (int id, int nid, String name, String img,int created) {
+    public boolean addFriend (Friend friend) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(Friend.ID, id);
-        contentValues.put(Friend.NID, nid);
-        contentValues.put(Friend.NAME, name);
-        contentValues.put(Friend.IMG, img);
-        contentValues.put(Friend.CREATED, created);
-        mySQLiteDatabase.insert(Friend.TABLE_NAME, null, contentValues);
+        contentValues.put(FriendTable.ID, friend.getId());
+        contentValues.put(FriendTable.NID, friend.getNid());
+        contentValues.put(FriendTable.NAME, friend.getName());
+        contentValues.put(FriendTable.IMG, friend.getImg());
+        contentValues.put(FriendTable.CREATED, friend.getCreated());
+        mySQLiteDatabase.insert(FriendTable.TABLE_NAME, null, contentValues);
         return true;
     }
 
-    public String getFriend(int id) {
-        Cursor res =  mySQLiteDatabase.rawQuery( "select * from "+Friend.TABLE_NAME+" where "+Friend.ID+"="+id+";", null );
-        res.moveToFirst();
-        String fname = res.getString(res.getColumnIndex(Friend.NAME));
-        return fname;
-        // TODO: 2017. 8. 1. return array instead of Cursor
+    public Friend getFriend(String id) {
+        Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ FriendTable.TABLE_NAME+" where "+ FriendTable.ID+"="+id+";", null );
+        if (cursor != null)
+            cursor.moveToFirst();
+
+        Friend friend = new Friend(
+                cursor.getString(0), //id
+                cursor.getString(1), //nid
+                cursor.getString(2), //name
+                cursor.getString(3), //img
+                cursor.getInt(4) // created
+        );
+        Log.d(TAG, "getFriend: "+friend.toString());
+        return friend;
     }
 
-    public boolean updateFriend (int id, int nid, String name, String img, int created) {
+    public boolean updateFriend (Friend friend) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(Friend.ID, id);
-        contentValues.put(Friend.NID, nid);
-        contentValues.put(Friend.NAME, name);
-        contentValues.put(Friend.IMG, img);
-        contentValues.put(Friend.CREATED, created);
-        mySQLiteDatabase.update(Friend.TABLE_NAME, contentValues, "id = ? ", new String[] { Integer.toString(id) } );
+        contentValues.put(FriendTable.ID, friend.getId());
+        contentValues.put(FriendTable.NID, friend.getNid());
+        contentValues.put(FriendTable.NAME, friend.getName());
+        contentValues.put(FriendTable.IMG, friend.getImg());
+        contentValues.put(FriendTable.CREATED, friend.getCreated());
+        mySQLiteDatabase.update(FriendTable.TABLE_NAME, contentValues, "id = ? ", new String[] { friend.getId() } );
         return true;
     }
 
-    // TODO: 2017. 8. 1.  fetch friend list!
-    public ArrayList<String> getAllFriends() {
-        ArrayList<String> array_list = new ArrayList<String>();
+    // TODO: 2017. 8. 2.  ArrayList OR List ????
+    // TODO: 2017. 8. 2. 친구 순서
+    public ArrayList<Friend> getAllFriends() {
+        ArrayList<Friend> friends = new ArrayList<Friend>();
 
-        Cursor res =  mySQLiteDatabase.rawQuery( "select * from "+Friend.TABLE_NAME, null );
-        res.moveToFirst();
+        // 1. build the query
+        Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ FriendTable.TABLE_NAME, null );
 
-        // Cursor into Array
-        while(!res.isAfterLast()){
-            // FIXME: 2017. 8. 2.  이름만 array에 넣는건가 ?
-            array_list.add(res.getString(res.getColumnIndex(Friend.NAME)));
-            res.moveToNext();
+        // 2. go over each row, build friend and add it to arraylist
+        if (cursor.moveToFirst()) {
+            do {
+                Friend friend = new Friend(
+                        cursor.getString(0), //id
+                        cursor.getString(1), //nid
+                        cursor.getString(2), //name
+                        cursor.getString(3), //img
+                        cursor.getInt(4) // created
+                );
+
+                friends.add(friend);
+            } while (cursor.moveToNext());
         }
-        return array_list;
+        Log.d(TAG, "getAllFriends: "+friends.toString());
+        return friends;
+    }
+
+    /**
+     * room table 의 상수들 정의.
+     * 테이블 이름과 컬럼들의 이름을 정의한다.
+     */
+    public static final class RoomTable implements BaseColumns {
+        // TODO: 2017. 8. 2. 이거 .. 클래스말고 ENUM인가 그걸로 처리할수도 있을 것 같은데
+        public static final String TABLE_NAME = "room";
+        public static final String RID = "rid";
+        public static final String PPL = "ppl";
     }
 
 
@@ -167,22 +196,32 @@ public final class MySQLite {
 
         private void dropDatabase(SQLiteDatabase db){
             // table 늘어날 때 마다
-            db.execSQL("DROP TABLE IF EXISTS "+ Friend.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS "+ FriendTable.TABLE_NAME);
         }
 
         private void createFriendTable(SQLiteDatabase db) {
             db.execSQL(
-                    "CREATE TABLE " + Friend.TABLE_NAME + " ("
-//                    + Friend._ID + " INTEGER PRIMARY KEY,"
-                    + Friend.ID + " INTEGER PRIMARY KEY,"
-                    + Friend.NID + " INTEGER,"
-                    + Friend.NAME + " TEXT,"
-                    + Friend.IMG + " TEXT,"
-                    + Friend.CREATED + " INTEGER );"
+                    "CREATE TABLE " + FriendTable.TABLE_NAME + " ("
+//                    + FriendTable._ID + " INTEGER PRIMARY KEY,"
+                    + FriendTable.ID + " TEXT PRIMARY KEY,"
+                    + FriendTable.NID + " TEXT,"
+                    + FriendTable.NAME + " TEXT,"
+                    + FriendTable.IMG + " TEXT,"
+                    + FriendTable.CREATED + " INTEGER );"
             );
 
             // sample friend
-            db.execSQL("INSERT INTO FRIEND VALUES (12341234,01012341234,'일이삼사','',1501659026)");
+            db.execSQL("INSERT INTO FRIEND VALUES ( '12341234', '01012341234', '일이삼사', '', 1501659026 )");
+            db.execSQL("INSERT INTO FRIEND VALUES ( '11111234', '01011111234', '일일일일', '', 1501659469 )");
+
+        }
+
+        private void createRoomTable(SQLiteDatabase db){
+            db.execSQL(
+                    "CREATE TABLE " + RoomTable.TABLE_NAME + " ("
+                            + RoomTable.RID + " TEXT PRIMARY KEY,"
+                            + RoomTable.PPL + " INTEGER );"
+            );
         }
     }
 

@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parkhanee.tinychat.classbox.Friend;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     MyPreferences pref=null;
     Context context=this;
@@ -33,9 +35,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.logout : // 로그아웃
-                //db test
-                String fname =  mySQLite.getFriend(12341234);
-                logout.setText("fname "+fname);
+
+                Friend f = mySQLite.getFriend("12341234");
+                logout.setText(f.toString());
+                mySQLite.getAllFriends();
 
 //                if (pref.logout()){
 //                    // TODO: 2017. 7. 27. 로그아웃 되었습니다 알림
@@ -45,9 +48,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                    finish();
 //                    return;
 //                }
-//                // TODO: 2017. 7. 29. 한번 로그아웃 누르고 화면 넘어가기 전에 누르면 이쪽으로 옴. 아예 안눌리도록 처리.
+//                // TODO: 2017. 7. 29. 한번 로그아웃 누르고 화면 넘어가기 전에 누르면 이쪽으로 옴. 아예 안눌리도록 처리 해야.
 //                Toast.makeText(context, "SP 로그아웃 실패??", Toast.LENGTH_SHORT).show();
-//                break;
+                break;
 
         }
     }
