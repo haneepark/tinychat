@@ -6,6 +6,7 @@ import android.net.NetworkInfo;
 
 /**
  * Created by parkhanee on 2017. 7. 21..
+ * Static/Helper Class (Class with only static fields/methods)
  */
 
 public final class MyUtil {

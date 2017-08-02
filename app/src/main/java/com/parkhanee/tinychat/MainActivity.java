@@ -8,36 +8,47 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     MyPreferences pref=null;
     Context context=this;
+    MySQLite mySQLite = null;
+    TextView logout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (pref==null){
-            pref = MyPreferences.getInstance(context);
-        }
+        if (pref==null){ pref = MyPreferences.getInstance(context); }
+        // TODO: 2017. 8. 2. sqlite getInstance를 IntentService로 ?
+        if (mySQLite==null){ mySQLite = MySQLite.getInstance(context); }
 
-        // TODO: 2017. 8. 1.   로그아웃 버튼과 이름보이는 텍스트뷰 분리
-        TextView logout = (TextView) findViewById(R.id.logout);
+
+        // TODO: 2017. 8. 1.   로그아웃 버튼과 이름보이는 텍스트뷰 분리 해야함
+        logout = (TextView) findViewById(R.id.logout);
         logout.setText("name "+pref.getString("name"));
-        logout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        logout.setOnClickListener(this);
+    }
 
-                if (pref.logout()){
-                    // TODO: 2017. 7. 27. 로그아웃 되었습니다 알림
-                    Toast.makeText(context, "로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
-                    Intent i = new Intent(context,LoginActivity.class);
-                    startActivity(i);
-                    finish();
-                    return;
-                }
-                // TODO: 2017. 7. 29. 한번 로그아웃 누르고 화면 넘어가기 전에 누르면 이쪽으로 옴. 아예 안눌리도록 처리.
-                Toast.makeText(context, "SP 로그아웃 실패??", Toast.LENGTH_SHORT).show();
-            }
-        });
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.logout : // 로그아웃
+                //db test
+                String fname =  mySQLite.getFriend(12341234);
+                logout.setText("fname "+fname);
+
+//                if (pref.logout()){
+//                    // TODO: 2017. 7. 27. 로그아웃 되었습니다 알림
+//                    Toast.makeText(context, "로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
+//                    Intent i = new Intent(context,LoginActivity.class);
+//                    startActivity(i);
+//                    finish();
+//                    return;
+//                }
+//                // TODO: 2017. 7. 29. 한번 로그아웃 누르고 화면 넘어가기 전에 누르면 이쪽으로 옴. 아예 안눌리도록 처리.
+//                Toast.makeText(context, "SP 로그아웃 실패??", Toast.LENGTH_SHORT).show();
+//                break;
+
+        }
     }
 }

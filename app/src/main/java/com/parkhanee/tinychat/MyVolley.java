@@ -12,6 +12,7 @@ import com.android.volley.toolbox.Volley;
 /**
  * Created by parkhanee on 2017. 7. 24..
  * https://developer.android.com/training/volley/requestqueue.html
+ * Singleton Class
  */
 
 public final class MyVolley {
@@ -66,7 +67,8 @@ public final class MyVolley {
 
 
     // FIXME: 2017. 7. 26. 이게 필요한가 ? 얘는 non-static method라서 액티비티에서 갖다 쓸 수 없는데 ?
-    // 현재는 같은 기능을 queue.add 해서 쓰고있다. singleton과 static의 관계를 잘 모르겠다
+    // 현재는 같은 기능을 액티비티에서는 queue.add 해서 쓰고있다.
+    // 그러면 얘가 이 클래스 내부에서는 쓰일일이 있나 ?
     public <T> void addToRequestQueue(Request<T> req) {
         getRequestQueue().add(req);
     }

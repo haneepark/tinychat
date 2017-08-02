@@ -8,6 +8,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by parkhanee on 2017. 7. 27..
+ * Singleton Class
  */
 
 public final class MyPreferences {
