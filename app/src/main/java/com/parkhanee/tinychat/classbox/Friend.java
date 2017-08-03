@@ -19,6 +19,10 @@ public class Friend {
     }
 
     /**
+     *
+     * 근데 이 클래스의 인스턴스는 애초에 일회용인데.
+     * 디비도 아니고 이걸 업데이트할 일이 있을까?
+     *
      * update the friend instance information.
      * caution : id cannot be updated !
      * if id from paramater is differ from id from the instance, it fails update and return false.

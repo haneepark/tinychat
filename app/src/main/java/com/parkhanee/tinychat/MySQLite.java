@@ -9,6 +9,7 @@ import android.provider.BaseColumns;
 import android.util.Log;
 
 import com.parkhanee.tinychat.classbox.Friend;
+import com.parkhanee.tinychat.classbox.Room;
 
 import java.util.ArrayList;
 
@@ -29,6 +30,7 @@ public final class MySQLite {
     // MySQLite 객체와 아래 세 개의 객체는 모두 맨 처음 한번만 생성되어 싱글톤으로 사용 됨.
     private MySQLite(Context context){
         applicationContext = context.getApplicationContext();
+        mySQLiteHelper = getMySQLiteHelper();
         // TODO: 2017. 8. 2. getWritableDatabase must be called in Background Thread !!?
         mySQLiteDatabase = getMySQLiteDatabase();
     }
@@ -41,13 +43,13 @@ public final class MySQLite {
         return mySQLite;
     }
 
-//    // MySQLite 생성자에서 호출.
-//    private MySQLiteHelper getMySQLiteHelper(){
-//        if (mySQLiteHelper == null){
-//            mySQLiteHelper = new MySQLiteHelper(applicationContext);
-//        }
-//        return mySQLiteHelper;
-//    }
+    // MySQLite 생성자에서 호출.
+    private MySQLiteHelper getMySQLiteHelper(){
+        if (mySQLiteHelper == null){
+            mySQLiteHelper = new MySQLiteHelper(applicationContext);
+        }
+        return mySQLiteHelper;
+    }
 
     private boolean isOpen() {
         return mySQLiteDatabase != null && mySQLiteDatabase.isOpen();
@@ -56,9 +58,6 @@ public final class MySQLite {
     // MySQLite 생성자에서 호출
     public SQLiteDatabase getMySQLiteDatabase(){
         if (!isOpen()){
-            if (mySQLiteHelper==null){
-                mySQLiteHelper = new MySQLiteHelper(applicationContext);
-            }
             mySQLiteDatabase = mySQLiteHelper.getWritableDatabase();
         }
         return mySQLiteDatabase;
@@ -77,7 +76,6 @@ public final class MySQLite {
 
 
 
-
     /**
     * friend table 의 상수들 정의.
     * 테이블 이름과 컬럼들의 이름을 정의한다.
@@ -90,7 +88,6 @@ public final class MySQLite {
         public static final String NAME = "name";
         public static final String IMG = "img";
         public static final String CREATED = "created";
-        // TODO: 2017. 8. 2. save Thumbnail image into a new column with blob type
     }
 
     public boolean addFriend (Friend friend) {
@@ -168,6 +165,50 @@ public final class MySQLite {
         public static final String PPL = "ppl";
     }
 
+    public boolean addRoom(Room room){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(RoomTable.RID, room.getRid());
+        contentValues.put(RoomTable.PPL, room.getPpl());
+        mySQLiteDatabase.insert(FriendTable.TABLE_NAME, null, contentValues);
+        return true;
+    }
+
+    public Room getRoom(String rid) {
+        Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ RoomTable.TABLE_NAME+" where "+ RoomTable.RID+"="+rid+";", null );
+        if (cursor != null)
+            cursor.moveToFirst();
+
+            Room room = new Room(
+                    cursor.getString(0), //rid
+                    cursor.getInt(1) // ppl
+            );
+
+        Log.d(TAG, "getRoom: "+room.toString());
+        return room;
+    }
+
+    // TODO: 2017. 8. 2.  ArrayList OR List ????
+    // TODO: 2017. 8. 2. 방 순서
+    public ArrayList<Room> getAllRooms() {
+        ArrayList<Room> rooms = new ArrayList<Room>();
+
+        // 1. build the query
+        Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ RoomTable.TABLE_NAME, null );
+
+        // 2. go over each row, build room and add it to arraylist
+        if (cursor.moveToFirst()) {
+            do {
+                Room room = new Room(
+                        cursor.getString(0), //rid
+                        cursor.getInt(1) // ppl
+                );
+                rooms.add(room);
+            } while (cursor.moveToNext());
+        }
+        Log.d(TAG, "getAllRooms: "+rooms.toString());
+        return rooms;
+    }
+
 
 
     /**
@@ -185,6 +226,7 @@ public final class MySQLite {
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
             // table 늘어날 때 마다
             createFriendTable(sqLiteDatabase);
+            createRoomTable(sqLiteDatabase);
         }
 
         @Override
@@ -197,9 +239,11 @@ public final class MySQLite {
         private void dropDatabase(SQLiteDatabase db){
             // table 늘어날 때 마다
             db.execSQL("DROP TABLE IF EXISTS "+ FriendTable.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS "+ RoomTable.TABLE_NAME);
         }
 
         private void createFriendTable(SQLiteDatabase db) {
+            // TODO: 2017. 8. 2. save Thumbnail image into a new column with blob type
             db.execSQL(
                     "CREATE TABLE " + FriendTable.TABLE_NAME + " ("
 //                    + FriendTable._ID + " INTEGER PRIMARY KEY,"
@@ -217,11 +261,18 @@ public final class MySQLite {
         }
 
         private void createRoomTable(SQLiteDatabase db){
+            // TODO: 2017. 8. 2. boolean isPrivateRoom ??
             db.execSQL(
                     "CREATE TABLE " + RoomTable.TABLE_NAME + " ("
                             + RoomTable.RID + " TEXT PRIMARY KEY,"
                             + RoomTable.PPL + " INTEGER );"
             );
+
+            db.execSQL("INSERT INTO ROOM VALUES ( '1', 3 )" );
+            db.execSQL("INSERT INTO ROOM VALUES ( '2', 1 )" );
+            db.execSQL("INSERT INTO ROOM VALUES ( '3', 1 )" );
+            db.execSQL("INSERT INTO ROOM VALUES ( '4', 2 )" );
+            db.execSQL("INSERT INTO ROOM VALUES ( '5', 1 )" );
         }
     }
 

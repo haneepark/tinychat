@@ -9,6 +9,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Friend;
+import com.parkhanee.tinychat.classbox.Room;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     MyPreferences pref=null;
@@ -21,7 +24,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (pref==null){ pref = MyPreferences.getInstance(context); }
-        // TODO: 2017. 8. 2. sqlite getInstance를 IntentService로 ?
+        // TODO: 2017. 8. 2. sqlite getInstance를 IntentService로 ..?
         if (mySQLite==null){ mySQLite = MySQLite.getInstance(context); }
 
 
@@ -36,9 +39,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()){
             case R.id.logout : // 로그아웃
 
-                Friend f = mySQLite.getFriend("12341234");
-                logout.setText(f.toString());
-                mySQLite.getAllFriends();
+                ArrayList<Room> r = mySQLite.getAllRooms();
+                logout.setText(r.toString());
+//                Friend f = mySQLite.getFriend("12341234");
+//                logout.setText(f.toString());
+//                mySQLite.getAllFriends();
 
 //                if (pref.logout()){
 //                    // TODO: 2017. 7. 27. 로그아웃 되었습니다 알림
