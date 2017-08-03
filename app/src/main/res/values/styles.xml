@@ -28,5 +28,20 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="ActionBarTitle" parent="android:Widget.TextView">
+        <!-- The action bar title font -->
+        <!--<item name="android:fontFamily">sans-serif-light</item>-->
+
+        <!-- Customizes the color of the action bar title-->
+        <!--<item name="android:textColor">#FF0000</item>-->
+
+        <!-- Customizes the size of the action bar title-->
+        <!--<item name="android:textSize">24sp</item>-->
+
+        <!--<item name="android:layout_centerInParent">true</item>-->
+        <item name="android:layout_centerHorizontal">true</item>
+
+    </style>
+
 
 </resources>
