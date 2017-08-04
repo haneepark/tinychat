@@ -23,7 +23,7 @@ public class RoomTabAdapter extends BaseAdapter {
 
     public RoomTabAdapter(Context context){
         this.context = context;
-        setDummy();
+//        setDummy();
     }
 
     private void setDummy(){
@@ -70,6 +70,10 @@ public class RoomTabAdapter extends BaseAdapter {
         roomArrayList.add(position,room);
     }
 
+    public void setRoomArrayList(ArrayList<Room> rooms){
+        roomArrayList = rooms;
+    }
+
     @Override
     public View getView(int position, View v, ViewGroup viewGroup) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
@@ -81,6 +85,7 @@ public class RoomTabAdapter extends BaseAdapter {
             holder.msg = (TextView) v.findViewById(R.id.room_recent_msg);
             holder.time = (TextView) v.findViewById(R.id.room_recent_time);
             holder.img = (ImageView) v.findViewById(R.id.imageView3);
+            holder.pref = MyPreferences.getInstance(context);
             v.setTag(holder);
         } else {
             holder = (ViewHolder) v.getTag(); // we call the view created before to not create a view in each time
@@ -88,6 +93,7 @@ public class RoomTabAdapter extends BaseAdapter {
 
         if (roomArrayList.size()>0){
             Room room = roomArrayList.get(position);
+
             holder.title.setText(room.getRid());
             holder.msg.setText(room.getPpl()+" "+room.isPrivateRoom().toString());
             if (!room.isPrivateRoom()){
@@ -105,5 +111,6 @@ public class RoomTabAdapter extends BaseAdapter {
         TextView msg = null;
         TextView time = null;
         ImageView img = null;
+        MyPreferences pref = null;
     }
 }

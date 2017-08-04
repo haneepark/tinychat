@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-    MyPreferences pref=null;
+//    MyPreferences pref=null;
     Context context=this;
-    MySQLite mySQLite = null;
+//    MySQLite mySQLite = null;
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -31,10 +31,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        if (pref==null){ pref = MyPreferences.getInstance(context); }
-        // TODO: 2017. 8. 2. sqlite getInstance를 IntentService로 ..?
-        if (mySQLite==null){ mySQLite = MySQLite.getInstance(context); }
+//
+//        if (pref==null){ pref = MyPreferences.getInstance(context); }
+//        // TODO: 2017. 8. 2. sqlite getInstance를 IntentService로 ..?
+//        if (mySQLite==null){ mySQLite = MySQLite.getInstance(context); }
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
