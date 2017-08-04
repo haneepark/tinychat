@@ -10,15 +10,10 @@
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <android.support.v7.widget.Toolbar
+        <include
             android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/action_bar_size"
-            android:layout_gravity="center"
-            android:background="?attr/colorPrimary"
-            android:textAlignment="viewEnd"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+            layout="@layout/toolbar"
+            />
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabs"
