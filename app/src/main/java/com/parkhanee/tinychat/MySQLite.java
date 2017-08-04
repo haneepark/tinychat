@@ -117,6 +117,15 @@ public final class MySQLite {
         return friend;
     }
 
+    public String getFriendName(String id) {
+        Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ FriendTable.TABLE_NAME+" where "+ FriendTable.ID+"="+id+";", null );
+        if (cursor != null)
+            cursor.moveToFirst();
+            String name = cursor.getString(2);  //name
+        Log.d(TAG, "getFriendName : "+ name);
+        return name;
+    }
+
     public boolean updateFriend (Friend friend) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(FriendTable.ID, friend.getId());
@@ -256,7 +265,8 @@ public final class MySQLite {
 
             // sample friend
             db.execSQL("INSERT INTO FRIEND VALUES ( '12341234', '01012341234', '일이삼사', '', 1501659026 )");
-            db.execSQL("INSERT INTO FRIEND VALUES ( '11111234', '01011111234', '일일일일', '', 1501659469 )");
+            db.execSQL("INSERT INTO FRIEND VALUES ( '11111111', '01011111111', '일일일일', '', 1501659469 )");
+            db.execSQL("INSERT INTO FRIEND VALUES ( '22222222', '01022222222', '둘둘', '', 1501659570 )");
 
         }
 
@@ -268,10 +278,10 @@ public final class MySQLite {
                             + RoomTable.PPL + " INTEGER );"
             );
 
-            db.execSQL("INSERT INTO ROOM VALUES ( '1', 3 )" );
+            db.execSQL("INSERT INTO ROOM VALUES ( '1', 1 )" );
             db.execSQL("INSERT INTO ROOM VALUES ( '2', 1 )" );
-            db.execSQL("INSERT INTO ROOM VALUES ( '3', 1 )" );
-            db.execSQL("INSERT INTO ROOM VALUES ( '4', 2 )" );
+            db.execSQL("INSERT INTO ROOM VALUES ( '3', 2 )" );
+            db.execSQL("INSERT INTO ROOM VALUES ( '4', 3 )" );
             db.execSQL("INSERT INTO ROOM VALUES ( '5', 1 )" );
         }
     }

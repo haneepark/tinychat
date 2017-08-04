@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Room;
 
+import java.util.ArrayList;
+
 /**
  * Created by parkhanee on 2017. 8. 3..
  */
@@ -20,6 +22,7 @@ public class RoomTab extends Fragment {
     private final String TAG = "RoomTab";
     private RoomTabAdapter adapter;
     MySQLite db=null;
+    MyPreferences pref = null;
 
     @Nullable
     @Override
@@ -34,6 +37,9 @@ public class RoomTab extends Fragment {
         if (db==null){
             db = MySQLite.getInstance(getActivity().getApplicationContext());
         }
+        if (pref==null){
+            pref = MyPreferences.getInstance(getActivity());
+        }
 ;    }
 
     @Override
@@ -47,7 +53,11 @@ public class RoomTab extends Fragment {
         * getView의 역할 자체가 아이템 하나하나를 inflate하는 건데, getView하기전에 적어도 아이템이 몇개가 있을지는 결정되어있어야지.
         * 아이템 개수는 사실 Adapter의 getCount매써드에서 정할수도 있긴 하지만..
         * */
-        adapter.setRoomArrayList(db.getAllRooms());
+        ArrayList<Room> roomArrayList = db.getAllRooms();
+        for (Room room : roomArrayList){
+            room.setPplList(pref.getString(room.getRid()));
+        }
+        adapter.setRoomArrayList(roomArrayList);
         adapter.notifyDataSetChanged();
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){

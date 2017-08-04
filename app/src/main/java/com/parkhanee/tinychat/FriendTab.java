@@ -50,7 +50,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // TODO: 2017. 8. 4. show friend's profile dialog
                 Friend friend = (Friend) adapterView.getItemAtPosition(i);
-                Toast.makeText(getActivity(), "clicked "+friend.getName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "clicked "+friend.getName()+" id:"+friend.getId(), Toast.LENGTH_SHORT).show();
 
             }
         });

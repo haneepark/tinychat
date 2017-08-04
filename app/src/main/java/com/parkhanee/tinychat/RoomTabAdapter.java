@@ -86,6 +86,7 @@ public class RoomTabAdapter extends BaseAdapter {
             holder.time = (TextView) v.findViewById(R.id.room_recent_time);
             holder.img = (ImageView) v.findViewById(R.id.imageView3);
             holder.pref = MyPreferences.getInstance(context);
+            holder.db = MySQLite.getInstance(context);
             v.setTag(holder);
         } else {
             holder = (ViewHolder) v.getTag(); // we call the view created before to not create a view in each time
@@ -94,7 +95,15 @@ public class RoomTabAdapter extends BaseAdapter {
         if (roomArrayList.size()>0){
             Room room = roomArrayList.get(position);
 
-            holder.title.setText(room.getRid());
+            // TODO: 2017. 8. 4. 디비에서 대화참여자 아이디->이름 가져와서 대화방 이름에 넣기
+            // 비효율적인거같아 ..
+            String title="";
+            for (String id : room.getPplList()){
+                String name = holder.db.getFriendName(id);
+                title += name+" ";
+            }
+
+            holder.title.setText(title);
             holder.msg.setText(room.getPpl()+" "+room.isPrivateRoom().toString());
             if (!room.isPrivateRoom()){
                 holder.img.setImageResource(R.drawable.tab_friends);
@@ -112,5 +121,6 @@ public class RoomTabAdapter extends BaseAdapter {
         TextView time = null;
         ImageView img = null;
         MyPreferences pref = null;
+        MySQLite db=null;
     }
 }
