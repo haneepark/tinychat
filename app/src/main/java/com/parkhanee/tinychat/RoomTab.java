@@ -14,8 +14,8 @@ import android.widget.ListView;
  */
 
 public class RoomTab extends Fragment {
+    private final String TAG = "RoomTab";
     private RoomTabAdapter adapter;
-    final String TAG = "RoomTab";
     MySQLite db=null;
 
     @Nullable
@@ -36,7 +36,7 @@ public class RoomTab extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         adapter = new RoomTabAdapter(getActivity());
-        ListView listView = (ListView) view.findViewById(R.id.talk_list_view);
+        ListView listView = (ListView) getActivity().findViewById(R.id.room_list_view);
         listView.setAdapter(adapter);
         /*
         * listview의 어레이아이템 추가/삭제는 getView 안에서 할 수 없다!

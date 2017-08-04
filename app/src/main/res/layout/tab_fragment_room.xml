@@ -12,6 +12,6 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/talk_list_view"/>
+        android:id="@+id/room_list_view"/>
 
 </RelativeLayout>

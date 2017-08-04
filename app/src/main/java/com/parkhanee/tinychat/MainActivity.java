@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false); // do not show default title text and instead, show the textView i included
+        getSupportActionBar().setDisplayShowTitleEnabled(false); // do not show default name text and instead, show the textView i included
         getSupportActionBar().setDisplayHomeAsUpEnabled(false); // do not show back button
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
