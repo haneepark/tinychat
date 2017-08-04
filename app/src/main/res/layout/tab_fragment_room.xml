@@ -3,12 +3,15 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context="com.parkhanee.tinychat.TalkTabFragment">
+                tools:context="com.parkhanee.tinychat.RoomTab">
 
-    <TextView
+
+    <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="talk fragment"/>
-
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/talk_list_view"/>
 
 </RelativeLayout>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="@dimen/listvew_margin"
+        android:background="@color/colorAccent"
+        android:padding="10dp"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/ic_profile"/>
+
+    <TextView
+        android:id="@+id/room_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="@dimen/listvew_margin"
+        android:layout_toEndOf="@+id/imageView3"
+        android:layout_toRightOf="@+id/imageView3"
+        android:text="TextView"
+        android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"/>
+
+    <TextView
+        android:id="@+id/room_recent_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/room_title"
+        android:layout_alignStart="@+id/room_title"
+        android:layout_below="@+id/room_title"
+        android:layout_marginBottom="@dimen/listvew_margin"
+        android:maxLength="40"
+        android:maxLines="2"
+        android:text="TextView"/>
+
+    <TextView
+        android:id="@+id/room_recent_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@id/room_title"
+        android:layout_marginBottom="@dimen/listvew_margin"
+        android:layout_marginEnd="@dimen/listvew_margin"
+        android:layout_marginLeft="@dimen/listvew_margin"
+        android:layout_marginRight="@dimen/listvew_margin"
+        android:layout_marginStart="@dimen/listvew_margin"
+        android:maxLength="12"
+        android:text="TextView"
+        android:textColor="@color/textGrey"/>
+</RelativeLayout>
