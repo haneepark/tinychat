@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import com.parkhanee.tinychat.classbox.Room;
 
 /**
  * Created by parkhanee on 2017. 8. 3..
@@ -50,7 +53,9 @@ public class RoomTab extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // TODO: 2017. 8. 4.
+                // TODO: 2017. 8. 4. go to ChatActivity
+                Room room = (Room)adapterView.getItemAtPosition(i);
+                Toast.makeText(getActivity(), "clicked "+room.getRid(), Toast.LENGTH_SHORT).show();
             }
         });
 
