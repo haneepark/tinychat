@@ -33,9 +33,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 //
         if (pref==null){ pref = MyPreferences.getInstance(context); }
-//        // TODO: 2017. 8. 2. sqlite getInstance를 IntentService로 ..?
 //        if (mySQLite==null){ mySQLite = MySQLite.getInstance(context); }
-        // TODO: 2017. 8. 4. 1 1 2 3 1
+
+        // TODO: 2017. 8. 4. TEST
         pref.putString("1","12341234");
         pref.putString("2","11111111");
         pref.putString("3","12341234:22222222");

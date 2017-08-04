@@ -7,7 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Friend;
@@ -18,13 +20,16 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     private FriendTabAdapter adapter;
     private ViewGroup header;
     MySQLite db = null;
+    private View myprofile;
+    MyPreferences pref=null;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.tab_fragment_friend,container,false);
         header = (ViewGroup)inflater.inflate(R.layout.listview_header_friend, container, false);
-        header.findViewById(R.id.myprofile).setOnClickListener(this); // header안에 있는 애니까 header에서 찾아줌 !!
+        myprofile = header.findViewById(R.id.myprofile);
+        myprofile.setOnClickListener(this); // header안에 있는 애니까 header에서 찾아줌 !!
         return v;
     }
 
@@ -34,10 +39,16 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         if (db==null){
             db = MySQLite.getInstance(getActivity().getApplicationContext());
         }
+        if (pref==null){
+            pref = MyPreferences.getInstance(getActivity());
+        }
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        ((TextView)myprofile.findViewById(R.id.header_name)).setText(pref.getString("name"));
+        // TODO: 2017. 8. 4.  ((ImageView)myprofile.findViewById(R.id.header_img)) <-- (pref.getString("img"));
+
         adapter = new FriendTabAdapter(getActivity());
         ListView listView = (ListView) view.findViewById(R.id.friend_list_view);
         listView.setAdapter(adapter);

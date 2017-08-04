@@ -26,7 +26,7 @@
         android:clickable="true">
 
         <ImageView
-            android:id="@+id/imageView5"
+            android:id="@+id/header_img"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_alignParentLeft="true"
@@ -38,13 +38,13 @@
             app:srcCompat="@drawable/ic_profile"/>
 
         <TextView
-            android:id="@+id/friend_name"
+            android:id="@+id/header_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/imageView5"
+            android:layout_alignTop="@+id/header_img"
             android:layout_marginTop="12dp"
-            android:layout_toEndOf="@+id/imageView5"
-            android:layout_toRightOf="@+id/imageView5"
+            android:layout_toEndOf="@+id/header_img"
+            android:layout_toRightOf="@+id/header_img"
             android:text="TextView"
             android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"/>
     </RelativeLayout>
