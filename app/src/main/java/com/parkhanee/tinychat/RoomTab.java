@@ -18,29 +18,29 @@ import java.util.ArrayList;
  * Created by parkhanee on 2017. 8. 3..
  */
 
-public class RoomTab extends Fragment implements View.OnClickListener{
+public class RoomTab extends Fragment implements View.OnClickListener {
     private final String TAG = "RoomTab";
     private RoomTabAdapter adapter;
-    MySQLite db=null;
+    MySQLite db = null;
     MyPreferences pref = null;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.tab_fragment_room,container,false);
+        View v = inflater.inflate(R.layout.tab_fragment_room, container, false);
         return v;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (db==null){
+        if (db == null) {
             db = MySQLite.getInstance(getActivity().getApplicationContext());
         }
-        if (pref==null){
+        if (pref == null) {
             pref = MyPreferences.getInstance(getActivity());
         }
-;    }
+    }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -54,25 +54,25 @@ public class RoomTab extends Fragment implements View.OnClickListener{
         * 아이템 개수는 사실 Adapter의 getCount매써드에서 정할수도 있긴 하지만..
         * */
         ArrayList<Room> roomArrayList = db.getAllRooms();
-        for (Room room : roomArrayList){
-            room.setParticipants(pref.getString(room.getRid()),getActivity());
+        for (Room room : roomArrayList) {
+            room.setParticipants(pref.getString(room.getRid()), getActivity());
         }
         adapter.setRoomArrayList(roomArrayList);
         adapter.notifyDataSetChanged();
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // TODO: 2017. 8. 4. go to ChatActivity
-                Room room = (Room)adapterView.getItemAtPosition(i);
-                Toast.makeText(getActivity(), "clicked "+room.getRid(), Toast.LENGTH_SHORT).show();
+                Room room = (Room) adapterView.getItemAtPosition(i);
+                Toast.makeText(getActivity(), "clicked " + room.getRid(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
 
         }
     }

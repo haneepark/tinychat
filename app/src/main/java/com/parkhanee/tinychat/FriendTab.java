@@ -2,7 +2,6 @@ package com.parkhanee.tinychat;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +30,6 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         header = (ViewGroup)inflater.inflate(R.layout.listview_header_friend, container, false);
         myprofile = header.findViewById(R.id.myprofile);
         myprofile.setOnClickListener(this); // header안에 있는 애니까 header에서 찾아줌 !!
-
         return v;
     }
 

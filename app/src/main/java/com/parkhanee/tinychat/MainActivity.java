@@ -1,6 +1,7 @@
 package com.parkhanee.tinychat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -136,7 +137,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.fab_friend : //fab1
-                Toast.makeText(context, "fab1 selected", Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(context,AddFriendActivity.class);
+                startActivity(i);
                 break;
             case R.id.fab_room : //fab2
                 Toast.makeText(context, "fab2 selected", Toast.LENGTH_SHORT).show();
