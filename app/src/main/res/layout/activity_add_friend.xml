@@ -7,4 +7,82 @@
     android:layout_height="match_parent"
     tools:context="com.parkhanee.tinychat.AddFriendActivity">
 
+        <android.support.v7.widget.Toolbar
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:background="@color/colorPrimary"
+            android:titleTextColor="@color/colorFontPrimary"
+            app:titleMarginStart="60dp"
+            android:id="@+id/toolbar2">
+
+            <TextView
+                android:id="@+id/tool_bar_add_friend"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:text="@string/add_friend"
+                android:textColor="@color/colorFontPrimary"
+                android:textSize="22sp"
+                android:textStyle="normal|bold"/>
+
+        </android.support.v7.widget.Toolbar>
+
+    <TextView
+        android:id="@+id/textView12"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/toolbar2"
+        android:background="@color/colorPrimary"
+        android:text="  "/>
+
+    <EditText
+        android:id="@+id/et_search"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/toolbar2"
+        android:layout_margin="10dp"
+        android:layout_toLeftOf="@+id/btn_search"
+        android:layout_toStartOf="@+id/btn_search"
+        android:background="@color/backgroundGrey"
+        android:ems="10"
+        android:hint="이름이나 번호로 찾기"
+        android:inputType="textPersonName"
+        android:maxLines="1"
+        android:paddingEnd="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp"
+        android:paddingStart="10dp"
+        android:textColor="@color/colorFontPrimary"
+        android:textColorHint="@color/textGrey"/>
+
+    <ImageButton
+        android:id="@+id/btn_search"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/toolbar2"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@android:color/transparent"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_search"
+        android:layout_alignTop="@+id/et_search"/>
+
+    <ListView
+        android:id="@+id/listview_add_friend"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView12"/>
+
+
 </RelativeLayout>

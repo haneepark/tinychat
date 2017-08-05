@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,7 +26,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.tab_fragment_friend,container,false);
-        header = (ViewGroup)inflater.inflate(R.layout.listview_header_friend, container, false);
+        header = (ViewGroup)inflater.inflate(R.layout.listview_friend_header, container, false);
         myprofile = header.findViewById(R.id.myprofile);
         myprofile.setOnClickListener(this); // header안에 있는 애니까 header에서 찾아줌 !!
         return v;

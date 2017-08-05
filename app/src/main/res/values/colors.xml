@@ -5,7 +5,7 @@
     <color name="colorAccent">#4f9189</color>
     <color name="darkGrey">#5f6069</color>
     <color name="textGrey">#b2b2b5</color>
-    <color name="colorFontPrimary">#FFFFFF</color>
+    <color name="colorFontPrimary">#ffffff</color>
     <color name="backgroundGrey">#ececec</color>
     <color name="colorWarning">#e95f6d</color>
 </resources>

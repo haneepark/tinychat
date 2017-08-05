@@ -5,5 +5,5 @@
     <string name="login_intro">Quick and simple messaging app</string>
     <string name="signup">SIGN UP FOR AN ACCOUNT</string>
     <string name="server">http://13.124.124.168/</string>
-
+    <string name="add_friend">"친구 추가하기"</string>
 </resources>
