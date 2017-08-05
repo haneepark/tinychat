@@ -1,6 +1,7 @@
 package com.parkhanee.tinychat;
 
 import android.content.Context;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -10,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             R.drawable.tab_friends,
             R.drawable.tab_talk
     };
+    private FloatingActionButton fab1,fab2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +55,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         setupTabIcons();
+
+        fab1 = (FloatingActionButton) findViewById(R.id.fab_friend);
+        fab2 = (FloatingActionButton) findViewById(R.id.fab_room);
+        fab1.setOnClickListener(this);
+        fab2.setOnClickListener(this);
+        fab1.setVisibility(View.VISIBLE);
+        fab2.setVisibility(View.INVISIBLE);
     }
 
     private void setupTabIcons() {
@@ -64,6 +74,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         adapter.addFragment(new FriendTab(), "FRIEND");
         adapter.addFragment(new RoomTab(), "TALK");
         viewPager.setAdapter(adapter);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position==0){
+//                    Toast.makeText(context, "page 1", Toast.LENGTH_SHORT).show();
+                    fab1.setVisibility(View.VISIBLE);
+                    fab2.setVisibility(View.INVISIBLE);
+                } else if (position==1){
+//                    Toast.makeText(context, "page 2", Toast.LENGTH_SHORT).show();
+                    fab1.setVisibility(View.INVISIBLE);
+                    fab2.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -91,19 +125,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public CharSequence getPageTitle(int position) {
+            // tab 이름 보이고 숨기기
 //            return mFragmentTitleList.get(position);
             return null;
         }
+
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-//            case R.id.logout : // 로그아웃
-//
-//
-//                break;
-
+            case R.id.fab_friend : //fab1
+                Toast.makeText(context, "fab1 selected", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.fab_room : //fab2
+                Toast.makeText(context, "fab2 selected", Toast.LENGTH_SHORT).show();
+                break;
         }
     }
 }

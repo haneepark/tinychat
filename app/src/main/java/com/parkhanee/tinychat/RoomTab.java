@@ -18,7 +18,7 @@ import java.util.ArrayList;
  * Created by parkhanee on 2017. 8. 3..
  */
 
-public class RoomTab extends Fragment {
+public class RoomTab extends Fragment implements View.OnClickListener{
     private final String TAG = "RoomTab";
     private RoomTabAdapter adapter;
     MySQLite db=null;
@@ -68,6 +68,12 @@ public class RoomTab extends Fragment {
                 Toast.makeText(getActivity(), "clicked "+room.getRid(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+
+        }
     }
 }

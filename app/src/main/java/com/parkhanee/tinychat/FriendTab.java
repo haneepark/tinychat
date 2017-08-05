@@ -2,6 +2,7 @@ package com.parkhanee.tinychat;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +31,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         header = (ViewGroup)inflater.inflate(R.layout.listview_header_friend, container, false);
         myprofile = header.findViewById(R.id.myprofile);
         myprofile.setOnClickListener(this); // header안에 있는 애니까 header에서 찾아줌 !!
+
         return v;
     }
 
@@ -47,7 +49,9 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ((TextView)myprofile.findViewById(R.id.header_name)).setText(pref.getString("name"));
-        // TODO: 2017. 8. 4.  ((ImageView)myprofile.findViewById(R.id.header_img)) <-- (pref.getString("img"));
+        // TODO: 2017. 8. 4. 내프로필사진 보이기
+        // ((ImageView)myprofile.findViewById(R.id.header_img)) <-- (pref.getString("img"));
+
 
         adapter = new FriendTabAdapter(getActivity());
         ListView listView = (ListView) view.findViewById(R.id.friend_list_view);
@@ -74,7 +78,6 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                 // TODO: 2017. 8. 4. show my profile dialog
                 Toast.makeText(getActivity(), "my profile", Toast.LENGTH_SHORT).show();
                 break;
-
         }
     }
 }
