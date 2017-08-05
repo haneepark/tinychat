@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.parkhanee.tinychat.classbox.Friend;
 import com.parkhanee.tinychat.classbox.Room;
 
 import java.util.ArrayList;
@@ -85,8 +86,8 @@ public class RoomTabAdapter extends BaseAdapter {
             holder.msg = (TextView) v.findViewById(R.id.room_recent_msg);
             holder.time = (TextView) v.findViewById(R.id.room_recent_time);
             holder.img = (ImageView) v.findViewById(R.id.imageView3);
-            holder.pref = MyPreferences.getInstance(context);
-            holder.db = MySQLite.getInstance(context);
+//            holder.pref = MyPreferences.getInstance(context);
+//            holder.db = MySQLite.getInstance(context);
             v.setTag(holder);
         } else {
             holder = (ViewHolder) v.getTag(); // we call the view created before to not create a view in each time
@@ -95,11 +96,9 @@ public class RoomTabAdapter extends BaseAdapter {
         if (roomArrayList.size()>0){
             Room room = roomArrayList.get(position);
 
-            // TODO: 2017. 8. 4. 디비에서 대화참여자 아이디->이름 가져와서 대화방 이름에 넣기
-            // 비효율적인거같아 ..
             String title="";
-            for (String id : room.getPplList()){
-                String name = holder.db.getFriendName(id);
+            for (Friend friend : room.getParticipants()){
+                String name = friend.getName();
                 title += name+" ";
             }
 
@@ -120,7 +119,7 @@ public class RoomTabAdapter extends BaseAdapter {
         TextView msg = null;
         TextView time = null;
         ImageView img = null;
-        MyPreferences pref = null;
-        MySQLite db=null;
+//        MyPreferences pref = null;
+//        MySQLite db=null;
     }
 }

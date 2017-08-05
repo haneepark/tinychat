@@ -55,7 +55,7 @@ public class RoomTab extends Fragment {
         * */
         ArrayList<Room> roomArrayList = db.getAllRooms();
         for (Room room : roomArrayList){
-            room.setPplList(pref.getString(room.getRid()));
+            room.setParticipants(pref.getString(room.getRid()),getActivity());
         }
         adapter.setRoomArrayList(roomArrayList);
         adapter.notifyDataSetChanged();

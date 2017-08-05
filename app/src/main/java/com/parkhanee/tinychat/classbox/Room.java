@@ -1,6 +1,9 @@
 package com.parkhanee.tinychat.classbox;
 
+import android.content.Context;
 import android.util.Log;
+
+import com.parkhanee.tinychat.MySQLite;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -16,7 +19,8 @@ public class Room {
     private String rid;
     private int ppl;
     private Boolean isPrivateRoom=null;
-    private ArrayList<String> pplArrayList = new ArrayList<>();
+    private ArrayList<Friend> participants = new ArrayList<>();
+    private MySQLite db =null;
 
     // TODO: 2017. 8. 2. 최근 대화 sharedPreferences는 어디서 뽑지?
 
@@ -41,18 +45,27 @@ public class Room {
         return ppl;
     }
 
-    public ArrayList<String> getPplList() {
-        return pplArrayList;
+    public ArrayList<Friend> getParticipants() {
+        return participants;
     }
 
-    public void setPplList(String string) {
-        // pplListString에 들어있는 id 쪼개서 어레이리스트에 넣기
-        // int ppl 과 ArrayList 길이 맞추기
-        // 안맞으면 ..? ㅜㅠㅠ
-        pplArrayList =  new ArrayList<String>(Arrays.asList(string.split(":")));
-        if (pplArrayList.size()!=ppl){
-            Log.d(TAG, "setPplList: pplArrayList.size()!=ppl ");
+    public boolean setParticipants (String string, Context context) {
+
+        if (db==null){
+            db = MySQLite.getInstance(context);
         }
+
+        // pplListString에 들어있는 id 쪼개서 어레이리스트에 넣기
+        ArrayList<String> arrayList =  new ArrayList<>(Arrays.asList(string.split(":")));
+        if (arrayList.size()!=ppl){
+            Log.d(TAG, "setParticipants: participants.size()!=ppl ");
+            return false;
+        }
+
+        for (String id : arrayList){
+            participants.add(db.getFriend(id));
+        }
+        return true;
     }
 
     @Override

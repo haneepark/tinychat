@@ -70,7 +70,7 @@ public class FriendTabAdapter extends BaseAdapter {
             v = inflater.inflate(R.layout.listview_friend, null);
             holder.name = (TextView) v.findViewById(R.id.friend_name);
             holder.img = (ImageView) v.findViewById(R.id.friend_img);
-            holder.pref = MyPreferences.getInstance(context); //원래는 널 검사 해야하는데 v==null 검사했으므로 패스
+//            holder.pref = MyPreferences.getInstance(context); //원래는 널 검사 해야하는데 v==null 검사했으므로 패스
             v.setTag(holder);
         } else {
             holder = (ViewHolder) v.getTag(); // we call the view created before to not create a view in each time
@@ -88,6 +88,6 @@ public class FriendTabAdapter extends BaseAdapter {
     private static class ViewHolder {
         TextView name = null;
         ImageView img = null;
-        MyPreferences pref = null;
+//        MyPreferences pref = null; //필요한가 ?
     }
 }
