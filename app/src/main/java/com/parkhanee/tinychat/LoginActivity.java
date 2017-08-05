@@ -108,9 +108,6 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
                     e.printStackTrace();
                 }
 
-                // TODO: 2017. 7. 26. 친구정보, 방정보 불러오기 어느 액티비티에서 언제?
-                // TODO: 2017. 7. 26. 불러와서 Sp에 저장 얼마나 어떻게 ? --> 설계 필요
-
                 Intent i = new Intent(context,MainActivity.class);
                 startActivity(i);
                 finish();
