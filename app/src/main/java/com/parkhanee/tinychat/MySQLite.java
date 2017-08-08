@@ -3,6 +3,7 @@ package com.parkhanee.tinychat;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -106,15 +107,23 @@ public final class MySQLite {
         if (cursor != null)
             cursor.moveToFirst();
 
-        Friend friend = new Friend(
-                cursor.getString(0), //id
-                cursor.getString(1), //nid
-                cursor.getString(2), //name
-                cursor.getString(3), //img
-                cursor.getInt(4) // created
-        );
-        Log.d(TAG, "getFriend: "+friend.toString());
-        return friend;
+        try {
+            Friend friend = new Friend(
+                    cursor.getString(0), //id
+                    cursor.getString(1), //nid
+                    cursor.getString(2), //name
+                    cursor.getString(3), //img
+                    cursor.getInt(4) // created
+            );
+            Log.d(TAG, "getFriend: "+friend.toString());
+            return friend;
+        } catch (CursorIndexOutOfBoundsException e){
+            e.printStackTrace();
+            return null;
+        }
+
+
+
     }
 
     public String getFriendName(String id) {

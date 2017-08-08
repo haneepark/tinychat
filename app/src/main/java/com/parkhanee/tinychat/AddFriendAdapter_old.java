@@ -32,14 +32,14 @@ import java.util.Map;
  * Created by parkhanee on 2017. 8. 8..
  */
 
-public class AddFriendAdapter extends BaseAdapter {
+public class AddFriendAdapter_old extends BaseAdapter {
     private ArrayList<Friend> friends = new ArrayList<>();
     private ArrayList<Friend> allFriends;
     private Context context=null;
-    private final String TAG = "AddFriendAdapter";
+    private final String TAG = "AddFriendAdapter_old";
 
 
-    public AddFriendAdapter(Context context){
+    public AddFriendAdapter_old(Context context){
         this.context = context;
     }
 
