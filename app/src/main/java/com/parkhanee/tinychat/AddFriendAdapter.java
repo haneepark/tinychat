@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,21 +14,16 @@ import com.parkhanee.tinychat.classbox.Friend;
 import java.util.ArrayList;
 
 /**
- * Created by parkhanee on 2017. 8. 4..
+ * Created by parkhanee on 2017. 8. 8..
  */
 
-public class FriendTabAdapter extends BaseAdapter {
-    final String TAG = "FriendTabAdapter";
+public class AddFriendAdapter extends BaseAdapter {
     private ArrayList<Friend> friendArrayList = new ArrayList<>();
     private Context context=null;
+    private final String TAG = "AddFriendAdapter";
 
-    public FriendTabAdapter(Context context){
+    public AddFriendAdapter(Context context){
         this.context = context;
-//        setDummy();
-    }
-
-    private void setDummy(){
-//        friendArrayList.add(new Room("123345",1));
     }
 
     @Override
@@ -36,7 +32,7 @@ public class FriendTabAdapter extends BaseAdapter {
     }
 
     @Override
-    public Friend getItem(int i) {
+    public Object getItem(int i) {
         return friendArrayList.get(i);
     }
 
@@ -45,42 +41,28 @@ public class FriendTabAdapter extends BaseAdapter {
         return i;
     }
 
-    public void addItem(Friend friend){
-        friendArrayList.add(friend);
-    }
-
-    public void clearItem(){
-        friendArrayList.clear();
-    }
-
-    public void addItem(Friend friend, int position){
-        friendArrayList.add(position,friend);
-    }
-
-    public void setFriendArrayList(ArrayList<Friend> friends){
-        friendArrayList = friends;
+    public void setFriendArrayList(ArrayList<Friend> friendArrayList) {
+        this.friendArrayList = friendArrayList;
     }
 
     @Override
-    public View getView(int position, View v, ViewGroup viewGroup) {
+    public View getView(int i, View v, ViewGroup viewGroup) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
         ViewHolder holder;
         if (v == null) {
             holder = new ViewHolder();
-            v = inflater.inflate(R.layout.listview_friend, null);
-            holder.name = (TextView) v.findViewById(R.id.friend_name);
+            v = inflater.inflate(R.layout.listview_add_friend, null);
+            holder.name = (TextView) v.findViewById(R.id.add_friend_name);
             holder.img = (ImageView) v.findViewById(R.id.add_friend_img);
-//            holder.pref = MyPreferences.getInstance(context); //원래는 널 검사 해야하는데 v==null 검사했으므로 패스
+            holder.add = (ImageButton) v.findViewById(R.id.add_friend_button);
             v.setTag(holder);
         } else {
             holder = (ViewHolder) v.getTag(); // we call the view created before to not create a view in each time
         }
 
-        if (friendArrayList.size()>0){
-            Friend friend = friendArrayList.get(position);
-            holder.name.setText(friend.getName());
+        // TODO: 2017. 8. 8. set image, and set onClickListener
+        holder.name.setText(friendArrayList.get(i).getName());
 
-        }
 
         return v;
     }
@@ -88,6 +70,6 @@ public class FriendTabAdapter extends BaseAdapter {
     private static class ViewHolder {
         TextView name = null;
         ImageView img = null;
-//        MyPreferences pref = null; //필요한가 ?
+        ImageButton add = null;
     }
 }

@@ -6,7 +6,7 @@
               android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/friend_img"
+        android:id="@+id/add_friend_img"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentLeft="true"
@@ -19,21 +19,21 @@
         app:srcCompat="@drawable/ic_profile"/>
 
     <TextView
-        android:id="@+id/friend_name"
+        android:id="@+id/add_friend_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/friend_img"
+        android:layout_alignTop="@+id/add_friend_img"
         android:layout_marginTop="12dp"
-        android:layout_toEndOf="@+id/friend_img"
-        android:layout_toLeftOf="@+id/imageButton"
-        android:layout_toRightOf="@+id/friend_img"
-        android:layout_toStartOf="@+id/imageButton"
+        android:layout_toEndOf="@+id/add_friend_img"
+        android:layout_toLeftOf="@+id/add_friend_button"
+        android:layout_toRightOf="@+id/add_friend_img"
+        android:layout_toStartOf="@+id/add_friend_button"
         android:elevation="24dp"
         android:text="TextView"
         android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"/>
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/add_friend_button"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentEnd="true"

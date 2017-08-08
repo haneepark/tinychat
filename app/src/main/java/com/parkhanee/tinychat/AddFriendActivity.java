@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -16,10 +17,13 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.parkhanee.tinychat.classbox.Friend;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +31,7 @@ public class AddFriendActivity extends AppCompatActivity {
     final String TAG = "AddFriendActivity";
     Context context = this;
     MyPreferences pref=null;
+    AddFriendAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +54,9 @@ public class AddFriendActivity extends AppCompatActivity {
             getAllUserRequested();
         }
 
+        adapter = new AddFriendAdapter(context);
+        ListView listView = (ListView) findViewById(R.id.listview_add_friend);
+        listView.setAdapter(adapter);
     }
 
     public void getAllUserRequested () {
@@ -75,6 +83,52 @@ public class AddFriendActivity extends AppCompatActivity {
                         Toast.makeText(context, "result "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "getAllUserRequested : "+resultCode+" "+result);
                         return;
+                    }
+
+                    Toast.makeText(context, "100", Toast.LENGTH_SHORT).show();
+
+                    // TODO jsonObject "users" 를 받고
+                    // 어레이인지 검사하고 어레이가 아니면
+                        // 또는 내용물이 없나 ?     확인해서 처리하고
+                    // 어레이 이면 리스트뷰로 넘겨서 처리하기 . 한 명일때도 어레이네 !
+                    Object users = jsonObject.get("users");
+
+                    if (users instanceof JSONArray) { // It's an array
+                        JSONArray usersJsonArray = (JSONArray)users;
+                        Toast.makeText(context, "array", Toast.LENGTH_SHORT).show();
+                        // TODO: 2017. 8. 8. list view 처리
+                        int length = usersJsonArray.length();
+                        ArrayList<Friend> friends = new ArrayList<>();
+                        for (int i=0;i<length;i++){
+                            JSONObject user = (JSONObject) usersJsonArray.get(i);
+                            String img;
+                            if (user.has("img")){
+                                img = user.getString("img");
+                            } else {
+                                img = "";
+                            }
+
+                            friends.add(
+                                    new Friend(
+                                    user.getString("id"),
+                                    user.getString("nid"),
+                                    user.getString("name"),
+                                    img,
+                                    user.getInt("created")
+                                    )
+                            );
+                        }
+                        adapter.setFriendArrayList(friends);
+                        adapter.notifyDataSetChanged();
+
+                    } else {
+                        Toast.makeText(context, "불러올 유저 없음 에러 ??? ", Toast.LENGTH_SHORT).show();
+//                        if (users instanceof JSONObject) { // It's an object
+//                        Toast.makeText(context, "object", Toast.LENGTH_SHORT).show();
+//                        JSONObject userObject = (JSONObject)users;
+//
+//                    } else {
+                        // It's something else, like a string or number
                     }
 
                     // 결과 처리
