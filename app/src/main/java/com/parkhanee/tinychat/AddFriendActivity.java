@@ -1,17 +1,18 @@
 package com.parkhanee.tinychat;
 
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -24,8 +25,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AddFriendActivity extends AppCompatActivity {
     final String TAG = "AddFriendActivity";
@@ -57,6 +56,32 @@ public class AddFriendActivity extends AppCompatActivity {
         adapter = new AddFriendAdapter(context);
         ListView listView = (ListView) findViewById(R.id.listview_add_friend);
         listView.setAdapter(adapter);
+
+        final EditText et_search = (EditText) findViewById(R.id.et_search);
+//        et_search.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//                adapter.getFilter().filter(charSequence.toString());
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable editable) {
+//
+//            }
+//        });
+//
+        ImageButton btn_search = (ImageButton) findViewById(R.id.btn_search);
+        btn_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                adapter.getFilter().filter(et_search.getText().toString());
+            }
+        });
     }
 
     public void getAllUserRequested () {
@@ -110,15 +135,15 @@ public class AddFriendActivity extends AppCompatActivity {
 
                             friends.add(
                                     new Friend(
-                                    user.getString("id"),
-                                    user.getString("nid"),
-                                    user.getString("name"),
-                                    img,
-                                    user.getInt("created")
+                                            user.getString("id"),
+                                            user.getString("nid"),
+                                            user.getString("name"),
+                                            img,
+                                            user.getInt("created")
                                     )
                             );
                         }
-                        adapter.setFriendArrayList(friends);
+                        adapter.setFriends(friends);
                         adapter.notifyDataSetChanged();
 
                     } else {
@@ -130,20 +155,6 @@ public class AddFriendActivity extends AppCompatActivity {
 //                    } else {
                         // It's something else, like a string or number
                     }
-
-                    // 결과 처리
-
-//                    String name = jsonObject.getString("name");
-//                    String id = jsonObject.getString("id");
-//                    String created = jsonObject.getString("created");
-//
-//                    String jsonString = "";
-//                    jsonString += "name: " + name + "\n\n";
-//                    jsonString += "id: " + id + "\n\n";
-//                    jsonString += "created: " + created + "\n\n";
-//
-//                    Log.d(TAG, "onResponse:"+jsonString);
-
 
                 } catch (JSONException e) {
                     e.printStackTrace();
