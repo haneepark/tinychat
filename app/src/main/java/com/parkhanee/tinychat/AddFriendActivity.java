@@ -63,7 +63,6 @@ public class AddFriendActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         et_search = (EditText) findViewById(R.id.et_search);
-
         ImageButton btn_search = (ImageButton) findViewById(R.id.btn_search);
 
         // edit text 에서 키보드 enter 누른 경우
@@ -95,8 +94,7 @@ public class AddFriendActivity extends AppCompatActivity {
             }
         });
 
-        // edit text 에서 글자 입력하기 시작하면
-        // cleanable button 보이기 && 이전 검색 결과 보이는 거 없애기
+
         et_search.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -109,9 +107,10 @@ public class AddFriendActivity extends AppCompatActivity {
                 if (charSequence.length() > 0) {
                     btn_clear.setVisibility(View.VISIBLE);
                 } else {
+                    // 입력했던 글자 모두 지우면
+                    // cleanable button 안보이기 && 이전 검색 결과 clear
                     btn_clear.setVisibility(View.INVISIBLE);
-                    adapter.setFriends(new ArrayList<Friend>());
-                    adapter.notifyDataSetChanged();
+                    adapter.clearItem();
                 }
             }
 
@@ -131,8 +130,7 @@ public class AddFriendActivity extends AppCompatActivity {
             // TODO: 2017. 8. 8. 경고
             Toast.makeText(context, "전화번호를 정확히 입력해 주세요", Toast.LENGTH_SHORT).show();
             // 검색결과 초기화 하기
-            adapter.setFriends(new ArrayList<Friend>());
-            adapter.notifyDataSetChanged();
+            adapter.clearItem();
         }
     }
 
