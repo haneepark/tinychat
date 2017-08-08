@@ -7,10 +7,13 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -31,6 +34,8 @@ public class AddFriendActivity extends AppCompatActivity {
     Context context = this;
     MyPreferences pref=null;
     AddFriendAdapter adapter;
+    EditText et_search;
+    ImageButton btn_clear;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,31 +62,78 @@ public class AddFriendActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.listview_add_friend);
         listView.setAdapter(adapter);
 
-        final EditText et_search = (EditText) findViewById(R.id.et_search);
-//        et_search.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//                adapter.getFilter().filter(charSequence.toString());
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable editable) {
-//
-//            }
-//        });
-//
+        et_search = (EditText) findViewById(R.id.et_search);
+
         ImageButton btn_search = (ImageButton) findViewById(R.id.btn_search);
+
+        // edit text 에서 키보드 enter 누른 경우
+        et_search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH || event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    search();
+                }
+                return true;
+            }
+        });
+
+        // search image button 누른 경우
         btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                adapter.getFilter().filter(et_search.getText().toString());
+                search();
             }
         });
+
+        // cleanable edittext
+        btn_clear = (ImageButton) findViewById(R.id.cleanable_button_clear);
+        btn_clear.setVisibility(View.INVISIBLE);
+        btn_clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                et_search.setText("");
+            }
+        });
+
+        // edit text 에서 글자 입력하기 시작하면
+        // cleanable button 보이기 && 이전 검색 결과 보이는 거 없애기
+        et_search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                if (charSequence.length() > 0) {
+                    btn_clear.setVisibility(View.VISIBLE);
+                } else {
+                    btn_clear.setVisibility(View.INVISIBLE);
+                    adapter.setFriends(new ArrayList<Friend>());
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+    }
+
+    public void search(){ // when search action is called
+        String nid = et_search.getText().toString();
+        if (MyUtil.nidFormChecker(nid)){
+            adapter.getFilter().filter(nid);
+        } else {
+            // TODO: 2017. 8. 8. 경고
+            Toast.makeText(context, "전화번호를 정확히 입력해 주세요", Toast.LENGTH_SHORT).show();
+            // 검색결과 초기화 하기
+            adapter.setFriends(new ArrayList<Friend>());
+            adapter.notifyDataSetChanged();
+        }
     }
 
     public void getAllUserRequested () {
@@ -143,17 +195,11 @@ public class AddFriendActivity extends AppCompatActivity {
                                     )
                             );
                         }
-                        adapter.setFriends(friends);
+                        adapter.setAllFriends(friends);
                         adapter.notifyDataSetChanged();
 
                     } else {
                         Toast.makeText(context, "불러올 유저 없음 에러 ??? ", Toast.LENGTH_SHORT).show();
-//                        if (users instanceof JSONObject) { // It's an object
-//                        Toast.makeText(context, "object", Toast.LENGTH_SHORT).show();
-//                        JSONObject userObject = (JSONObject)users;
-//
-//                    } else {
-                        // It's something else, like a string or number
                     }
 
                 } catch (JSONException e) {

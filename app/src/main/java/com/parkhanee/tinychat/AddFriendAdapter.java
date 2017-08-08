@@ -10,6 +10,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Filter;
+import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Friend;
 
@@ -49,6 +50,10 @@ public class AddFriendAdapter extends BaseAdapter {
         if (allFriends==null){
             allFriends = new ArrayList<>(this.friends);
         }
+    }
+
+    public void setAllFriends(ArrayList<Friend> allFriends) {
+        this.allFriends = allFriends;
     }
 
     public void clearItem(){
@@ -116,9 +121,9 @@ public class AddFriendAdapter extends BaseAdapter {
                     Log.d(TAG, "performFiltering: allFriend.size"+String.valueOf(allFriends.size()));
                     for (int i = 0; i < allFriends.size(); i++) {
                         Friend f = allFriends.get(i);
-                        String data = f.getName();
+                        String data = f.getNid();
                         Log.d(TAG, "performFiltering: data "+data);
-                        if (data.toLowerCase().contains(constraint.toString())){ //startsWith(constraint.toString())) {
+                        if (data.toLowerCase().equals(constraint.toString())){ //startsWith(constraint.toString())) {
                             FilteredArrList.add(
                                     new Friend(f.getId(),f.getNid(),f.getName(),f.getImg(),f.getCreated()
                                     )
@@ -137,6 +142,10 @@ public class AddFriendAdapter extends BaseAdapter {
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
                 friends = (ArrayList<Friend>) filterResults.values ;
+                if (friends.size()==0){
+                    // TODO: 2017. 8. 8. 알림
+                    Toast.makeText(context, " 일치하는 결과 없음", Toast.LENGTH_SHORT).show();
+                }
                 Log.d(TAG, "publishResults: "+friends.toString());
                 notifyDataSetChanged();
             }
