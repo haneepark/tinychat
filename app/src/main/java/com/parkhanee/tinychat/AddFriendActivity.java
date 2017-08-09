@@ -242,7 +242,7 @@ public class AddFriendActivity extends AppCompatActivity {
         private ArrayList<Friend> friends = new ArrayList<>();
         private ArrayList<Friend> allFriends;
         private Context context = null;
-        private final String TAG = "AddFriendAdapter_old";
+        private final String TAG = "AddFriendAdapter";
 
 
         public AddFriendAdapter(Context context) {
@@ -308,12 +308,16 @@ public class AddFriendActivity extends AppCompatActivity {
                     public void onClick(View view) {
 
                         // 네트워크 연결되어있고 해당 유저가 친구로 등록되어있지 않음
-                        if (MyUtil.IsNetworkConnected(context)&&db.getFriend(friend.getId()) == null){
-                            // TODO: 2017. 8. 8. add friend to server database
-                            onAddFriendRequested(friend);
+                        if (!MyUtil.IsNetworkConnected(context)){
+                            // TODO: 2017. 8. 9. 경고
+                            Toast.makeText(context, "인터넷 없음", Toast.LENGTH_SHORT).show();
                         } else {
-                            // TODO: 2017. 8. 8. 경고
-                            Toast.makeText(context, "인터넷 없음 또는 이미 친구 ? ", Toast.LENGTH_SHORT).show();
+                            if (db.getFriend(friend.getId()) != null){
+                                // TODO: 2017. 8. 8. 경고
+                                Toast.makeText(context, "이미 로컬db에서 친구입니다", Toast.LENGTH_SHORT).show();
+                            }
+                            //  add friend to server database
+                            onAddFriendRequested(friend);
                         }
                     }
                 });
@@ -393,6 +397,7 @@ public class AddFriendActivity extends AppCompatActivity {
     }
 
     public void onAddFriendRequested (final Friend friend) {
+        final String friendId = friend.getId();
 
         RequestQueue queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
@@ -407,22 +412,34 @@ public class AddFriendActivity extends AppCompatActivity {
                 Log.d(TAG, response);
 
                 try {
+
                     JSONObject jsonObject = new JSONObject(response);
                     String resultCode = jsonObject.getString("resultCode");
                     String result = jsonObject.getString("result");
 
                     // result code 확인
-                    if (!resultCode.equals("100")){
+                    if (resultCode.equals("302")&jsonObject.getJSONArray("followings:"+id).toString().contains(friendId)){
+                        // TODO: 2017. 8. 9. 알림
+                        Toast.makeText(context, "이미 서버db에서 친구입니다", Toast.LENGTH_SHORT).show();
+                        if (db.getFriend(friend.getId()) == null){
+                            // local db에 친구관계 추가
+                            db.addFriend(friend);
+                        }
+                        return;
+                    } else if (!resultCode.equals("100")){
+                        // TODO: 2017. 8. 9. 실패 경고
                         Toast.makeText(context, "result "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "getAllUserRequested : "+resultCode+" "+result);
                         return;
                     }
-
                     Toast.makeText(context, "100", Toast.LENGTH_SHORT).show();
-                    // TODO: 2017. 8. 8. local db에 친구관계 추가
+
+                    // local db에 친구관계 추가
                     db.addFriend(friend);
 
-                    // TODO: 2017. 8. 8. 친구등록 완료 알림, MainActivity로 넘어가면서 FriendTab 다시 불러오기(친구 추가되었으니까 !)
+                    // 친구등록 완료 알림, MainActivity로 넘어가면서 FriendTab 다시 불러오기(친구 추가되었으니까 !)
+                    Toast.makeText(context, "친구 등록 완료", Toast.LENGTH_SHORT).show();
+
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -438,9 +455,9 @@ public class AddFriendActivity extends AppCompatActivity {
             @Override
             protected Map<String,String> getParams(){
                 Map<String,String> params = new HashMap<>();
+                Log.d(TAG, "getParams: id f_id"+id+" "+friendId);
                 params.put("my_id",id);
-                params.put("friend_id",friend.getId());
-                params.put("name",friend.getName());
+                params.put("friend_id",friendId);
                 return params;
             }
 
