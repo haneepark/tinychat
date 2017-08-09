@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-    MyPreferences pref=null; //테스트목적외에 필요없음
     Context context=this;
+//    MyPreferences pref=null; //테스트목적외에 필요없음
 //    MySQLite mySQLite = null;//테스트목적외에 필요없음
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -35,15 +35,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 //
-        if (pref==null){ pref = MyPreferences.getInstance(context); }
+//        if (pref==null){ pref = MyPreferences.getInstance(context); }
 //        if (mySQLite==null){ mySQLite = MySQLite.getInstance(context); }
 
-        // TODO: 2017. 8. 4. TEST
-        pref.putString("1","12341234");
-        pref.putString("2","11111111");
-        pref.putString("3","12341234:22222222");
-        pref.putString("4","11111111:12341234:22222222");
-        pref.putString("5","22222222");
+//        // TODO: 2017. 8. 4. TEST
+//        pref.putString("1","12341234");
+//        pref.putString("2","11111111");
+//        pref.putString("3","12341234:22222222");
+//        pref.putString("4","11111111:12341234:22222222");
+//        pref.putString("5","22222222");
+
+
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

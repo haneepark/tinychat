@@ -81,14 +81,13 @@ public final class MySQLite {
     * friend table 의 상수들 정의.
     * 테이블 이름과 컬럼들의 이름을 정의한다.
     */
-    public static final class FriendTable implements BaseColumns {
-        // TODO: 2017. 8. 2. 이거 .. 클래스말고 ENUM인가 그걸로 처리할수도 있을 것 같은데
-        public static final String TABLE_NAME = "friend";
-        public static final String ID = "id";
-        public static final String NID = "nid";
-        public static final String NAME = "name";
-        public static final String IMG = "img";
-        public static final String CREATED = "created";
+    private static final class FriendTable implements BaseColumns {
+        static final String TABLE_NAME = "friend";
+        static final String ID = "id";
+        static final String NID = "nid";
+        static final String NAME = "name";
+        static final String IMG = "img";
+        static final String CREATED = "created";
     }
 
     public boolean addFriend (Friend friend) {
@@ -99,6 +98,7 @@ public final class MySQLite {
         contentValues.put(FriendTable.IMG, friend.getImg());
         contentValues.put(FriendTable.CREATED, friend.getCreated());
         mySQLiteDatabase.insert(FriendTable.TABLE_NAME, null, contentValues);
+        Log.d(TAG, "addFriend: "+friend.toString());
         return true;
     }
 
@@ -146,6 +146,18 @@ public final class MySQLite {
         return true;
     }
 
+    public boolean deleteFriend (String id){
+        getAllFriends();
+
+        mySQLiteDatabase.delete(FriendTable.TABLE_NAME,
+                FriendTable.ID+" = ?",
+                new String[] { String.valueOf(id) });
+        Log.d(TAG, "deleteFriend: "+String.valueOf(id));
+        getAllFriends();
+
+        return true;
+    }
+
     // TODO: 2017. 8. 2.  ArrayList OR List ????
     // TODO: 2017. 8. 2. 친구 순서
     public ArrayList<Friend> getAllFriends() {
@@ -176,11 +188,10 @@ public final class MySQLite {
      * room table 의 상수들 정의.
      * 테이블 이름과 컬럼들의 이름을 정의한다.
      */
-    public static final class RoomTable implements BaseColumns {
-        // TODO: 2017. 8. 2. 이거 .. 클래스말고 ENUM인가 그걸로 처리할수도 있을 것 같은데
-        public static final String TABLE_NAME = "room";
-        public static final String RID = "rid";
-        public static final String PPL = "ppl";
+    private static final class RoomTable implements BaseColumns {
+        static final String TABLE_NAME = "room";
+        static final String RID = "rid";
+        static final String PPL = "ppl";
     }
 
     public boolean addRoom(Room room){
@@ -272,10 +283,10 @@ public final class MySQLite {
                     + FriendTable.CREATED + " INTEGER );"
             );
 
-            // sample friend
-            db.execSQL("INSERT INTO FRIEND VALUES ( '12341234', '01012341234', '일이삼사', '', 1501659026 )");
-            db.execSQL("INSERT INTO FRIEND VALUES ( '11111111', '01011111111', '일일일일', '', 1501659469 )");
-            db.execSQL("INSERT INTO FRIEND VALUES ( '22222222', '01022222222', '둘둘', '', 1501659570 )");
+//            // sample friend
+//            db.execSQL("INSERT INTO FRIEND VALUES ( '12341234', '01012341234', '일이삼사', '', 1501659026 )");
+//            db.execSQL("INSERT INTO FRIEND VALUES ( '11111111', '01011111111', '일일일일', '', 1501659469 )");
+//            db.execSQL("INSERT INTO FRIEND VALUES ( '22222222', '01022222222', '둘둘', '', 1501659570 )");
 
         }
 
@@ -287,11 +298,11 @@ public final class MySQLite {
                             + RoomTable.PPL + " INTEGER );"
             );
 
-            db.execSQL("INSERT INTO ROOM VALUES ( '1', 1 )" );
-            db.execSQL("INSERT INTO ROOM VALUES ( '2', 1 )" );
-            db.execSQL("INSERT INTO ROOM VALUES ( '3', 2 )" );
-            db.execSQL("INSERT INTO ROOM VALUES ( '4', 3 )" );
-            db.execSQL("INSERT INTO ROOM VALUES ( '5', 1 )" );
+//            db.execSQL("INSERT INTO ROOM VALUES ( '1', 1 )" );
+//            db.execSQL("INSERT INTO ROOM VALUES ( '2', 1 )" );
+//            db.execSQL("INSERT INTO ROOM VALUES ( '3', 2 )" );
+//            db.execSQL("INSERT INTO ROOM VALUES ( '4', 3 )" );
+//            db.execSQL("INSERT INTO ROOM VALUES ( '5', 1 )" );
         }
     }
 
