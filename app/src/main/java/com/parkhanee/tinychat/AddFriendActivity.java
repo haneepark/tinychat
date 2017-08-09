@@ -1,6 +1,7 @@
 package com.parkhanee.tinychat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -167,7 +168,7 @@ public class AddFriendActivity extends AppCompatActivity {
         StringRequest stringRequest = new StringRequest(Request.Method.GET,url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG, response);
+                Log.d(TAG, "getAllUserRequested onResponse : "+response);
 
                 try {
                     JSONObject jsonObject = new JSONObject(response);
@@ -409,7 +410,7 @@ public class AddFriendActivity extends AppCompatActivity {
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG, response);
+                Log.d(TAG,"onAddFriendRequested response : "+ response);
 
                 try {
 
@@ -437,9 +438,16 @@ public class AddFriendActivity extends AppCompatActivity {
                     // local db에 친구관계 추가
                     db.addFriend(friend);
 
-                    // 친구등록 완료 알림, MainActivity로 넘어가면서 FriendTab 다시 불러오기(친구 추가되었으니까 !)
+                    // TODO: 2017. 8. 9. 친구등록 완료 알림
                     Toast.makeText(context, "친구 등록 완료", Toast.LENGTH_SHORT).show();
 
+                    // 1 메인 액티비티로 가고 나서 새로 등록된 친구 바로 보여야 함
+                    // 2 액티비티 스텍에 원래 원래 있던 메인 액티비티는 없어지거나 병합되어야 함
+                    // CLEAR_TOP : 스택 아래에 있는 메인액티비티의 onCreate로 가면서 위에 있는 액티비티는 싹 밀어버림.
+                    Intent i = new Intent(context,MainActivity.class);
+                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(i);
+                    finish();
 
                 } catch (JSONException e) {
                     e.printStackTrace();
