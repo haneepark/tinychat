@@ -25,7 +25,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     MySQLite db = null;
     private View myprofile;
     MyPreferences pref=null;
-    Dialog dialog;
+    UserProfileDialog.Builder dialog;
 
     @Nullable
     @Override
@@ -77,18 +77,19 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.myprofile :
-                // TODO: 2017. 8. 4. show my profile dialog
-
-                // 번호(body)를 텍스트뷰가 아니라 버튼으로
-                // 폰트 크기
-                // 여백 조정
-                // 이미지 클릭 리스너
+                // TODO: 2017. 8. 4. init and show my profile dialog
                 if (dialog == null){
-                    dialog = new Dialog(getActivity());
-                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-                    dialog.setContentView(R.layout.dialog_userprofile);
-//                    dialog.setTitle("박하늬");
-                    ((TextView)dialog.findViewById(R.id.title)).setText("박하늬");
+                    dialog = new UserProfileDialog.Builder(getActivity())
+                            .setMine(false)
+                            .setTextName("Hanee Park")
+                            .setTextNumber("010-6862-0823")
+                            .setOnLogoutClicked(new UserProfileDialog.OnLogoutClicked() {
+                                @Override
+                                public void OnClick(View view, Dialog dialog) {
+                                    Toast.makeText(getActivity(), "logout", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .build();
                 }
                 dialog.show();
                 /*if (alert==null){
