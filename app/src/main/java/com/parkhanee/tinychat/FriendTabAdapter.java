@@ -21,6 +21,7 @@ public class FriendTabAdapter extends BaseAdapter {
     private ArrayList<Friend> friendArrayList = new ArrayList<>();
     private Context context=null;
 
+
     public FriendTabAdapter(Context context){
         this.context = context;
 //        setDummy();
@@ -64,22 +65,36 @@ public class FriendTabAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View v, ViewGroup viewGroup) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
-        ViewHolder holder;
+        final ViewHolder holder;
         if (v == null) {
             holder = new ViewHolder();
             v = inflater.inflate(R.layout.listview_friend, null);
             holder.name = (TextView) v.findViewById(R.id.friend_name);
             holder.img = (ImageView) v.findViewById(R.id.add_friend_img);
-//            holder.pref = MyPreferences.getInstance(context); //원래는 널 검사 해야하는데 v==null 검사했으므로 패스
+            holder.dialog = new UserProfileDialog.Builder(context);
+            holder.layout = v.findViewById(R.id.friend_item);
             v.setTag(holder);
         } else {
             holder = (ViewHolder) v.getTag(); // we call the view created before to not create a view in each time
         }
 
-        if (friendArrayList.size()>0){
+        if (friendArrayList.size()>0){ // 친구 존재 할 때
             Friend friend = friendArrayList.get(position);
             holder.name.setText(friend.getName());
 
+            holder.dialog.setTextName(friend.getName())
+                    .setTextNumber(friend.getNid())
+                    .setMine(false)
+                    .build();
+
+            // show friend's profile dialog
+            // 원래는 FriendTabFragment 에서 listView.OnItemClickListener 를 써야 하는데 대신에 리스트뷰 아이템 감싸는 레이아웃을 불러서 온클릭리스너 등록
+            holder.layout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    holder.dialog.show();
+                }
+            });
         }
 
         return v;
@@ -88,6 +103,7 @@ public class FriendTabAdapter extends BaseAdapter {
     private static class ViewHolder {
         TextView name = null;
         ImageView img = null;
-//        MyPreferences pref = null; //필요한가 ?
+        UserProfileDialog.Builder dialog=null;
+        View layout = null;
     }
 }

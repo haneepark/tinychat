@@ -85,18 +85,6 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
                     // sharedPreference에 로그인 성공 저장
                     pref.login();
 
-//                    String name = jsonObject.getString("name");
-//                    String id = jsonObject.getString("id");
-//                    String created = jsonObject.getString("created");
-//
-//                    String jsonString = "";
-//                    jsonString += "name: " + name + "\n\n";
-//                    jsonString += "id: " + id + "\n\n";
-//                    jsonString += "created: " + created + "\n\n";
-//
-//                    Log.d(TAG, "onResponse:"+jsonString);
-
-
                     // 유저 정보 SP에 저장
                     pref.putString("id",jsonObject.getString("id"));
                     pref.putString("nid",jsonObject.getString("nid"));

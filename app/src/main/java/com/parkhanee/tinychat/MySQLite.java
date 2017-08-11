@@ -52,6 +52,15 @@ public final class MySQLite {
         return mySQLiteHelper;
     }
 
+    public void logout(){
+        // TODO: 2017. 8. 12. 여기서 drop table해버리면 로그아웃 했다가 다시 로그인 할때 테이블이 없어서 에러 남.
+        // 그러니까 deleteAllFriends / deleteAllRooms 하자 !
+        mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ FriendTable.TABLE_NAME);
+        mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ RoomTable.TABLE_NAME);
+        mySQLiteHelper.createFriendTable(mySQLiteDatabase);
+        mySQLiteHelper.createRoomTable(mySQLiteDatabase);
+    }
+
     private boolean isOpen() {
         return mySQLiteDatabase != null && mySQLiteDatabase.isOpen();
     }
@@ -284,9 +293,8 @@ public final class MySQLite {
             );
 
 //            // sample friend
-//            db.execSQL("INSERT INTO FRIEND VALUES ( '12341234', '01012341234', '일이삼사', '', 1501659026 )");
-//            db.execSQL("INSERT INTO FRIEND VALUES ( '11111111', '01011111111', '일일일일', '', 1501659469 )");
-//            db.execSQL("INSERT INTO FRIEND VALUES ( '22222222', '01022222222', '둘둘', '', 1501659570 )");
+            db.execSQL("INSERT INTO FRIEND VALUES ( '91433734', '01091433734', '규백', '', 1501659026 )");
+            db.execSQL("INSERT INTO FRIEND VALUES ( '11111111', '01011111111', '일일일', '', 1501659469 )");
 
         }
 

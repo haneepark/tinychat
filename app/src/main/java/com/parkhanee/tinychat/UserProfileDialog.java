@@ -7,7 +7,6 @@ import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -23,13 +22,15 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Created by parkhanee on 2017. 8. 11..
  */
 
 public class UserProfileDialog extends DialogFragment {
-    public static final String TAG = UserProfileDialog.class.getSimpleName();
+    public static final String SimpleName = UserProfileDialog.class.getSimpleName();
+    public static final String TAG = "UserProfileDialog";
     private Builder builder;
     private static UserProfileDialog instance = new UserProfileDialog(); // why static ?
 
@@ -78,84 +79,101 @@ public class UserProfileDialog extends DialogFragment {
         super.onViewCreated(view, savedInstanceState);
         initViews(view);
         if (builder != null) {
+            // 사용자 이름
             if (builder.getTextName() != null) {
                 name.setText(builder.getTextName());
             } else {
                 // TODO: 2017. 8. 11. 이름이 없을때 처리 ?
-                name.setVisibility(View.GONE);
+                name.setText(" ");
             }
 
+            // 사용자 전화번호
             if (builder.getTextNumber() != null) {
                 number.setText(builder.getTextNumber());
             } else {
-                number.setVisibility(View.GONE);
+                number.setText(" ");
             }
 
-            if (builder.getOnPositiveClicked() != null) {
-                Log.d("OnPositive", "Clicked");
-                positive.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        builder.getOnPositiveClicked().OnClick(v, getDialog());
-                    }
-                });
-            }
+            // 닫기 버튼
+            negative.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dismiss();
+                }
+            });
 
-            if (builder.getOnNegativeClicked() != null) {
-                negative.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        builder.getOnNegativeClicked().OnClick(v, getDialog());
-                    }
-                });
-            }
-
-            if (builder.getImageRecourse() != 0) {
-                Drawable imageRes = VectorDrawableCompat.create(getResources(), builder.getImageRecourse(), getActivity().getTheme());
-                image.setImageDrawable(imageRes);
-            } else if (builder.getImageDrawable() != null) {
-                image.setImageDrawable(builder.getImageDrawable());
-            } else {
+            // 프로필 이미지
+            if (builder.getImageRecourse() == 0 && builder.getImageDrawable() == null){ // 설정한 이미지가 없는 경우
                 // TODO: 2017. 8. 11. default image here
-                image.setVisibility(View.GONE);
+                image.setImageResource(R.drawable.ic_profile);
+            } else { // 설정한 이미지가 있는 경우
+                // 이미지 클릭
+                image.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(getActivity(), "ImageActivity", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                // 이미지 넣어주기
+                if (builder.getImageRecourse() != 0) {
+                    Drawable imageRes = VectorDrawableCompat.create(getResources(), builder.getImageRecourse(), getActivity().getTheme());
+                    image.setImageDrawable(imageRes);
+                } else if (builder.getImageDrawable() != null) {
+                    image.setImageDrawable(builder.getImageDrawable());
+                }
             }
 
-            if (builder.isAutoHide()) {
-                int time = builder.getTimeToHide() != 0 ? builder.getTimeToHide() : 10000;
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (isAdded() && getActivity() != null)
-                            dismiss();
-                    }
-                }, time);
-            }
+            if (builder.isMine()){ // TODO: 2017. 8. 11. my profile
 
-            if (builder.isMine()){
-                // TODO: 2017. 8. 11. my profile
-                logout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        builder.getOnLogoutClicked().OnClick(view, getDialog());
-                    }
-                });
-                editImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        builder.getOnEditImageClicked().OnClick(view, getDialog());
-                    }
-                });
-                editName.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        builder.getOnEditNameClicked().OnClick(view, getDialog());
-                    }
-                });
-            } else {
-                // not my profile
-                logout.setVisibility(View.GONE);
-                editImage.setVisibility(View.GONE);
-                editName.setVisibility(View.GONE);
+                    // TODO: 2017. 8. 11. 수정 ?
+                    positive.setText("수정");
+                    positive.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Toast.makeText(getActivity(), "edit", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    // 로그아웃
+                    logout.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                           MyUtil.logout(getActivity());
+                        }
+                    });
+
+                    // 프로필 이미지 변경하기
+                    editImage.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            builder.getOnEditImageClicked().OnClick(view, getDialog());
+                        }
+                    });
+
+                    // 이름 변경하기
+                    editName.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            builder.getOnEditNameClicked().OnClick(view, getDialog());
+                        }
+                    });
+
+            } else { // not my profile
+
+                    // 1:1 채팅 버튼
+                    positive.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(getActivity(), "1:1 대화", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    // 본인 프로필일때만 보이는 버튼들 가리기
+                    logout.setVisibility(View.GONE);
+                    editImage.setVisibility(View.GONE);
+                    editName.setVisibility(View.GONE);
+
             }
 
         }
@@ -173,9 +191,13 @@ public class UserProfileDialog extends DialogFragment {
     }
 
     private Dialog show(Activity activity, Builder builder) {
+        Log.d(TAG, "show: private");
         this.builder = builder;
-        if (!isAdded())
-            show(((AppCompatActivity) activity).getSupportFragmentManager(), TAG);
+        Log.d(TAG, "show: isAdded "+String.valueOf(isAdded()));
+        if (!isAdded()){
+//            Log.d(TAG, "show: private, is not added");
+            show(((AppCompatActivity) activity).getSupportFragmentManager(), SimpleName);
+        }
         return getDialog();
     }
 
@@ -186,13 +208,8 @@ public class UserProfileDialog extends DialogFragment {
         private String textNumber;
 
         private OnPositiveClicked onPositiveClicked;
-        private OnNegativeClicked onNegativeClicked;
-        private OnLogoutClicked onLogoutClicked;
         private OnEditNameClicked onEditNameClicked;
         private OnEditImageClicked onEditImageClicked;
-
-        private boolean autoHide;
-        private int timeToHide;
 
         private int imageRecourse;
         private Drawable imageDrawable;
@@ -205,9 +222,7 @@ public class UserProfileDialog extends DialogFragment {
         protected Builder(Parcel in) {
             textName = in.readString();
             textNumber = in.readString();
-            autoHide = in.readByte() != 0;
             isMine = in.readByte() != 0;
-            timeToHide = in.readInt();
             imageRecourse = in.readInt();
         }
 
@@ -223,26 +238,8 @@ public class UserProfileDialog extends DialogFragment {
             }
         };
 
-        public int getTimeToHide() {
-            return timeToHide;
-        }
-
-        public Builder setTimeToHide(int timeToHide) {
-            this.timeToHide = timeToHide;
-            return this;
-        }
-
-        public boolean isAutoHide() {
-            return autoHide;
-        }
-
         public boolean isMine(){
             return isMine;
-        }
-
-        public Builder setAutoHide(boolean autoHide) {
-            this.autoHide = autoHide;
-            return this;
         }
 
         public Builder setMine(boolean isMine){
@@ -250,18 +247,20 @@ public class UserProfileDialog extends DialogFragment {
             return this;
         }
 
-        public Context getContext() {
-            return context;
-        }
-
-        public Builder setActivity(Context context) {
-            this.context = context;
-            return this;
-        }
+//        public Context getContext() {
+//            return context;
+//        }
+//
+//        public Builder setActivity(Context context) {
+//            this.context = context;
+//            return this;
+//        }
 
         public Builder(Context context) {
             this.context = context;
         }
+
+//        public Builder (){}
 
 
         public int getImageRecourse() {
@@ -282,18 +281,12 @@ public class UserProfileDialog extends DialogFragment {
             return this;
         }
 
-
         public String getTextName() {
             return textName;
         }
 
         public Builder setTextName(String textName) {
             this.textName = textName;
-            return this;
-        }
-
-        public Builder setTextName(int textName) {
-            this.textName = context.getString(textName);
             return this;
         }
 
@@ -306,36 +299,12 @@ public class UserProfileDialog extends DialogFragment {
             return this;
         }
 
-        public Builder setTextNumber(int textNumber) {
-            this.textNumber = context.getString(textNumber);
-            return this;
-        }
-
-
         public OnPositiveClicked getOnPositiveClicked() {
             return onPositiveClicked;
         }
 
         public Builder setOnPositiveClicked(OnPositiveClicked onPositiveClicked) {
             this.onPositiveClicked = onPositiveClicked;
-            return this;
-        }
-
-        public OnNegativeClicked getOnNegativeClicked() {
-            return onNegativeClicked;
-        }
-
-        public Builder setOnNegativeClicked(OnNegativeClicked onNegativeClicked) {
-            this.onNegativeClicked = onNegativeClicked;
-            return this;
-        }
-
-        public OnLogoutClicked getOnLogoutClicked(){
-            return onLogoutClicked;
-        }
-
-        public Builder setOnLogoutClicked(OnLogoutClicked onLogoutClicked){
-            this.onLogoutClicked = onLogoutClicked;
             return this;
         }
 
@@ -362,6 +331,7 @@ public class UserProfileDialog extends DialogFragment {
         }
 
         public Dialog show() {
+            Log.d(TAG, "show: public");
             return UserProfileDialog.getInstance().show(((Activity) context), this);
         }
 
@@ -374,22 +344,12 @@ public class UserProfileDialog extends DialogFragment {
         public void writeToParcel(Parcel parcel, int i) {
             parcel.writeString(textName);
             parcel.writeString(textNumber);
-            parcel.writeByte((byte) (autoHide ? 1 : 0));
             parcel.writeByte((byte) (isMine ? 1 : 0));
-            parcel.writeInt(timeToHide);
             parcel.writeInt(imageRecourse);
         }
     }
 
     public interface OnPositiveClicked {
-        void OnClick(View view, Dialog dialog);
-    }
-
-    public interface OnNegativeClicked {
-        void OnClick(View view, Dialog dialog);
-    }
-
-    public interface OnLogoutClicked {
         void OnClick(View view, Dialog dialog);
     }
 

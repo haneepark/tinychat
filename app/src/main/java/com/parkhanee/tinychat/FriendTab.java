@@ -1,10 +1,10 @@
 package com.parkhanee.tinychat;
 
 import android.app.Dialog;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +15,6 @@ import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Friend;
 
-import org.w3c.dom.Text;
-
 
 public class FriendTab extends Fragment implements View.OnClickListener {
     final String TAG = "FriendTab";
@@ -25,7 +23,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     MySQLite db = null;
     private View myprofile;
     MyPreferences pref=null;
-    UserProfileDialog.Builder dialog;
+    UserProfileDialog.Builder dialog=null;
 
     @Nullable
     @Override
@@ -41,7 +39,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (db==null){
-            db = MySQLite.getInstance(getActivity().getApplicationContext());
+            db = MySQLite.getInstance(getActivity());
         }
         if (pref==null){
             pref = MyPreferences.getInstance(getActivity());
@@ -61,16 +59,6 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         listView.addHeaderView(header, null, false);
         adapter.setFriendArrayList(db.getAllFriends());
         adapter.notifyDataSetChanged();
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // TODO: 2017. 8. 4. show friend's profile dialog
-                Friend friend = (Friend) adapterView.getItemAtPosition(i);
-                Toast.makeText(getActivity(), "clicked "+friend.getName()+" id:"+friend.getId(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
     }
 
     @Override
@@ -79,47 +67,14 @@ public class FriendTab extends Fragment implements View.OnClickListener {
             case R.id.myprofile :
                 // TODO: 2017. 8. 4. init and show my profile dialog
                 if (dialog == null){
+                    Log.d(TAG, "onClick: dialog init");
                     dialog = new UserProfileDialog.Builder(getActivity())
-                            .setMine(false)
-                            .setTextName("Hanee Park")
-                            .setTextNumber("010-6862-0823")
-                            .setOnLogoutClicked(new UserProfileDialog.OnLogoutClicked() {
-                                @Override
-                                public void OnClick(View view, Dialog dialog) {
-                                    Toast.makeText(getActivity(), "logout", Toast.LENGTH_SHORT).show();
-                                }
-                            })
+                            .setMine(true)
+                            .setTextName(pref.getString("name"))
+                            .setTextNumber(pref.getString("nid"))
                             .build();
                 }
                 dialog.show();
-                /*if (alert==null){
-                    alert = new FancyAlertDialog.Builder(getActivity())
-                            .setImageRecourse(R.drawable.plus_circle)
-                            .setTextTitle("박하늬")
-//                            .setTextSubTitle("박하늬")
-                            .setBody("010 6862 0823")
-                            .setNegativeColor(R.color.colorWarning)
-                            .setNegativeButtonText("닫기")
-                            .setOnNegativeClicked(new FancyAlertDialog.OnNegativeClicked() {
-                                @Override
-                                public void OnClick(View view, Dialog dialog) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setPositiveButtonText("메세지 보내기")
-                            .setPositiveColor(R.color.colorAccent)
-                            .setOnPositiveClicked(new FancyAlertDialog.OnPositiveClicked() {
-                                @Override
-                                public void OnClick(View view, Dialog dialog) {
-                                    Toast.makeText(getActivity(), "메세지 보내기", Toast.LENGTH_SHORT).show();
-                                }
-                            })
-                            .setButtonsGravity(FancyAlertDialog.PanelGravity.RIGHT)
-                            .build();
-
-                }
-                alert.show();
-        */
                 break;
         }
     }
