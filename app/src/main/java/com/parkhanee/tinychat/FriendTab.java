@@ -1,5 +1,7 @@
 package com.parkhanee.tinychat;
 
+import android.app.Dialog;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -13,6 +15,8 @@ import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Friend;
 
+import org.w3c.dom.Text;
+
 
 public class FriendTab extends Fragment implements View.OnClickListener {
     final String TAG = "FriendTab";
@@ -21,6 +25,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     MySQLite db = null;
     private View myprofile;
     MyPreferences pref=null;
+    Dialog dialog;
 
     @Nullable
     @Override
@@ -73,8 +78,50 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         switch (view.getId()){
             case R.id.myprofile :
                 // TODO: 2017. 8. 4. show my profile dialog
-                Toast.makeText(getActivity(), "my profile", Toast.LENGTH_SHORT).show();
+
+                // 번호(body)를 텍스트뷰가 아니라 버튼으로
+                // 폰트 크기
+                // 여백 조정
+                // 이미지 클릭 리스너
+                if (dialog == null){
+                    dialog = new Dialog(getActivity());
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                    dialog.setContentView(R.layout.dialog_userprofile);
+//                    dialog.setTitle("박하늬");
+                    ((TextView)dialog.findViewById(R.id.title)).setText("박하늬");
+                }
+                dialog.show();
+                /*if (alert==null){
+                    alert = new FancyAlertDialog.Builder(getActivity())
+                            .setImageRecourse(R.drawable.plus_circle)
+                            .setTextTitle("박하늬")
+//                            .setTextSubTitle("박하늬")
+                            .setBody("010 6862 0823")
+                            .setNegativeColor(R.color.colorWarning)
+                            .setNegativeButtonText("닫기")
+                            .setOnNegativeClicked(new FancyAlertDialog.OnNegativeClicked() {
+                                @Override
+                                public void OnClick(View view, Dialog dialog) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setPositiveButtonText("메세지 보내기")
+                            .setPositiveColor(R.color.colorAccent)
+                            .setOnPositiveClicked(new FancyAlertDialog.OnPositiveClicked() {
+                                @Override
+                                public void OnClick(View view, Dialog dialog) {
+                                    Toast.makeText(getActivity(), "메세지 보내기", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .setButtonsGravity(FancyAlertDialog.PanelGravity.RIGHT)
+                            .build();
+
+                }
+                alert.show();
+        */
                 break;
         }
     }
+
+
 }
