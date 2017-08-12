@@ -293,8 +293,8 @@ public final class MySQLite {
             );
 
 //            // sample friend
-            db.execSQL("INSERT INTO FRIEND VALUES ( '91433734', '01091433734', '규백', '', 1501659026 )");
-            db.execSQL("INSERT INTO FRIEND VALUES ( '11111111', '01011111111', '일일일', '', 1501659469 )");
+//            db.execSQL("INSERT INTO FRIEND VALUES ( '91433734', '01091433734', '규백', '', 1501659026 )");
+//            db.execSQL("INSERT INTO FRIEND VALUES ( '11111111', '01011111111', '일일일', '', 1501659469 )");
 
         }
 

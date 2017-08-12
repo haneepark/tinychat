@@ -82,7 +82,7 @@ public class FriendTabAdapter extends BaseAdapter {
             Friend friend = friendArrayList.get(position);
             holder.name.setText(friend.getName());
 
-            holder.dialog.setTextName(friend.getName())
+            holder.dialog.setTextName(friend.getImg())
                     .setTextNumber(friend.getNid())
                     .setMine(false)
                     .build();

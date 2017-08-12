@@ -52,7 +52,6 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         // TODO: 2017. 8. 4. 내프로필사진 보이기
         // ((ImageView)myprofile.findViewById(R.id.header_img)) <-- (pref.getString("img"));
 
-
         adapter = new FriendTabAdapter(getActivity());
         ListView listView = (ListView) view.findViewById(R.id.friend_list_view);
         listView.setAdapter(adapter);

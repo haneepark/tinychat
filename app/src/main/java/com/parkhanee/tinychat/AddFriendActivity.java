@@ -192,8 +192,9 @@ public class AddFriendActivity extends AppCompatActivity {
 
                     if (users instanceof JSONArray) { // It's an array
                         JSONArray usersJsonArray = (JSONArray)users;
-                        Toast.makeText(context, "array", Toast.LENGTH_SHORT).show();
-                        // TODO: 2017. 8. 8. list view 처리
+//                        Toast.makeText(context, "array", Toast.LENGTH_SHORT).show();
+
+                        // jsonArray 정보를 받아서 listView에 allFriends 전달
                         int length = usersJsonArray.length();
                         ArrayList<Friend> friends = new ArrayList<>();
                         for (int i=0;i<length;i++){
@@ -316,7 +317,7 @@ public class AddFriendActivity extends AppCompatActivity {
                             if (db.getFriend(friend.getId()) != null){
                                 // TODO: 2017. 8. 8. 경고
                                 Toast.makeText(context, "이미 로컬db에서 친구입니다", Toast.LENGTH_SHORT).show();
-                            }
+                            }// TODO: 2017. 8. 12. 로컬에서 친구여도 서버로 가서 디비등록 하도록 해놓음
                             //  add friend to server database
                             onAddFriendRequested(friend);
                         }
@@ -425,21 +426,22 @@ public class AddFriendActivity extends AppCompatActivity {
                         if (db.getFriend(friend.getId()) == null){
                             // local db에 친구관계 추가
                             db.addFriend(friend);
+                            Toast.makeText(context, "local db에 친구 등록 완료", Toast.LENGTH_SHORT).show();
                         }
-                        return;
                     } else if (!resultCode.equals("100")){
                         // TODO: 2017. 8. 9. 실패 경고
                         Toast.makeText(context, "result "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "getAllUserRequested : "+resultCode+" "+result);
                         return;
+                    } else {
+                        Toast.makeText(context, "100", Toast.LENGTH_SHORT).show();
+
+                        // local db에 친구관계 추가
+                        db.addFriend(friend);
+
+                        // TODO: 2017. 8. 9. 친구등록 완료 알림
+                        Toast.makeText(context, "친구 등록 완료", Toast.LENGTH_SHORT).show();
                     }
-                    Toast.makeText(context, "100", Toast.LENGTH_SHORT).show();
-
-                    // local db에 친구관계 추가
-                    db.addFriend(friend);
-
-                    // TODO: 2017. 8. 9. 친구등록 완료 알림
-                    Toast.makeText(context, "친구 등록 완료", Toast.LENGTH_SHORT).show();
 
                     // 1 메인 액티비티로 가고 나서 새로 등록된 친구 바로 보여야 함
                     // 2 액티비티 스텍에 원래 원래 있던 메인 액티비티는 없어지거나 병합되어야 함
