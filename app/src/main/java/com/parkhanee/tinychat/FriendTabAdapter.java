@@ -79,10 +79,11 @@ public class FriendTabAdapter extends BaseAdapter {
         }
 
         if (friendArrayList.size()>0){ // 친구 존재 할 때
+            // 친구 목록 리스트뷰 아이템
             Friend friend = friendArrayList.get(position);
             holder.name.setText(friend.getName());
-
-            holder.dialog.setTextName(friend.getImg())
+            // 각 아이템의 프로필 다이알로그 설정
+            holder.dialog.setTextName(friend.getName())
                     .setTextNumber(friend.getNid())
                     .setMine(false)
                     .setImageUrl(friend.getImg())

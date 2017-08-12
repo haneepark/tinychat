@@ -130,8 +130,7 @@ public class UserProfileDialog extends DialogFragment {
 
             if (builder.isMine()){ // my profile
 
-                    // 프로필 수정 중 일 때
-                    if (builder.isEditing()){
+                    if (builder.isEditing()){ // 프로필 수정 중 일 때
                         // 수정 사항 저장
                         positive.setText("수정 사항 저장");
                         // 수정 사항 저장 버튼 크기 늘리기 !!
@@ -144,20 +143,19 @@ public class UserProfileDialog extends DialogFragment {
                             @Override
                             public void onClick(View view) {
                                 // TODO: 2017. 8. 12. 네트워크 처리는 FriendTab에서 구현
-                                Toast.makeText(getActivity(), "edit", Toast.LENGTH_SHORT).show();
-//                            builder.getOnPositiveClicked().OnClick(view, getDialog());
+                            builder.getOnPositiveClicked().OnClick(view, getDialog());
                             }
                         });
                         logout.setVisibility(View.GONE);
-                    } else { // 프로필 수정 중 아닐 때
-                        positive.setVisibility(View.GONE);
 
+                    } else { // 프로필 수정 중 아닐 때
+                        builder.setImageBitmapNull();
+                        positive.setVisibility(View.GONE);
                         // 닫기 버튼을 parent END로 정렬 <-- positive 버튼이 없기 때문에 .
                         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)negative.getLayoutParams();
                         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                         params.addRule(RelativeLayout.ALIGN_PARENT_END);
                         negative.setLayoutParams(params); //causes layout update
-
                     }
 
 
@@ -331,6 +329,11 @@ public class UserProfileDialog extends DialogFragment {
 
         public Builder setImageBitmap(Bitmap bitmap){
             this.imageBitmap = bitmap;
+            return this;
+        }
+
+        public Builder setImageBitmapNull(){
+            this.imageBitmap = null;
             return this;
         }
 

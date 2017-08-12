@@ -18,19 +18,15 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.parkhanee.tinychat.classbox.Friend;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -99,7 +95,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                     Log.d(TAG, "onClick: dialog init");
                     dialog = new UserProfileDialog.Builder(getActivity())
                             .setMine(true)
-                            .setTextName(pref.getString("img"))
+                            .setTextName(pref.getString("name"))
                             .setTextNumber(pref.getString("nid"))
                             .setImageUrl(pref.getString("img"))
                             .setEditing(false)
@@ -120,7 +116,6 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                                                             switch (i){
                                                                 case 0 : // 사진 촬영
                                                                     Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                                                                    // TODO: 2017. 8. 12. start DialogFragmentForResult 같은거 없나 ?
                                                                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
 
                                                                     break;
@@ -147,6 +142,9 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         }
     }
 
+    /**
+     * 카메라 인텐트 처리
+     * */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (resultCode == Activity.RESULT_OK){
@@ -190,7 +188,36 @@ public class FriendTab extends Fragment implements View.OnClickListener {
             // 아직 서버에 저장은 안한 상태.
             dialog.setImageBitmap(bitmap)
                     .setEditing(true)
-                    .build(); // build 필요 ?
+                    .setOnPositiveClicked(new UserProfileDialog.OnPositiveClicked() { // "수정 사항 저장" 눌렀을 때
+                        @Override
+                        public void OnClick(View view, Dialog dialog) {
+                            // show an alert window
+                            final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder.setTitle("수정 사항을 저장하시겠습니까?")
+                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            if (MyUtil.IsNetworkConnected(getActivity())){
+                                                // TODO: 2017. 8. 12.  서버에 업로드
+                                                Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
+//                                              onProfileChangeRequested();
+                                            } else {
+                                                // TODO: 2017. 8. 12. 경고
+                                                Toast.makeText(getActivity(), "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    })
+                                    .setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            dialogInterface.dismiss();
+                                        }
+                                    });
+                            AlertDialog alertDialog = builder.create();
+                            alertDialog.show();
+                        }
+                    })
+                    .build();
             dialog.show();
         }
         super.onActivityResult(requestCode, resultCode, data);
