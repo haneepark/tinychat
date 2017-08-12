@@ -11,4 +11,5 @@
     <dimen name="action_bar_size">50dp</dimen>
     <dimen name="listvew_margin">10dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="edit_button_width">100dp</dimen>
 </resources>
