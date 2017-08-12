@@ -2,6 +2,8 @@ package com.parkhanee.tinychat;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v4.app.DialogFragment;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
@@ -43,7 +45,8 @@ public class UserProfileDialog extends DialogFragment {
     private Button number, positive, negative;
 
     // my profile
-    private ImageButton logout,editImage, editName;
+    private Button logout;
+    private ImageButton editImage, editName;
 
 
     @Override
@@ -139,7 +142,9 @@ public class UserProfileDialog extends DialogFragment {
                     logout.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            // TODO: 2017. 8. 12. 로그아웃 하시겠습니까 같은거 ..
                            MyUtil.logout(getActivity());
+                            dismiss();
                         }
                     });
 
@@ -169,6 +174,15 @@ public class UserProfileDialog extends DialogFragment {
                         }
                     });
 
+                    // 전화번호 누르면 통화
+                    number.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", builder.getTextNumber(), null));
+                            startActivity(intent);
+                        }
+                    });
+
                     // 본인 프로필일때만 보이는 버튼들 가리기
                     logout.setVisibility(View.GONE);
                     editImage.setVisibility(View.GONE);
@@ -185,17 +199,16 @@ public class UserProfileDialog extends DialogFragment {
         number = (Button) view.findViewById(R.id.number);
         positive = (Button) view.findViewById(R.id.positive);
         negative = (Button) view.findViewById(R.id.negative);
-        logout = (ImageButton) view.findViewById(R.id.logout);
+        logout = (Button) view.findViewById(R.id.logout);
         editImage = (ImageButton) view.findViewById(R.id.editImage);
         editName = (ImageButton) view.findViewById(R.id.editName);
     }
 
     private Dialog show(Activity activity, Builder builder) {
-        Log.d(TAG, "show: private");
+        Log.d(TAG, "show in DialogFragment");
         this.builder = builder;
-        Log.d(TAG, "show: isAdded "+String.valueOf(isAdded()));
+        Log.d(TAG, "show in DialogFragment : isAdded " + String.valueOf(isAdded()));
         if (!isAdded()){
-//            Log.d(TAG, "show: private, is not added");
             show(((AppCompatActivity) activity).getSupportFragmentManager(), SimpleName);
         }
         return getDialog();
@@ -295,6 +308,11 @@ public class UserProfileDialog extends DialogFragment {
         }
 
         public Builder setTextNumber(String textNumber) {
+            if (MyUtil.nidFormChecker(textNumber)){
+                // 휴대폰번호 형식이 맞으면 하이픈 넣기
+                textNumber = new StringBuilder(textNumber).insert(7, "-").toString(); // 0101234-5678
+                textNumber = new StringBuilder(textNumber).insert(3, "-").toString(); // 010-1234-5678
+            }
             this.textNumber = textNumber;
             return this;
         }
@@ -329,9 +347,9 @@ public class UserProfileDialog extends DialogFragment {
         public Builder build() {
             return this;
         }
-
+//
         public Dialog show() {
-            Log.d(TAG, "show: public");
+            Log.d(TAG, "show in Builder");
             return UserProfileDialog.getInstance().show(((Activity) context), this);
         }
 
