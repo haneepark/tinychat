@@ -69,8 +69,9 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                     Log.d(TAG, "onClick: dialog init");
                     dialog = new UserProfileDialog.Builder(getActivity())
                             .setMine(true)
-                            .setTextName(pref.getString("name"))
+                            .setTextName(pref.getString("img"))
                             .setTextNumber(pref.getString("nid"))
+                            .setImageUrl(pref.getString("img"))
                             .build();
                 }
                 dialog.show();

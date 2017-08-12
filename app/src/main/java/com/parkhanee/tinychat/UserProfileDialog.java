@@ -23,8 +23,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 
 /**
  * Created by parkhanee on 2017. 8. 11..
@@ -105,27 +108,28 @@ public class UserProfileDialog extends DialogFragment {
                 }
             });
 
-            // 프로필 이미지
-            if (builder.getImageRecourse() == 0 && builder.getImageDrawable() == null){ // 설정한 이미지가 없는 경우
-                // TODO: 2017. 8. 11. default image here
-                image.setImageResource(R.drawable.ic_profile);
-            } else { // 설정한 이미지가 있는 경우
+
+            // 설정한 이미지가 있는 경우
+            if (builder.getImageUrl() != null) { // TODO: 2017. 8. 12. 이거 구별하는거 어떻게 ?  얘 지금 안되는거같은데 ?
+                // TODO: 2017. 8. 12. 이미지 넣어주기  asyncronously in a sub thread
+                // load의 paramater로 url형태의 string 넣어주면 되는건가 ???
+                // TODO: 2017. 8. 12. 여기서 이미지를 . . 비트맵으로 넣을까 글라이드로 넣을까 ?
+                Glide.with(getActivity()).load(builder.getImageUrl()).into(image);
+                image.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 // 이미지 클릭
                 image.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        // TODO: 2017. 8. 12. go to imageActivity
                         Toast.makeText(getActivity(), "ImageActivity", Toast.LENGTH_SHORT).show();
                     }
                 });
-
-                // 이미지 넣어주기
-                if (builder.getImageRecourse() != 0) {
-                    Drawable imageRes = VectorDrawableCompat.create(getResources(), builder.getImageRecourse(), getActivity().getTheme());
-                    image.setImageDrawable(imageRes);
-                } else if (builder.getImageDrawable() != null) {
-                    image.setImageDrawable(builder.getImageDrawable());
-                }
+            } else {
+                // TODO: 2017. 8. 11. default image here
+                // TODO: 2017. 8. 12. 이미지 크기, 스케일 타입 조정
+                image.setImageResource(R.drawable.ic_profile);
             }
+
 
             if (builder.isMine()){ // TODO: 2017. 8. 11. my profile
 
@@ -224,8 +228,7 @@ public class UserProfileDialog extends DialogFragment {
         private OnEditNameClicked onEditNameClicked;
         private OnEditImageClicked onEditImageClicked;
 
-        private int imageRecourse;
-        private Drawable imageDrawable;
+        private String imageUrl;
 
         private Context context;
 
@@ -236,7 +239,7 @@ public class UserProfileDialog extends DialogFragment {
             textName = in.readString();
             textNumber = in.readString();
             isMine = in.readByte() != 0;
-            imageRecourse = in.readInt();
+            imageUrl = in.readString();
         }
 
         public static final Creator<Builder> CREATOR = new Creator<Builder>() {
@@ -275,22 +278,18 @@ public class UserProfileDialog extends DialogFragment {
 
 //        public Builder (){}
 
-
-        public int getImageRecourse() {
-            return imageRecourse;
+        @Nullable
+        public String getImageUrl(){
+            if (imageUrl.trim().length() <= 0){ // 이미지 설정 안 된 경우
+                return null;
+            } else {
+                String url = context.getString(R.string.server)+context.getString(R.string.server_img_path)+imageUrl;
+                return url;
+            }
         }
 
-        public Builder setImageRecourse(int imageRecourse) {
-            this.imageRecourse = imageRecourse;
-            return this;
-        }
-
-        public Drawable getImageDrawable() {
-            return imageDrawable;
-        }
-
-        public Builder setImageDrawable(Drawable imageDrawable) {
-            this.imageDrawable = imageDrawable;
+        public Builder setImageUrl(String imageUrl){
+            this.imageUrl = imageUrl;
             return this;
         }
 
@@ -363,7 +362,6 @@ public class UserProfileDialog extends DialogFragment {
             parcel.writeString(textName);
             parcel.writeString(textNumber);
             parcel.writeByte((byte) (isMine ? 1 : 0));
-            parcel.writeInt(imageRecourse);
         }
     }
 
