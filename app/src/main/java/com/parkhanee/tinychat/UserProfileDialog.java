@@ -3,17 +3,17 @@ package com.parkhanee.tinychat;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v4.app.DialogFragment;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.Log;
@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +36,7 @@ import com.bumptech.glide.Glide;
 public class UserProfileDialog extends DialogFragment {
     public static final String SimpleName = UserProfileDialog.class.getSimpleName();
     public static final String TAG = "UserProfileDialog";
+
     private Builder builder;
     private static UserProfileDialog instance = new UserProfileDialog(); // why static ?
 
@@ -108,7 +110,9 @@ public class UserProfileDialog extends DialogFragment {
                 }
             });
 
-            if (builder.getImageUrl() != null) {// 설정한 이미지가 있는 경우
+            if (builder.isEditing()){ // 프사 바꾸려고 방금 갤러리/카메라에서 선택한 사진이 있는 경우. (아직 서버에 저장 안함)
+                image.setImageBitmap(builder.getImageBitmap());
+            } else if (builder.getImageUrl() != null) {// 설정한 이미지가 있는 경우
                 // 이미지 넣어주기  : Glide
                 Glide.with(getActivity()).load(builder.getImageUrl()).into(image);
                 // 이미지 클릭
@@ -126,16 +130,36 @@ public class UserProfileDialog extends DialogFragment {
 
             if (builder.isMine()){ // my profile
 
-                    // TODO: 2017. 8. 11. 수정 ?
-                    positive.setText("수정");
-                    positive.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            // TODO: 2017. 8. 12. 네트워크 처리는 FriendTab에서 구현
-                            Toast.makeText(getActivity(), "edit", Toast.LENGTH_SHORT).show();
-//                            builder.getOnEditImageClicked().OnClick(view, getDialog());
-                        }
-                    });
+                    // 프로필 수정 중 일 때
+                    if (builder.isEditing()){
+                        // 수정 사항 저장
+                        positive.setText("수정 사항 저장");
+                        // 수정 사항 저장 버튼 크기 늘리기 !!
+                        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)positive.getLayoutParams();
+                        params.width = Math.round(130 * getResources().getDisplayMetrics().density); // 300 dp -->  900.0 pixel(float) --> 900 pixel(int)
+                        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                        positive.setLayoutParams(params); //causes layout update
+
+                        positive.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // TODO: 2017. 8. 12. 네트워크 처리는 FriendTab에서 구현
+                                Toast.makeText(getActivity(), "edit", Toast.LENGTH_SHORT).show();
+//                            builder.getOnPositiveClicked().OnClick(view, getDialog());
+                            }
+                        });
+                        logout.setVisibility(View.GONE);
+                    } else { // 프로필 수정 중 아닐 때
+                        positive.setVisibility(View.GONE);
+
+                        // 닫기 버튼을 parent END로 정렬 <-- positive 버튼이 없기 때문에 .
+                        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)negative.getLayoutParams();
+                        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                        params.addRule(RelativeLayout.ALIGN_PARENT_END);
+                        negative.setLayoutParams(params); //causes layout update
+
+                    }
+
 
                     // 로그아웃
                     logout.setOnClickListener(new View.OnClickListener() {
@@ -153,6 +177,7 @@ public class UserProfileDialog extends DialogFragment {
                         public void onClick(View view) {
                             // TODO: 2017. 8. 12.
                             builder.getOnEditImageClicked().OnClick(view, getDialog());
+                            dismiss();
                         }
                     });
 
@@ -228,10 +253,12 @@ public class UserProfileDialog extends DialogFragment {
         private OnEditImageClicked onEditImageClicked;
 
         private String imageUrl;
+        private Bitmap imageBitmap;
 
         private Context context;
 
         private boolean isMine; // 내 프로필인지 아닌지
+        private boolean editing;  // 프로필 사진 수정 중 일때 true
 
 
         protected Builder(Parcel in) {
@@ -239,6 +266,7 @@ public class UserProfileDialog extends DialogFragment {
             textNumber = in.readString();
             isMine = in.readByte() != 0;
             imageUrl = in.readString();
+            imageBitmap = in.readParcelable(Bitmap.class.getClassLoader());
         }
 
         public static final Creator<Builder> CREATOR = new Creator<Builder>() {
@@ -262,7 +290,16 @@ public class UserProfileDialog extends DialogFragment {
             return this;
         }
 
-//        public Context getContext() {
+        public boolean isEditing(){
+            return editing;
+        }
+
+        public Builder setEditing(boolean editing) {
+            this.editing = editing;
+            return this;
+        }
+
+        //        public Context getContext() {
 //            return context;
 //        }
 //
@@ -290,6 +327,15 @@ public class UserProfileDialog extends DialogFragment {
         public Builder setImageUrl(String imageUrl){
             this.imageUrl = imageUrl;
             return this;
+        }
+
+        public Builder setImageBitmap(Bitmap bitmap){
+            this.imageBitmap = bitmap;
+            return this;
+        }
+
+        public Bitmap getImageBitmap() {
+            return imageBitmap;
         }
 
         public String getTextName() {
@@ -361,6 +407,8 @@ public class UserProfileDialog extends DialogFragment {
             parcel.writeString(textName);
             parcel.writeString(textNumber);
             parcel.writeByte((byte) (isMine ? 1 : 0));
+            parcel.writeValue(imageBitmap);
+            parcel.writeString(imageUrl);
         }
     }
 
