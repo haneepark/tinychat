@@ -23,14 +23,28 @@
             android:gravity="center">
 
             <android.support.v7.widget.AppCompatImageView
-                android:id="@+id/background"
+                android:id="@+id/loading"
+                android:layout_width="match_parent"
+                android:layout_height="234dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:background="@color/backgroundDarkGrey"
+                android:scaleType="fitCenter"
+                />
+
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/empty_image"
                 android:layout_width="match_parent"
                 android:layout_height="234dp"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
                 android:background="@color/colorAccent"
-                android:scaleType="fitCenter"/>
+                android:padding="50dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_profile"/>
 
             <android.support.v7.widget.AppCompatImageView
                 android:id="@+id/image"
@@ -39,17 +53,23 @@
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
 
-                android:scaleType="fitCenter"
-                app:srcCompat="@drawable/ic_profile"/>
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                />
 
             <ImageButton
                 android:id="@+id/editImage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignBottom="@+id/background"
+                android:layout_alignBottom="@+id/loading"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:layout_margin="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
                 android:background="@android:color/transparent"
                 app:srcCompat="@android:drawable/ic_menu_camera"/>
 
@@ -58,7 +78,7 @@
                 style="@style/Base.TextAppearance.AppCompat.Medium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/background"
+                android:layout_below="@+id/loading"
                 android:layout_centerHorizontal="true"
                 android:gravity="center"
                 android:paddingLeft="16dp"
@@ -73,13 +93,18 @@
                 android:id="@+id/editName"
                 android:layout_width="18dp"
                 android:layout_height="18dp"
-                android:layout_below="@+id/background"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
+                android:layout_below="@+id/loading"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
                 android:background="@android:color/transparent"
                 android:scaleType="fitXY"
-                app:srcCompat="@android:drawable/ic_menu_edit"
-                android:layout_margin="15dp"/>
+                app:srcCompat="@android:drawable/ic_menu_edit"/>
 
             <Button
                 android:id="@+id/number"

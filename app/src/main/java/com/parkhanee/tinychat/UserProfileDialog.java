@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,11 +42,12 @@ public class UserProfileDialog extends DialogFragment {
         return instance;
     }
 
-    private AppCompatImageView image;
+    private AppCompatImageView image, loading;
     private TextView name;
     private Button number, positive, negative;
 
     // my profile
+    private AppCompatImageView empty;
     private Button logout;
     private ImageButton editImage, editName;
 
@@ -108,14 +108,9 @@ public class UserProfileDialog extends DialogFragment {
                 }
             });
 
-
-            // 설정한 이미지가 있는 경우
-            if (builder.getImageUrl() != null) { // TODO: 2017. 8. 12. 이거 구별하는거 어떻게 ?  얘 지금 안되는거같은데 ?
-                // TODO: 2017. 8. 12. 이미지 넣어주기  asyncronously in a sub thread
-                // load의 paramater로 url형태의 string 넣어주면 되는건가 ???
-                // TODO: 2017. 8. 12. 여기서 이미지를 . . 비트맵으로 넣을까 글라이드로 넣을까 ?
+            if (builder.getImageUrl() != null) {// 설정한 이미지가 있는 경우
+                // 이미지 넣어주기  : Glide
                 Glide.with(getActivity()).load(builder.getImageUrl()).into(image);
-                image.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 // 이미지 클릭
                 image.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -124,21 +119,21 @@ public class UserProfileDialog extends DialogFragment {
                         Toast.makeText(getActivity(), "ImageActivity", Toast.LENGTH_SHORT).show();
                     }
                 });
-            } else {
-                // TODO: 2017. 8. 11. default image here
-                // TODO: 2017. 8. 12. 이미지 크기, 스케일 타입 조정
-                image.setImageResource(R.drawable.ic_profile);
+            } else { // 디폴트 이미지 보이는 경우
+                empty.setVisibility(View.VISIBLE);
             }
 
 
-            if (builder.isMine()){ // TODO: 2017. 8. 11. my profile
+            if (builder.isMine()){ // my profile
 
                     // TODO: 2017. 8. 11. 수정 ?
                     positive.setText("수정");
                     positive.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            // TODO: 2017. 8. 12. 네트워크 처리는 FriendTab에서 구현
                             Toast.makeText(getActivity(), "edit", Toast.LENGTH_SHORT).show();
+//                            builder.getOnEditImageClicked().OnClick(view, getDialog());
                         }
                     });
 
@@ -146,7 +141,7 @@ public class UserProfileDialog extends DialogFragment {
                     logout.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            // TODO: 2017. 8. 12. 로그아웃 하시겠습니까 같은거 ..
+                            // TODO: 2017. 8. 12. 로그아웃 하시겠습니까
                            MyUtil.logout(getActivity());
                             dismiss();
                         }
@@ -156,6 +151,7 @@ public class UserProfileDialog extends DialogFragment {
                     editImage.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            // TODO: 2017. 8. 12.
                             builder.getOnEditImageClicked().OnClick(view, getDialog());
                         }
                     });
@@ -164,6 +160,7 @@ public class UserProfileDialog extends DialogFragment {
                     editName.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            // TODO: 2017. 8. 12.
                             builder.getOnEditNameClicked().OnClick(view, getDialog());
                         }
                     });
@@ -206,6 +203,8 @@ public class UserProfileDialog extends DialogFragment {
         logout = (Button) view.findViewById(R.id.logout);
         editImage = (ImageButton) view.findViewById(R.id.editImage);
         editName = (ImageButton) view.findViewById(R.id.editName);
+        loading = (AppCompatImageView) view.findViewById(R.id.loading);
+        empty = (AppCompatImageView) view.findViewById(R.id.empty_image);
     }
 
     private Dialog show(Activity activity, Builder builder) {
