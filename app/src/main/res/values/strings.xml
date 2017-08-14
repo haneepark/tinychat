@@ -12,9 +12,10 @@
     <!--paths to append to the server url sending http request-->
     <string name="server_login">login.php</string>
     <string name="server_signup">signup.php</string>
-    <string name="server_uploadImage">redis_simple_upload_image.php</string>
+    <string name="server_updateProfile">update_profile.php</string>
     <string name="server_getAllUser">get_all_user.php</string>
     <string name="server_addFriend">add_friend.php</string>
+    <string name="server_getAllFriend">get_all_friend.php</string>
     <!---->
 
 </resources>

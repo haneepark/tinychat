@@ -74,10 +74,17 @@ public final class MyPreferences {
         return b;
     }
 
-    public void login(){
+    public void login(String id, String nid, String name, String img, String created){
         pref.edit()
                 .putBoolean(LOGIN_KEY,true)
                 .apply();
+
+        // 유저 정보 저장
+        putString("id",id);
+        putString("nid",nid);
+        putString("name",name);
+        putString("img",img);
+        putString("created",created);
     }
 
     public boolean clear() {

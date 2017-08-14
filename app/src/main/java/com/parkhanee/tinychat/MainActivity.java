@@ -30,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     };
     private FloatingActionButton fab1,fab2;
 
+    static final String FRIEND_TAB = "friend_tab", ROOM_TAB = "room_tab";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,8 +76,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new FriendTab(), "FRIEND");
-        adapter.addFragment(new RoomTab(), "TALK");
+        adapter.addFragment(new FriendTab(), FRIEND_TAB);
+        adapter.addFragment(new RoomTab(), ROOM_TAB);
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override

@@ -64,6 +64,7 @@ public final class MyUtil {
         context.startActivity(i);
     }
 
+
     /**
      *  인텐트로 불러온 이미지를 비트맵으로 저장할 때 자동으로 -90도 돌아가는거 조정해주는 클래스
      *  http://stackoverflow.com/a/20634331/6653855

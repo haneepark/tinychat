@@ -16,6 +16,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -138,29 +140,7 @@ public class UserProfileDialog extends DialogFragment {
 
                     if (builder.isEditing()){ // 프로필 수정 중 일 때
 
-                        // 이름 수정하는 edittext
-                        editName.setVisibility(View.VISIBLE);
-                        name.setVisibility(View.GONE);
-                        editName.setText(builder.getTextName());
-
-                        // 수정사항 저장 버튼 텍스트 설정
-                        positive.setText("수정 사항 저장");
-
-                        // 수정 사항 저장 버튼 크기 늘리기 !!
-                        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)positive.getLayoutParams();
-                        params.width = Math.round(130 * getResources().getDisplayMetrics().density); // 300 dp -->  900.0 pixel(float) --> 900 pixel(int)
-                        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                        positive.setLayoutParams(params); //causes layout update
-
-                        // 수정사항 저장 버튼 onClick
-                        positive.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                            builder.getOnPositiveClicked().OnClick(view, getDialog());
-                                dismiss();
-                            }
-                        });
-                        logout.setVisibility(View.GONE);
+                        setViewEditingState(builder);
 
                     } else { // 프로필 수정 중 아닐 때
                         builder.setImageBitmapNull();
@@ -169,9 +149,7 @@ public class UserProfileDialog extends DialogFragment {
                         positive.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                builder.setEditing(true);
-                                Log.d(TAG, "positive '수정' onClick: ");
-                                // TODO: 2017. 8. 14. custom dialog 새로고침 .. !  ?
+                                setViewEditingState(builder);
                             }
                         });
 
@@ -188,7 +166,7 @@ public class UserProfileDialog extends DialogFragment {
                         @Override
                         public void onClick(View view) {
                             // TODO: 2017. 8. 12. 로그아웃 하시겠습니까
-                           MyUtil.logout(getActivity());
+                            MyUtil.logout(getActivity());
                             dismiss();
                         }
                     });
@@ -203,12 +181,19 @@ public class UserProfileDialog extends DialogFragment {
                         }
                     });
 
-                    // 이름 변경하기
-                    editName.setOnClickListener(new View.OnClickListener() {
+                    editName.addTextChangedListener(new TextWatcher() {
                         @Override
-                        public void onClick(View view) {
-                            // TODO: 2017. 8. 12.
-                            builder.getOnEditNameClicked().OnClick(view, getDialog());
+                        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable editable) {
+                            builder.setEditedName(editable.toString());
                         }
                     });
 
@@ -245,8 +230,45 @@ public class UserProfileDialog extends DialogFragment {
                     editName.setVisibility(View.GONE);
 
             }
-
         }
+    }
+
+    private void setViewEditingState(Builder builder){
+
+        image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+        editImage.setVisibility(View.VISIBLE);
+        builder.setEditing(true);
+        Log.d(TAG, "positive '수정' onClick: ");
+        // 이름 수정하는 edittext
+        editName.setVisibility(View.VISIBLE);
+        name.setVisibility(View.INVISIBLE);
+        editName.setText(builder.getTextName());
+
+        // 수정사항 저장 버튼 텍스트 설정
+        positive.setText("수정 사항 저장");
+
+        // 수정 사항 저장 버튼 크기 늘리기 !!
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)positive.getLayoutParams();
+        params.width = Math.round(130 * getResources().getDisplayMetrics().density); // 300 dp -->  900.0 pixel(float) --> 900 pixel(int)
+        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        positive.setLayoutParams(params); //causes layout update
+
+        final OnUpdateClicked updateClicked = builder.getOnUpdateClicked();
+
+        // 수정사항 저장 버튼 onClick
+        positive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                updateClicked.OnClick(view, getDialog());
+                dismiss();
+            }
+        });
+        logout.setVisibility(View.GONE);
     }
 
     private void initViews(View view) {
@@ -281,9 +303,12 @@ public class UserProfileDialog extends DialogFragment {
         // 친구프로필에서 1:1 대화방으로 넘어갈때 필요
         private String friend_id;
 
+        // 내 프로필에서 이름 수정 했을 때
+        private String editedName;
+
         private OnPositiveClicked onPositiveClicked;
-        private OnEditNameClicked onEditNameClicked;
         private OnEditImageClicked onEditImageClicked;
+        private OnUpdateClicked onUpdateClicked;
 
         private String imageUrl;
         private Bitmap imageBitmap;
@@ -297,6 +322,8 @@ public class UserProfileDialog extends DialogFragment {
         protected Builder(Parcel in) {
             textName = in.readString();
             textNumber = in.readString();
+            friend_id = in.readString();
+            editedName = in.readString();
             isMine = in.readByte() != 0;
             imageUrl = in.readString();
             imageBitmap = in.readParcelable(Bitmap.class.getClassLoader());
@@ -318,7 +345,7 @@ public class UserProfileDialog extends DialogFragment {
             return isMine;
         }
 
-        public Builder setMine(boolean isMine){
+        Builder setMine(boolean isMine){
             this.isMine = isMine;
             return this;
         }
@@ -400,6 +427,16 @@ public class UserProfileDialog extends DialogFragment {
             return friend_id;
         }
 
+        public Builder setEditedName(String editedName) {
+            this.editedName = editedName;
+            return this;
+        }
+
+        public String getEditedName() {
+            return editedName;
+        }
+
+
         public String getTextNumber() {
             return textNumber;
         }
@@ -423,21 +460,22 @@ public class UserProfileDialog extends DialogFragment {
             return this;
         }
 
-        public OnEditNameClicked getOnEditNameClicked(){
-            return onEditNameClicked;
-        }
-
-        public Builder setOnEditNameClicked(OnEditNameClicked onEditNameClicked){
-            this.onEditNameClicked = onEditNameClicked;
-            return this;
-        }
-
         public OnEditImageClicked getOnEditImageClicked(){
             return onEditImageClicked;
         }
 
         public Builder setOnEditImageClicked (OnEditImageClicked onEditImageClicked){
             this.onEditImageClicked = onEditImageClicked;
+            return this;
+        }
+
+
+        public OnUpdateClicked getOnUpdateClicked() {
+            return onUpdateClicked;
+        }
+
+        public Builder setOnUpdateClicked(OnUpdateClicked onUpdateClicked) {
+            this.onUpdateClicked = onUpdateClicked;
             return this;
         }
 
@@ -460,6 +498,7 @@ public class UserProfileDialog extends DialogFragment {
             parcel.writeString(textName);
             parcel.writeString(textNumber);
             parcel.writeString(friend_id);
+            parcel.writeString(editedName);
             parcel.writeByte((byte) (isMine ? 1 : 0));
             parcel.writeValue(imageBitmap);
             parcel.writeString(imageUrl);
@@ -470,11 +509,11 @@ public class UserProfileDialog extends DialogFragment {
         void OnClick(View view, Dialog dialog);
     }
 
-    public interface OnEditNameClicked {
+    public interface OnEditImageClicked {
         void OnClick(View view, Dialog dialog);
     }
 
-    public interface OnEditImageClicked {
+    public interface OnUpdateClicked {
         void OnClick(View view, Dialog dialog);
     }
 

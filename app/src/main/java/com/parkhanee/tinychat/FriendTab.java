@@ -19,6 +19,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Base64;
 import android.util.Log;
@@ -147,6 +148,35 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                                             alertDialog.show();
                                         }
                             })
+                            .setOnUpdateClicked(new UserProfileDialog.OnUpdateClicked() { // "수정 사항 저장" 눌렀을 때
+                                @Override
+                                public void OnClick(View view, Dialog dialog) {
+                                    // show an alert window
+                                    final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                    builder.setTitle("수정 사항을 저장하시겠습니까?")
+                                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                    if (MyUtil.IsNetworkConnected(getActivity())){
+                                                        // TODO: 2017. 8. 12.  서버에 업로드 !! 여기서부터 !!
+//                                                Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
+                                                        onUpdateProfileRequested();
+                                                    } else {
+                                                        // TODO: 2017. 8. 12. 경고
+                                                        Toast.makeText(getActivity(), "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+                                            })
+                                            .setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                    dialogInterface.dismiss();
+                                                }
+                                            });
+                                    AlertDialog alertDialog = builder.create();
+                                    alertDialog.show();
+                                }
+                            })
                             .build();
                 } else if (dialog.isEditing()){ // 프로필 사진 수정하고 나서 서버에 저장안하고 그냥 다이알로그 닫기 하고나서 다시 연 경우
                         dialog.setEditing(false);
@@ -202,46 +232,17 @@ public class FriendTab extends Fragment implements View.OnClickListener {
             // 아직 서버에 저장은 안한 상태.
             dialog.setImageBitmap(bitmap)
                     .setEditing(true)
-                    .setOnPositiveClicked(new UserProfileDialog.OnPositiveClicked() { // "수정 사항 저장" 눌렀을 때
-                        @Override
-                        public void OnClick(View view, Dialog dialog) {
-                            // show an alert window
-                            final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setTitle("수정 사항을 저장하시겠습니까?")
-                                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            if (MyUtil.IsNetworkConnected(getActivity())){
-                                                // TODO: 2017. 8. 12.  서버에 업로드 !! 여기서부터 !!
-//                                                Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
-                                                onUploadImageRequested();
-                                            } else {
-                                                // TODO: 2017. 8. 12. 경고
-                                                Toast.makeText(getActivity(), "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                    })
-                                    .setNegativeButton("취소", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            dialogInterface.dismiss();
-                                        }
-                                    });
-                            AlertDialog alertDialog = builder.create();
-                            alertDialog.show();
-                        }
-                    })
                     .build();
             dialog.show();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void onUploadImageRequested () {
+    public void onUpdateProfileRequested() {
         RequestQueue queue = MyVolley.getInstance(getActivity()).
                 getRequestQueue();
 
-        String url = getString(R.string.server)+getString(R.string.server_uploadImage);
+        String url = getString(R.string.server)+getString(R.string.server_updateProfile);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override
@@ -255,20 +256,43 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                     // result code 확인
                     if (!resultCode.equals("100")){
                         // TODO: 2017. 8. 13.   경고
-                        Log.d(TAG, "onResponse: 이미지 업로드 실패, code : " + resultCode+", result : "+result);
-                        Toast.makeText(getActivity(),"이미지 업로드 실패, code : " + resultCode+", result : "+result, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onResponse: 프로필 업데이트 실패, code : " + resultCode+", result : "+result);
+                        Toast.makeText(getActivity(),"프로필 업데이트 실패, code : " + resultCode+", result : "+result, Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     // TODO: 2017. 8. 13. 알림
-                    Toast.makeText(getActivity(), "이미지 업로드에 성공 했습니다", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "프로필 업데이트에 성공 했습니다", Toast.LENGTH_SHORT).show();
 
-                    String url = jsonObject.getString("url");
-                    // pref에 저장되어있는 내 이미지 경로 변경
-                    pref.putString("img",url);
 
-                    dialog.setImageUrl(url)
-                            .setEditing(false);
+                    // 서버 응답(jsonObject)에 포함하는 항목
+                    // 이미지 업로드 한 경우 --> url, thumb_url
+                    // 이름 변경한 경우 --> name
+
+                    if (jsonObject.has("url")){ // 프사 바꾼 경우
+                        String url =  jsonObject.getString("url");
+                        // pref에 저장되어있는 내 이미지 경로 변경
+                        pref.putString("img",url);
+
+                        dialog.setImageUrl(url)
+                                .setEditing(false);
+
+                        String thumb = jsonObject.getString("thumb_url");
+                        // TODO: 2017. 8. 14. 썸네일 처리
+                    }
+
+                    if (jsonObject.has("name")){ // 이름 바꾼 경우
+                        pref.putString("name",jsonObject.getString("name"));
+                    }
+
+//                    // TODO: 2017. 8. 14. 끝 ? 바뀐거 액티비티에서 보이기 ?? ?
+//                    Fragment currentFragment = getFragmentManager().findFragmentByTag(MainActivity.FRIEND_TAB);
+//                    FragmentTransaction fragTransaction = getFragmentManager().beginTransaction();
+//                    fragTransaction.detach(currentFragment);
+//                    fragTransaction.attach(currentFragment);
+//                    fragTransaction.commit();
+                    getActivity().finish();
+                    startActivity(getActivity().getIntent());
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -278,15 +302,32 @@ public class FriendTab extends Fragment implements View.OnClickListener {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // TODO: 2017. 7. 26. 경고
-                Toast.makeText(getActivity(), "이미지업로드에 실패 했습니다 볼리 에러", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "프로필 업데이트에 실패 했습니다 볼리 에러", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "onErrorResponse: "+error.getMessage());
             }
         }){
             @Override
             protected Map<String,String> getParams(){
                 Map<String,String> params = new HashMap<>();
-                params.put("id",pref.getString("id"));
-                params.put("image",getStringImage(bitmap));
+                String editedName = dialog.getEditedName();
+                if (bitmap==null&&editedName==null){
+                    Toast.makeText(getActivity(), "변겅 사항이 없습니다", Toast.LENGTH_SHORT).show();
+                }else{
+                    params.put("id",pref.getString("id"));
+
+                    if (bitmap!=null){
+                        params.put("image",getStringImage(bitmap));
+                        bitmap=null;
+                    }
+
+                    Log.d(TAG, "getParams: getEditedName : "+dialog.getEditedName());
+
+                    if (dialog.getEditedName()!=null){
+                        params.put("editedName",dialog.getEditedName());
+                    }
+                }
+
+
                 return params;
             }
 
@@ -301,6 +342,8 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         // Add the request to the RequestQueue.
         stringRequest.setTag(TAG);
         queue.add(stringRequest);
+        Toast.makeText(getActivity(), "request sent .. ", Toast.LENGTH_SHORT).show();
+        // TODO: 2017. 8. 15. background? loading 프로그래스 다이알로그
     }
 
     public String getStringImage(Bitmap bmp){

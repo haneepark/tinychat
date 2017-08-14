@@ -81,15 +81,8 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
 
                     // TODO: 2017. 7. 26. 로그인에 성공 했습니다 알림
                     Toast.makeText(LoginActivity.this, "로그인에 성공 했습니다", Toast.LENGTH_SHORT).show();
-                    // sharedPreference에 로그인 성공 저장
-                    pref.login();
-
-                    // 유저 정보 SP에 저장
-                    pref.putString("id",jsonObject.getString("id"));
-                    pref.putString("nid",jsonObject.getString("nid"));
-                    pref.putString("name",jsonObject.getString("name"));
-                    pref.putString("img",jsonObject.getString("img"));
-                    pref.putString("created",jsonObject.getString("created"));
+                    // sharedPreference 로그인
+                    pref.login(jsonObject.getString("id"),jsonObject.getString("nid"),jsonObject.getString("name"),jsonObject.getString("img"),jsonObject.getString("created"));
 
                 } catch (JSONException e) {
                     e.printStackTrace();
