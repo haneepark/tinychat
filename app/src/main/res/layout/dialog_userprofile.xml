@@ -89,22 +89,21 @@
                 android:textStyle="bold"
                 />
 
-            <ImageButton
+            <EditText
                 android:id="@+id/editName"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                style="@style/Base.TextAppearance.AppCompat.Medium"
                 android:layout_below="@+id/loading"
-                android:layout_marginBottom="10dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="10dp"
-                android:background="@android:color/transparent"
-                android:scaleType="fitXY"
-                app:srcCompat="@android:drawable/ic_menu_edit"/>
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingTop="12dp"
+                android:text=" "
+                android:visibility="gone"
+                android:textColor="#3d3d3d"
+                android:textStyle="bold"/>
 
             <Button
                 android:id="@+id/number"

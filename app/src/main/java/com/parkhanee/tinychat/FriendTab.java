@@ -89,8 +89,8 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ((TextView)myprofile.findViewById(R.id.header_name)).setText(pref.getString("name"));
-        // TODO: 2017. 8. 4. 내프로필사진 보이기
-        // ((ImageView)myprofile.findViewById(R.id.header_img)) <-- (pref.getString("img"));
+        // TODO: 2017. 8. 4. 내프로필사진 보이기 썸네일 ! !
+        // ((ImageView)myprofile.findViewById(R.id.header_img)).setImage ?
 
         adapter = new FriendTabAdapter(getActivity());
         ListView listView = (ListView) view.findViewById(R.id.friend_list_view);
@@ -254,23 +254,19 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                     String result = jsonObject.getString("result");
                     // result code 확인
                     if (!resultCode.equals("100")){
-                        // TODO: 2017. 8. 13.  이미지 업로드실패 처리 경고
+                        // TODO: 2017. 8. 13.   경고
                         Log.d(TAG, "onResponse: 이미지 업로드 실패, code : " + resultCode+", result : "+result);
                         Toast.makeText(getActivity(),"이미지 업로드 실패, code : " + resultCode+", result : "+result, Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    // TODO: 2017. 8. 13. 이미지업로드 성공 했습니다 알림
+                    // TODO: 2017. 8. 13. 알림
                     Toast.makeText(getActivity(), "이미지 업로드에 성공 했습니다", Toast.LENGTH_SHORT).show();
 
-                    // TODO: 2017. 8. 13. 수정중이던 프로필 다이알로그 닫고
-                    // editing==false 설정하고
-                    // pref의 내 이미지 url 바꿔주고
-
                     String url = jsonObject.getString("url");
+                    // pref에 저장되어있는 내 이미지 경로 변경
                     pref.putString("img",url);
 
-                    // TODO: 2017. 8. 13. 액티비티 새로고침 해서 새로 설정한 프로필이 보이도록 하기
                     dialog.setImageUrl(url)
                             .setEditing(false);
 

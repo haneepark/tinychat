@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -44,14 +45,15 @@ public class UserProfileDialog extends DialogFragment {
         return instance;
     }
 
-    private AppCompatImageView image, loading;
+    private AppCompatImageView image;
     private TextView name;
     private Button number, positive, negative;
 
     // my profile
     private AppCompatImageView empty;
     private Button logout;
-    private ImageButton editImage, editName;
+    private ImageButton editImage;
+    private EditText editName;
 
 
     @Override
@@ -83,12 +85,16 @@ public class UserProfileDialog extends DialogFragment {
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.d(TAG, "onViewCreated: ");
         initViews(view);
         if (builder != null) {
             // 사용자 이름
             if (builder.getTextName() != null) {
+                if (name == null){
+                    Log.d(TAG, "onViewCreated: name is null");
+                }
                 name.setText(builder.getTextName());
             } else {
                 // TODO: 2017. 8. 11. 이름이 없을때 처리 ?
@@ -131,18 +137,25 @@ public class UserProfileDialog extends DialogFragment {
             if (builder.isMine()){ // my profile
 
                     if (builder.isEditing()){ // 프로필 수정 중 일 때
-                        // 수정 사항 저장
+
+                        // 이름 수정하는 edittext
+                        editName.setVisibility(View.VISIBLE);
+                        name.setVisibility(View.GONE);
+                        editName.setText(builder.getTextName());
+
+                        // 수정사항 저장 버튼 텍스트 설정
                         positive.setText("수정 사항 저장");
+
                         // 수정 사항 저장 버튼 크기 늘리기 !!
                         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)positive.getLayoutParams();
                         params.width = Math.round(130 * getResources().getDisplayMetrics().density); // 300 dp -->  900.0 pixel(float) --> 900 pixel(int)
                         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                         positive.setLayoutParams(params); //causes layout update
 
+                        // 수정사항 저장 버튼 onClick
                         positive.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                // TODO: 2017. 8. 12. 네트워크 처리는 FriendTab에서 구현
                             builder.getOnPositiveClicked().OnClick(view, getDialog());
                                 dismiss();
                             }
@@ -151,12 +164,22 @@ public class UserProfileDialog extends DialogFragment {
 
                     } else { // 프로필 수정 중 아닐 때
                         builder.setImageBitmapNull();
-                        positive.setVisibility(View.GONE);
-                        // 닫기 버튼을 parent END로 정렬 <-- positive 버튼이 없기 때문에 .
-                        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)negative.getLayoutParams();
-                        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                        params.addRule(RelativeLayout.ALIGN_PARENT_END);
-                        negative.setLayoutParams(params); //causes layout update
+
+                        positive.setText("수정");
+                        positive.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                builder.setEditing(true);
+                                Log.d(TAG, "positive '수정' onClick: ");
+                                // TODO: 2017. 8. 14. custom dialog 새로고침 .. !  ?
+                            }
+                        });
+
+//                        // 닫기 버튼을 parent END로 정렬 <-- positive 버튼이 없기 때문에 .
+//                        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)negative.getLayoutParams();
+//                        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+//                        params.addRule(RelativeLayout.ALIGN_PARENT_END);
+//                        negative.setLayoutParams(params); //causes layout update
                     }
 
 
@@ -219,6 +242,7 @@ public class UserProfileDialog extends DialogFragment {
     }
 
     private void initViews(View view) {
+        Log.d(TAG, "initViews: ");
         image = (AppCompatImageView) view.findViewById(R.id.image);
         name = (TextView) view.findViewById(R.id.name);
         number = (Button) view.findViewById(R.id.number);
@@ -226,8 +250,7 @@ public class UserProfileDialog extends DialogFragment {
         negative = (Button) view.findViewById(R.id.negative);
         logout = (Button) view.findViewById(R.id.logout);
         editImage = (ImageButton) view.findViewById(R.id.editImage);
-        editName = (ImageButton) view.findViewById(R.id.editName);
-        loading = (AppCompatImageView) view.findViewById(R.id.loading);
+        editName = (EditText) view.findViewById(R.id.editName);
         empty = (AppCompatImageView) view.findViewById(R.id.empty_image);
     }
 
