@@ -87,6 +87,7 @@ public class FriendTabAdapter extends BaseAdapter {
                     .setTextNumber(friend.getNid())
                     .setMine(false)
                     .setImageUrl(friend.getImg())
+                    .setFriend_id(friend.getId())
                     .build();
 
             // show friend's profile dialog

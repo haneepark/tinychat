@@ -218,7 +218,15 @@ public class UserProfileDialog extends DialogFragment {
                     positive.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Toast.makeText(getActivity(), "1:1 대화", Toast.LENGTH_SHORT).show();
+                            if (builder.getFriend_id()!=null){
+                                Intent i =  new Intent(getActivity(),ChatActivity.class);
+                                // 채팅방 정보 번들로 넘겨주기 !
+                                i.putExtra("friend_id",builder.getFriend_id());
+                                startActivity(i);
+                                dismiss();
+                            } else {
+                                Toast.makeText(getActivity(), "친구 아이디 가져올 수 없음?", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     });
 
@@ -269,6 +277,9 @@ public class UserProfileDialog extends DialogFragment {
 
         private String textName;
         private String textNumber;
+
+        // 친구프로필에서 1:1 대화방으로 넘어갈때 필요
+        private String friend_id;
 
         private OnPositiveClicked onPositiveClicked;
         private OnEditNameClicked onEditNameClicked;
@@ -380,6 +391,15 @@ public class UserProfileDialog extends DialogFragment {
             return this;
         }
 
+        public Builder setFriend_id(String friend_id) {
+            this.friend_id = friend_id;
+            return this;
+        }
+
+        public String getFriend_id() {
+            return friend_id;
+        }
+
         public String getTextNumber() {
             return textNumber;
         }
@@ -439,6 +459,7 @@ public class UserProfileDialog extends DialogFragment {
         public void writeToParcel(Parcel parcel, int i) {
             parcel.writeString(textName);
             parcel.writeString(textNumber);
+            parcel.writeString(friend_id);
             parcel.writeByte((byte) (isMine ? 1 : 0));
             parcel.writeValue(imageBitmap);
             parcel.writeString(imageUrl);
