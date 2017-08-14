@@ -144,6 +144,7 @@ public class UserProfileDialog extends DialogFragment {
                             public void onClick(View view) {
                                 // TODO: 2017. 8. 12. 네트워크 처리는 FriendTab에서 구현
                             builder.getOnPositiveClicked().OnClick(view, getDialog());
+                                dismiss();
                             }
                         });
                         logout.setVisibility(View.GONE);
@@ -316,7 +317,13 @@ public class UserProfileDialog extends DialogFragment {
         public String getImageUrl(){
             if (imageUrl.trim().length() <= 0){ // 이미지 설정 안 된 경우
                 return null;
-            } else {
+            }
+
+            // 원래는 클라 db에 파일이름만 저장하다가 전체 url 저장하는걸로 바뀌어서 if문 두개로 처리했음
+
+            else if(imageUrl.toLowerCase().contains("http")){ // imageUrl 에 http 포함 한 경우
+                return imageUrl;
+            } else { // 안한 경우
                 String url = context.getString(R.string.server)+context.getString(R.string.server_img_path)+imageUrl;
                 return url;
             }

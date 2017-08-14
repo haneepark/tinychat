@@ -20,6 +20,7 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,12 +29,25 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class FriendTab extends Fragment implements View.OnClickListener {
@@ -198,9 +212,9 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             if (MyUtil.IsNetworkConnected(getActivity())){
-                                                // TODO: 2017. 8. 12.  서버에 업로드
-                                                Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
-//                                              onProfileChangeRequested();
+                                                // TODO: 2017. 8. 12.  서버에 업로드 !! 여기서부터 !!
+//                                                Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
+                                                onUploadImageRequested();
                                             } else {
                                                 // TODO: 2017. 8. 12. 경고
                                                 Toast.makeText(getActivity(), "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
@@ -223,6 +237,83 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    public void onUploadImageRequested () {
+        RequestQueue queue = MyVolley.getInstance(getActivity()).
+                getRequestQueue();
+
+        String url = getString(R.string.server)+getString(R.string.server_uploadImage);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG, response);
+
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    String resultCode = jsonObject.getString("resultCode");
+                    String result = jsonObject.getString("result");
+                    // result code 확인
+                    if (!resultCode.equals("100")){
+                        // TODO: 2017. 8. 13.  이미지 업로드실패 처리 경고
+                        Log.d(TAG, "onResponse: 이미지 업로드 실패, code : " + resultCode+", result : "+result);
+                        Toast.makeText(getActivity(),"이미지 업로드 실패, code : " + resultCode+", result : "+result, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // TODO: 2017. 8. 13. 이미지업로드 성공 했습니다 알림
+                    Toast.makeText(getActivity(), "이미지 업로드에 성공 했습니다", Toast.LENGTH_SHORT).show();
+
+                    // TODO: 2017. 8. 13. 수정중이던 프로필 다이알로그 닫고
+                    // editing==false 설정하고
+                    // pref의 내 이미지 url 바꿔주고
+
+                    String url = jsonObject.getString("url");
+                    pref.putString("img",url);
+
+                    // TODO: 2017. 8. 13. 액티비티 새로고침 해서 새로 설정한 프로필이 보이도록 하기
+                    dialog.setImageUrl(url)
+                            .setEditing(false);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // TODO: 2017. 7. 26. 경고
+                Toast.makeText(getActivity(), "이미지업로드에 실패 했습니다 볼리 에러", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onErrorResponse: "+error.getMessage());
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<>();
+                params.put("id",pref.getString("id"));
+                params.put("image",getStringImage(bitmap));
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<>();
+                params.put("Content-Type","application/x-www-form-urlencoded"); //form ?
+                return params;
+            }
+        };
+
+        // Add the request to the RequestQueue.
+        stringRequest.setTag(TAG);
+        queue.add(stringRequest);
+    }
+
+    public String getStringImage(Bitmap bmp){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        return encodedImage;
+    }
 
     // for saving image into Internal storage
     private String saveToInternalStorage(Bitmap bitmapImage,String imageFileName){
