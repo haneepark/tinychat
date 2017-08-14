@@ -161,9 +161,8 @@ public class AddFriendActivity extends AppCompatActivity {
         RequestQueue queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
         String id = pref.getString("id");
-        String appendUrl = "get_all_user.php";
 
-        String url = getString(R.string.server)+appendUrl+"?id="+id;
+        String url = getString(R.string.server)+getString(R.string.server_getAllUser)+"?id="+id;
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET,url, new Response.Listener<String>() {
             @Override
@@ -404,9 +403,8 @@ public class AddFriendActivity extends AppCompatActivity {
         RequestQueue queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
         final String id = pref.getString("id");
-        String appendUrl = "add_friend.php";
 
-        String url = getString(R.string.server)+appendUrl;
+        String url = getString(R.string.server)+getString(R.string.server_addFriend);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override

@@ -1,10 +1,20 @@
 <resources>
-    <string name="app_name">tinychat</string>
 
+    <string name="app_name">tinychat</string>
     <string name="login_welcome">Welcome to tinychat</string>
     <string name="login_intro">Quick and simple messaging app</string>
     <string name="signup">SIGN UP FOR AN ACCOUNT</string>
-    <string name="server">http://13.124.124.168/</string>
     <string name="add_friend">"친구 추가하기"</string>
+
     <string name="server_img_path">uploads/</string>
+    <string name="server">http://13.124.124.168/</string>
+
+    <!--paths to append to the server url sending http request-->
+    <string name="server_login">login.php</string>
+    <string name="server_signup">signup.php</string>
+    <string name="server_uploadImage">redis_simple_upload_image.php</string>
+    <string name="server_getAllUser">get_all_user.php</string>
+    <string name="server_addFriend">add_friend.php</string>
+    <!---->
+
 </resources>

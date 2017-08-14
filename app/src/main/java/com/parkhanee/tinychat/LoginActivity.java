@@ -25,7 +25,6 @@ import java.util.Map;
 public class LoginActivity extends AppCompatActivity  implements View.OnClickListener{
 
     EditText et_nid, et_pwd;
-    String appendUrl = "login.php";
     public static final String TAG = "LoginActivity";
     RequestQueue queue;
     MyPreferences pref=null;
@@ -62,7 +61,7 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
         queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
 
-        String url = getString(R.string.server)+appendUrl;
+        String url = getString(R.string.server)+getString(R.string.server_login);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override

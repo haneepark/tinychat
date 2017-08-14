@@ -24,7 +24,6 @@ import java.util.Map;
 public class SignupActivity extends AppCompatActivity  implements View.OnClickListener {
 
     Context context = this;
-    String appendUrl = "signup.php";
     public static final String TAG = "SignupActivity";
     RequestQueue queue;
     EditText et_nid,et_pwd, et_pwd2, et_name;
@@ -48,7 +47,7 @@ public class SignupActivity extends AppCompatActivity  implements View.OnClickLi
     public void onSignupRequested (){
         queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
-        String url = getString(R.string.server)+appendUrl;
+        String url = getString(R.string.server)+getString(R.string.server_signup);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override
