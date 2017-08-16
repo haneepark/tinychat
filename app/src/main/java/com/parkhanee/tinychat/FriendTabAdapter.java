@@ -1,6 +1,8 @@
 package com.parkhanee.tinychat;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,7 +72,7 @@ public class FriendTabAdapter extends BaseAdapter {
             holder = new ViewHolder();
             v = inflater.inflate(R.layout.listview_friend, null);
             holder.name = (TextView) v.findViewById(R.id.friend_name);
-            holder.img = (ImageView) v.findViewById(R.id.add_friend_img);
+            holder.img = (ImageView) v.findViewById(R.id.friend_img);
             holder.dialog = new UserProfileDialog.Builder(context);
             holder.layout = v.findViewById(R.id.friend_item);
             v.setTag(holder);
@@ -82,11 +84,27 @@ public class FriendTabAdapter extends BaseAdapter {
             // 친구 목록 리스트뷰 아이템
             Friend friend = friendArrayList.get(position);
             holder.name.setText(friend.getName());
+
+            // set blob type image on imageView
+            if (friend.isBlobSet()){
+                byte[] byteArray = friend.getImgBlob();
+                Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+
+                // get size of imageView
+                holder.img.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                int targetHeight = holder.img.getMeasuredHeight();
+                int targetWidth = holder.img.getMeasuredWidth();
+
+                // set image
+                holder.img.setImageBitmap(Bitmap.createScaledBitmap(bmp, targetWidth,
+                        targetHeight, false));
+            }
+
             // 각 아이템의 프로필 다이알로그 설정
             holder.dialog.setTextName(friend.getName())
                     .setTextNumber(friend.getNid())
                     .setMine(false)
-                    .setImageUrl(friend.getImg())
+                    .setImageUrl(friend.getImgUrl())
                     .setFriend_id(friend.getId())
                     .build();
 

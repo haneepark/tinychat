@@ -7,7 +7,7 @@
                 android:id="@+id/friend_item">
 
     <ImageView
-        android:id="@+id/add_friend_img"
+        android:id="@+id/friend_img"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentLeft="true"
@@ -15,8 +15,7 @@
         android:layout_alignParentTop="true"
         android:layout_margin="@dimen/listvew_margin"
         android:background="@color/colorAccent"
-        android:padding="10dp"
-        android:scaleType="fitXY"
+        android:scaleType="fitCenter"
         app:srcCompat="@drawable/ic_profile"/>
 
     <TextView
@@ -26,8 +25,8 @@
         android:text="TextView"
         android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"
         android:layout_marginTop="12dp"
-        android:layout_alignTop="@+id/add_friend_img"
-        android:layout_toRightOf="@+id/add_friend_img"
-        android:layout_toEndOf="@+id/add_friend_img"/>
+        android:layout_alignTop="@+id/friend_img"
+        android:layout_toRightOf="@+id/friend_img"
+        android:layout_toEndOf="@+id/friend_img"/>
 
 </RelativeLayout>

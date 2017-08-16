@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -46,6 +48,7 @@ public class AddFriendActivity extends AppCompatActivity {
     AddFriendAdapter adapter;
     EditText et_search;
     ImageButton btn_clear, btn_search;
+    RequestQueue queue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,9 +160,11 @@ public class AddFriendActivity extends AppCompatActivity {
     }
 
     public void getAllUserRequested () {
+        if (queue==null){
+            queue = MyVolley.getInstance(this.getApplicationContext()).
+                    getRequestQueue();
+        }
 
-        RequestQueue queue = MyVolley.getInstance(this.getApplicationContext()).
-                getRequestQueue();
         String id = pref.getString("id");
 
         String url = getString(R.string.server)+getString(R.string.server_getAllUser)+"?id="+id;
@@ -196,15 +201,20 @@ public class AddFriendActivity extends AppCompatActivity {
                         // jsonArray 정보를 받아서 listView에 allFriends 전달
                         int length = usersJsonArray.length();
                         ArrayList<Friend> friends = new ArrayList<>();
+                        HashMap<String, String> thumbs = new HashMap<>();
                         for (int i=0;i<length;i++){
                             JSONObject user = (JSONObject) usersJsonArray.get(i);
-                            String img;
+                            String img="";
+                            String thumb="";
                             if (user.has("img")){
                                 img = user.getString("img");
-                            } else {
-                                img = "";
+                                if (img.length()>3){ // img 길이가 3 이상이면
+                                    thumb = user.getString("thumb_url");
+                                    thumbs.put(user.getString("id"),thumb); // thumbs hashmap에는 썸네일이 있을 때 만 넣음
+                                }
                             }
 
+                            // TODO: 2017. 8. 16. 친구추가하기 전에는 blob가지고 있을 필요 없음 처리 ?
                             friends.add(
                                     new Friend(
                                             user.getString("id"),
@@ -215,7 +225,8 @@ public class AddFriendActivity extends AppCompatActivity {
                                     )
                             );
                         }
-                        adapter.setAllFriends(friends);
+
+                        adapter.setAllFriends(friends,thumbs);
                         adapter.notifyDataSetChanged();
 
                     } else {
@@ -242,6 +253,7 @@ public class AddFriendActivity extends AppCompatActivity {
     public class AddFriendAdapter extends BaseAdapter {
         private ArrayList<Friend> friends = new ArrayList<>();
         private ArrayList<Friend> allFriends;
+        private HashMap<String, String> thumbs; // friend_id -> thumbnail url of all friends
         private Context context = null;
         private final String TAG = "AddFriendAdapter";
 
@@ -272,8 +284,9 @@ public class AddFriendActivity extends AppCompatActivity {
 //            }
 //        }
 
-        public void setAllFriends(ArrayList<Friend> allFriends) {
+        public void setAllFriends(ArrayList<Friend> allFriends,HashMap<String, String> thumbs) {
             this.allFriends = allFriends;
+            this.thumbs = thumbs;
         }
 
         public void clearItem() {
@@ -317,8 +330,12 @@ public class AddFriendActivity extends AppCompatActivity {
                                 // TODO: 2017. 8. 8. 경고
                                 Toast.makeText(context, "이미 로컬db에서 친구입니다", Toast.LENGTH_SHORT).show();
                             }// TODO: 2017. 8. 12. 로컬에서 친구여도 서버로 가서 디비등록 하도록 해놓음
+
                             //  add friend to server database
-                            onAddFriendRequested(friend);
+
+                            String thumb_url = thumbs.get(friend.getId());
+                            onAddFriendRequested(friend,thumb_url);
+
                         }
                     }
                 });
@@ -368,7 +385,7 @@ public class AddFriendActivity extends AppCompatActivity {
                             Log.d(TAG, "performFiltering: data " + data);
                             if (data.toLowerCase().equals(constraint.toString())) { //startsWith(constraint.toString())) {
                                 FilteredArrList.add(
-                                        new Friend(f.getId(), f.getNid(), f.getName(), f.getImg(), f.getCreated()
+                                        new Friend(f.getId(), f.getNid(), f.getName(), f.getImgUrl(), f.getCreated()
                                         )
                                 );
                             }
@@ -397,11 +414,14 @@ public class AddFriendActivity extends AppCompatActivity {
         }
     }
 
-    public void onAddFriendRequested (final Friend friend) {
+    public void onAddFriendRequested (final Friend friend,final String thumb_url) {
+        final String TAG = "onAddFriendRequested";
         final String friendId = friend.getId();
 
-        RequestQueue queue = MyVolley.getInstance(this.getApplicationContext()).
-                getRequestQueue();
+        if (queue==null){
+            queue = MyVolley.getInstance(this.getApplicationContext()).
+                    getRequestQueue();
+        }
         final String id = pref.getString("id");
 
         String url = getString(R.string.server)+getString(R.string.server_addFriend);
@@ -422,9 +442,17 @@ public class AddFriendActivity extends AppCompatActivity {
                         // TODO: 2017. 8. 9. 알림
                         Toast.makeText(context, "이미 서버db에서 친구입니다", Toast.LENGTH_SHORT).show();
                         if (db.getFriend(friend.getId()) == null){
+
                             // local db에 친구관계 추가
                             db.addFriend(friend);
                             Toast.makeText(context, "local db에 친구 등록 완료", Toast.LENGTH_SHORT).show();
+
+                            // TODO: 2017. 8. 16. get thumbnail path
+                            if (thumb_url!=null){
+                                Log.d(TAG, "onResponse: Sending Thumbnail request");
+                                onGetThumbnailRequested(friend, thumb_url);
+                            }
+
                         }
                     } else if (!resultCode.equals("100")){
                         // TODO: 2017. 8. 9. 실패 경고
@@ -436,6 +464,11 @@ public class AddFriendActivity extends AppCompatActivity {
 
                         // local db에 친구관계 추가
                         db.addFriend(friend);
+                        // TODO: 2017. 8. 16. get thumbnail path
+                        if (thumb_url!=null){
+                            Log.d(TAG, "onResponse: Sending Thumbnail request");
+                            onGetThumbnailRequested(friend, thumb_url);
+                        }
 
                         // TODO: 2017. 8. 9. 친구등록 완료 알림
                         Toast.makeText(context, "친구 등록 완료", Toast.LENGTH_SHORT).show();
@@ -468,6 +501,69 @@ public class AddFriendActivity extends AppCompatActivity {
                 params.put("friend_id",friendId);
                 return params;
             }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<>();
+                params.put("Content-Type","application/x-www-form-urlencoded"); //form ?
+                return params;
+            }
+        };
+
+        // Add the request to the RequestQueue.
+        stringRequest.setTag(TAG);
+        queue.add(stringRequest);
+    }
+
+    public void onGetThumbnailRequested (final Friend friend, final String thumb_url) {
+        final String TAG = "onGetThumbnailRequested";
+
+        if (queue==null){
+            queue = MyVolley.getInstance(this.getApplicationContext()).
+                    getRequestQueue();
+        }
+//        final String id = pref.getString("id");
+
+        String url = getString(R.string.server)+getString(R.string.server_getThumbnail)+"?thumb_url="+thumb_url;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET,url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG,"onGetThumbnailRequested response : "+ response);
+
+                try {
+
+                    JSONObject jsonObject = new JSONObject(response);
+                    String resultCode = jsonObject.getString("resultCode");
+                    String result = jsonObject.getString("result");
+
+                    if (resultCode.equals("100") & jsonObject.has("thumb_blob")) {
+                        // TODO: 2017. 8. 16. 성공 알림
+                        Toast.makeText(context, "thumb 100", Toast.LENGTH_SHORT).show();
+                        // TODO: 2017. 8. 16. save thumbnail on SQLite
+                        byte[] bytes = Base64.decode(jsonObject.getString("thumb_blob"), Base64.DEFAULT);
+                        friend.setImgBlob(bytes);
+                        db.updateFriend(friend);
+
+                    } else {
+                        // TODO: 2017. 8. 9. 실패 경고
+                        Toast.makeText(context, "thumb "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onGetThumbnailRequested : "+resultCode+" "+result);
+                        return;
+                    }
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(context, "volley error", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onErrorResponse: "+error.getMessage());
+            }
+        }){
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {

@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,6 +66,9 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     static final int REQUEST_IMAGE_CAPTURE = 12;
     private Bitmap bitmap;
     String imageFileName, image_path;
+    ImageView img;
+
+    RequestQueue queue;
 
     @Nullable
     @Override
@@ -90,8 +94,27 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ((TextView)myprofile.findViewById(R.id.header_name)).setText(pref.getString("name"));
-        // TODO: 2017. 8. 4. 내프로필사진 보이기 썸네일 ! !
-        // ((ImageView)myprofile.findViewById(R.id.header_img)).setImage ?
+
+//        // 내프로필사진 보이기 썸네일 ! !
+//        Log.d(TAG, "onViewCreated: pref.contains('img_blob') : "+pref.contains("img_blob"));
+//        Log.d(TAG, "onViewCreated: pref.getString('img_blob') : " +pref.getString("img_blob"));
+        if (pref.contains("img_blob")){ // TODO: 2017. 8. 16.  check if "img_blob" exists
+            byte[] byteArray = Base64.decode(pref.getString("img_blob"), Base64.DEFAULT);
+            Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+
+            if (img==null){
+                img = (ImageView)myprofile.findViewById(R.id.header_img);
+            }
+            // get size of imageView
+            img.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            int targetHeight = img.getMeasuredHeight();
+            int targetWidth = img.getMeasuredWidth();
+
+            // set image
+            img.setImageBitmap(Bitmap.createScaledBitmap(bmp, targetWidth,
+                    targetHeight, false));
+        }
+
 
         adapter = new FriendTabAdapter(getActivity());
         ListView listView = (ListView) view.findViewById(R.id.friend_list_view);
@@ -239,15 +262,17 @@ public class FriendTab extends Fragment implements View.OnClickListener {
     }
 
     public void onUpdateProfileRequested() {
-        RequestQueue queue = MyVolley.getInstance(getActivity()).
-                getRequestQueue();
+        if (queue==null){
+            queue = MyVolley.getInstance(getActivity()).
+                    getRequestQueue();
+        }
 
         String url = getString(R.string.server)+getString(R.string.server_updateProfile);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG, response);
+                Log.d(TAG,"onUpdateProfileRequested : "+ response);
 
                 try {
                     JSONObject jsonObject = new JSONObject(response);
@@ -277,8 +302,10 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                         dialog.setImageUrl(url)
                                 .setEditing(false);
 
-                        String thumb = jsonObject.getString("thumb_url");
-                        // TODO: 2017. 8. 14. 썸네일 처리
+                        // TODO: 2017. 8. 16. request Thumbnail !!
+                        onGetThumbnailRequested(jsonObject.getString("thumb_url"));
+
+                        bitmap = null;
                     }
 
                     if (jsonObject.has("name")){ // 이름 바꾼 경우
@@ -317,7 +344,6 @@ public class FriendTab extends Fragment implements View.OnClickListener {
 
                     if (bitmap!=null){
                         params.put("image",getStringImage(bitmap));
-                        bitmap=null;
                     }
 
                     Log.d(TAG, "getParams: getEditedName : "+dialog.getEditedName());
@@ -345,6 +371,68 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         Toast.makeText(getActivity(), "request sent .. ", Toast.LENGTH_SHORT).show();
         // TODO: 2017. 8. 15. background? loading 프로그래스 다이알로그
     }
+
+    public void onGetThumbnailRequested (final String thumb_url) {
+        final String TAG = "onGetMyThumbnailRequested";
+
+        if (queue==null){
+            queue = MyVolley.getInstance(getActivity()).getRequestQueue();
+        }
+//        final String id = pref.getString("id");
+
+        String url = getString(R.string.server)+getString(R.string.server_getThumbnail)+"?thumb_url="+thumb_url;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET,url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG,"onGetThumbnailRequested response : "+ response);
+
+                try {
+
+                    JSONObject jsonObject = new JSONObject(response);
+                    String resultCode = jsonObject.getString("resultCode");
+                    String result = jsonObject.getString("result");
+
+                    if (resultCode.equals("100") & jsonObject.has("thumb_blob")) {
+                        // TODO: 2017. 8. 16. 성공 알림
+                        Toast.makeText(getActivity(), "thumb 100", Toast.LENGTH_SHORT).show();
+                        // TODO: 2017. 8. 16. save thumbnail
+                        pref.setThumb(jsonObject.getString("thumb_blob"));
+
+                    } else {
+                        // TODO: 2017. 8. 9. 실패 경고
+                        Toast.makeText(getActivity(), "thumb "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onGetThumbnailRequested : "+resultCode+" "+result);
+                        return;
+                    }
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getActivity(), "volley error", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onErrorResponse: "+error.getMessage());
+            }
+        }){
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<>();
+                params.put("Content-Type","application/x-www-form-urlencoded"); //form ?
+                return params;
+            }
+        };
+
+        // Add the request to the RequestQueue.
+        stringRequest.setTag(TAG);
+        Toast.makeText(getActivity(), "thumb requested", Toast.LENGTH_SHORT).show();
+        queue.add(stringRequest);
+    }
+
 
     public String getStringImage(Bitmap bmp){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -52,7 +52,6 @@
                 android:layout_height="234dp"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
-
                 android:adjustViewBounds="true"
                 android:scaleType="centerCrop"
                 />
@@ -105,7 +104,9 @@
                 android:text=" "
                 android:visibility="gone"
                 android:textColor="#3d3d3d"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:maxLength="15"
+                android:maxLines="1"/>
 
             <Button
                 android:id="@+id/number"

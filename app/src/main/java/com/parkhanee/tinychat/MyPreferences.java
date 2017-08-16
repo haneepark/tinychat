@@ -2,6 +2,7 @@ package com.parkhanee.tinychat;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 
 import static android.content.Context.MODE_PRIVATE;
@@ -16,6 +17,7 @@ public final class MyPreferences {
     private SharedPreferences pref;
     private static final String PREF_NAME = "pref";
     private static final String LOGIN_KEY = "login";
+    private final String TAG = "MyPreferences";
 
     private MyPreferences(Context context){
         pref = context.getSharedPreferences(PREF_NAME,MODE_PRIVATE);
@@ -86,11 +88,34 @@ public final class MyPreferences {
         putString("img",img);
         putString("created",created);
     }
+    public void login(String id, String nid, String name, String img,String img_blob, String created){
+        pref.edit()
+                .putBoolean(LOGIN_KEY,true)
+                .apply();
+
+        // 유저 정보 저장
+        putString("id",id);
+        putString("nid",nid);
+        putString("name",name);
+        putString("img",img);
+        putString("img_blob",img_blob);
+        putString("created",created);
+    }
+
+    public void setThumb(String thumb){
+        putString("img_blob",thumb);
+        Log.d(TAG, "setThumb: "+thumb);
+    }
+
 
     public boolean clear() {
         return pref.edit()
                 .clear()
                 .commit();
+    }
+
+    public boolean contains(String s){
+        return pref.contains(s);
     }
 
     public boolean ifLoggedIn(){

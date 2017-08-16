@@ -5,16 +5,25 @@ package com.parkhanee.tinychat.classbox;
  */
 
 public class Friend {
-    private String id, nid, name, img;
+    private String id, nid, name, img_url;
+    private byte[] img_blob;
     private int  created;
 
     // TODO: 2017. 8. 2. 일대일 RID ??
 
-    public Friend (String id, String nid, String name, String img, int created ){
+    public Friend (String id, String nid, String name, String img_url,byte[] img_blob, int created ){
         this.id = id;
         this.nid = nid;
         this.name = name;
-        this.img = img; // 서버 이미지 url
+        this.img_url = img_url; // 서버 이미지 url
+        this.img_blob = img_blob; // 서버 이미지 url
+        this.created = created; // 친구 된 시간 unixtime
+    }
+    public Friend (String id, String nid, String name, String img_url, int created ){
+        this.id = id;
+        this.nid = nid;
+        this.name = name;
+        this.img_url = img_url; // 서버 이미지 url
         this.created = created; // 친구 된 시간 unixtime
     }
 
@@ -27,14 +36,15 @@ public class Friend {
      * caution : id cannot be updated !
      * if id from paramater is differ from id from the instance, it fails update and return false.
      * */
-    public boolean updateFriend (String id, String nid, String name, String img, int created ){
+    public boolean updateFriend (String id, String nid, String name, String img_url, byte[] img_blob, int created ){
         if (!this.id.equals(id)){
             return false;
         }
         this.id = id;
         this.nid = nid;
         this.name = name;
-        this.img = img;
+        this.img_url = img_url;
+        this.img_blob = img_blob;
         this.created = created;
         return true;
     }
@@ -46,7 +56,8 @@ public class Friend {
         this.id = friend.getId();
         this.nid = friend.getNid();
         this.name = friend.getName();
-        this.img = friend.getImg();
+        this.img_url = friend.getImgUrl();
+        this.img_blob = friend.getImgBlob();
         this.created = friend.getCreated();
         return true;
     }
@@ -55,8 +66,19 @@ public class Friend {
         this.name = name;
     }
 
-    public void updateImg(String img) {
-        this.img = img;
+    public void updateImg(String img_url, byte[] img_blob) {
+        this.img_url = img_url;
+        this.img_blob = img_blob;
+    }
+
+    public void setImgBlob(byte[] img_blob) {
+        this.img_blob = img_blob;
+    }
+
+    public boolean isBlobSet(){
+        // true when it exists
+        // false when it is not
+        return img_blob!=null ;
     }
 
     public String getId() {
@@ -71,12 +93,16 @@ public class Friend {
         return name;
     }
 
-    public String getImg() {
-        return img;
+    public String getImgUrl() {
+        return img_url;
     }
 
     public int getCreated() {
         return created;
+    }
+
+    public byte[] getImgBlob() {
+        return img_blob;
     }
 
     @Override
@@ -85,7 +111,8 @@ public class Friend {
                 "id='" + id + '\'' +
                 ", nid='" + nid + '\'' +
                 ", name='" + name + '\'' +
-                ", img='" + img + '\'' +
+                ", img_url='" + img_url + '\'' +
+                ", img_blob=" + (img_blob!=null)  +
                 ", created=" + created +
                 '}';
     }

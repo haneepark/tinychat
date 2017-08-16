@@ -95,8 +95,10 @@ public final class MySQLite {
         static final String ID = "id";
         static final String NID = "nid";
         static final String NAME = "name";
-        static final String IMG = "img";
+        static final String IMG_URL = "img_url";
+        static final String IMG_BLOB = "img_blob";
         static final String CREATED = "created";
+
     }
 
     public boolean addFriend (Friend friend) {
@@ -104,7 +106,8 @@ public final class MySQLite {
         contentValues.put(FriendTable.ID, friend.getId());
         contentValues.put(FriendTable.NID, friend.getNid());
         contentValues.put(FriendTable.NAME, friend.getName());
-        contentValues.put(FriendTable.IMG, friend.getImg());
+        contentValues.put(FriendTable.IMG_URL, friend.getImgUrl());
+        contentValues.put(FriendTable.IMG_BLOB, friend.getImgBlob());
         contentValues.put(FriendTable.CREATED, friend.getCreated());
         mySQLiteDatabase.insert(FriendTable.TABLE_NAME, null, contentValues);
         Log.d(TAG, "addFriend: "+friend.toString());
@@ -121,8 +124,9 @@ public final class MySQLite {
                     cursor.getString(0), //id
                     cursor.getString(1), //nid
                     cursor.getString(2), //name
-                    cursor.getString(3), //img
-                    cursor.getInt(4) // created
+                    cursor.getString(3), //img_url
+                    cursor.getBlob(4), //img_blob
+                    cursor.getInt(5) // created
             );
             Log.d(TAG, "getFriend: "+friend.toString());
             return friend;
@@ -130,9 +134,6 @@ public final class MySQLite {
             e.printStackTrace();
             return null;
         }
-
-
-
     }
 
     public String getFriendName(String id) {
@@ -149,7 +150,8 @@ public final class MySQLite {
         contentValues.put(FriendTable.ID, friend.getId());
         contentValues.put(FriendTable.NID, friend.getNid());
         contentValues.put(FriendTable.NAME, friend.getName());
-        contentValues.put(FriendTable.IMG, friend.getImg());
+        contentValues.put(FriendTable.IMG_URL, friend.getImgUrl());
+        contentValues.put(FriendTable.IMG_BLOB, friend.getImgBlob());
         contentValues.put(FriendTable.CREATED, friend.getCreated());
         mySQLiteDatabase.update(FriendTable.TABLE_NAME, contentValues, "id = ? ", new String[] { friend.getId() } );
         return true;
@@ -182,8 +184,9 @@ public final class MySQLite {
                         cursor.getString(0), //id
                         cursor.getString(1), //nid
                         cursor.getString(2), //name
-                        cursor.getString(3), //img
-                        cursor.getInt(4) // created
+                        cursor.getString(3), //img_url
+                        cursor.getBlob(4), //img_blob
+                        cursor.getInt(5) // created
                 );
 
                 friends.add(friend);
@@ -288,7 +291,8 @@ public final class MySQLite {
                     + FriendTable.ID + " TEXT PRIMARY KEY,"
                     + FriendTable.NID + " TEXT,"
                     + FriendTable.NAME + " TEXT,"
-                    + FriendTable.IMG + " TEXT,"
+                    + FriendTable.IMG_URL + " TEXT,"
+                    + FriendTable.IMG_BLOB + " BLOB,"
                     + FriendTable.CREATED + " INTEGER );"
             );
 

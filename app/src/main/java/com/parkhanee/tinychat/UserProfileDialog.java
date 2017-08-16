@@ -89,13 +89,12 @@ public class UserProfileDialog extends DialogFragment {
     @Override
     public void onViewCreated(View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.d(TAG, "onViewCreated: ");
         initViews(view);
         if (builder != null) {
             // 사용자 이름
             if (builder.getTextName() != null) {
                 if (name == null){
-                    Log.d(TAG, "onViewCreated: name is null");
+                    Log.d(TAG, "onViewCreated: name is null ? ");
                 }
                 name.setText(builder.getTextName());
             } else {
@@ -243,7 +242,6 @@ public class UserProfileDialog extends DialogFragment {
         });
         editImage.setVisibility(View.VISIBLE);
         builder.setEditing(true);
-        Log.d(TAG, "positive '수정' onClick: ");
         // 이름 수정하는 edittext
         editName.setVisibility(View.VISIBLE);
         name.setVisibility(View.INVISIBLE);
@@ -272,7 +270,6 @@ public class UserProfileDialog extends DialogFragment {
     }
 
     private void initViews(View view) {
-        Log.d(TAG, "initViews: ");
         image = (AppCompatImageView) view.findViewById(R.id.image);
         name = (TextView) view.findViewById(R.id.name);
         number = (Button) view.findViewById(R.id.number);
@@ -285,9 +282,7 @@ public class UserProfileDialog extends DialogFragment {
     }
 
     private Dialog show(Activity activity, Builder builder) {
-        Log.d(TAG, "show in DialogFragment");
         this.builder = builder;
-        Log.d(TAG, "show in DialogFragment : isAdded " + String.valueOf(isAdded()));
         if (!isAdded()){
             show(((AppCompatActivity) activity).getSupportFragmentManager(), SimpleName);
         }
@@ -484,7 +479,6 @@ public class UserProfileDialog extends DialogFragment {
         }
 //
         public Dialog show() {
-            Log.d(TAG, "show in Builder");
             return UserProfileDialog.getInstance().show(((Activity) context), this);
         }
 

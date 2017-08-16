@@ -16,6 +16,7 @@
     <string name="server_getAllUser">get_all_user.php</string>
     <string name="server_addFriend">add_friend.php</string>
     <string name="server_getAllFriend">get_all_friend.php</string>
+    <string name="server_getThumbnail">get_thumbnail.php</string>
     <!---->
 
 </resources>

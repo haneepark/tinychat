@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -15,6 +16,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.parkhanee.tinychat.classbox.Friend;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -81,8 +83,22 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
 
                     // TODO: 2017. 7. 26. 로그인에 성공 했습니다 알림
                     Toast.makeText(LoginActivity.this, "로그인에 성공 했습니다", Toast.LENGTH_SHORT).show();
-                    // sharedPreference 로그인
-                    pref.login(jsonObject.getString("id"),jsonObject.getString("nid"),jsonObject.getString("name"),jsonObject.getString("img"),jsonObject.getString("created"));
+
+                    Log.d(TAG, "onResponse: jsonObject.has('thumb_url') : "+jsonObject.has("thumb_url"));
+
+                    if (jsonObject.has("thumb_url")){
+                        Toast.makeText(context, "get thumb requested", Toast.LENGTH_SHORT).show();
+                        // TODO: 2017. 8. 16.  thumb url 로 이미지 blob 가져와서 pref에 저장 !
+                        onGetThumbnailRequested(jsonObject.getString("thumb_url"));
+                    }
+                        // sharedPreference 로그인 , 썸네일 없음.
+                        pref.login(jsonObject.getString("id"),
+                                jsonObject.getString("nid"),
+                                jsonObject.getString("name"),
+                                jsonObject.getString("img"),
+                                jsonObject.getString("created")
+                        );
+
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -177,5 +193,68 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
         }
         return true;
     }
+
+    public void onGetThumbnailRequested (final String thumb_url) {
+        final String TAG = "onGetMyThumbnailRequested";
+
+        if (queue==null){
+            queue = MyVolley.getInstance(this.getApplicationContext()).
+                    getRequestQueue();
+        }
+//        final String id = pref.getString("id");
+
+        String url = getString(R.string.server)+getString(R.string.server_getThumbnail)+"?thumb_url="+thumb_url;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET,url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG,"onGetThumbnailRequested response : "+ response);
+
+                try {
+
+                    JSONObject jsonObject = new JSONObject(response);
+                    String resultCode = jsonObject.getString("resultCode");
+                    String result = jsonObject.getString("result");
+
+                    if (resultCode.equals("100") & jsonObject.has("thumb_blob")) {
+                        // TODO: 2017. 8. 16. 성공 알림
+                        Toast.makeText(context, "thumb 100", Toast.LENGTH_SHORT).show();
+                        // TODO: 2017. 8. 16. save thumbnail while login
+                        pref.setThumb(jsonObject.getString("thumb_blob"));
+
+                    } else {
+                        // TODO: 2017. 8. 9. 실패 경고
+                        Toast.makeText(context, "thumb "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onGetThumbnailRequested : "+resultCode+" "+result);
+                        return;
+                    }
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(context, "volley error", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onErrorResponse: "+error.getMessage());
+            }
+        }){
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<>();
+                params.put("Content-Type","application/x-www-form-urlencoded"); //form ?
+                return params;
+            }
+        };
+
+        // Add the request to the RequestQueue.
+        stringRequest.setTag(TAG);
+        queue.add(stringRequest);
+    }
+
+
 
 }
