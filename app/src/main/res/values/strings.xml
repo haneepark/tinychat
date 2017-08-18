@@ -7,7 +7,8 @@
     <string name="add_friend">"친구 추가하기"</string>
 
     <string name="server_img_path">uploads/</string>
-    <string name="server">http://13.124.124.168/</string>
+    <string name="server_url">http://13.124.124.168/</string>
+    <string name="server_ip">13.124.124.168</string>
 
     <!--paths to append to the server url sending http request-->
     <string name="server_login">login.php</string>
@@ -17,6 +18,7 @@
     <string name="server_addFriend">add_friend.php</string>
     <string name="server_getAllFriend">get_all_friend.php</string>
     <string name="server_getThumbnail">get_thumbnail.php</string>
+    <string name="server_tcp_port">5000</string>
     <!---->
 
 </resources>

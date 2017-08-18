@@ -47,7 +47,7 @@ public class SignupActivity extends AppCompatActivity  implements View.OnClickLi
     public void onSignupRequested (){
         queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
-        String url = getString(R.string.server)+getString(R.string.server_signup);
+        String url = getString(R.string.server_url)+getString(R.string.server_signup);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override

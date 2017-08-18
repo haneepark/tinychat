@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -16,7 +15,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.parkhanee.tinychat.classbox.Friend;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,7 +61,7 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
         queue = MyVolley.getInstance(this.getApplicationContext()).
                 getRequestQueue();
 
-        String url = getString(R.string.server)+getString(R.string.server_login);
+        String url = getString(R.string.server_url)+getString(R.string.server_login);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override
@@ -203,7 +201,7 @@ public class LoginActivity extends AppCompatActivity  implements View.OnClickLis
         }
 //        final String id = pref.getString("id");
 
-        String url = getString(R.string.server)+getString(R.string.server_getThumbnail)+"?thumb_url="+thumb_url;
+        String url = getString(R.string.server_url)+getString(R.string.server_getThumbnail)+"?thumb_url="+thumb_url;
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET,url, new Response.Listener<String>() {
             @Override

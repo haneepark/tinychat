@@ -13,7 +13,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.Editable;
@@ -380,7 +379,7 @@ public class UserProfileDialog extends DialogFragment {
             else if(imageUrl.toLowerCase().contains("http")){ // imageUrl 에 http 포함 한 경우
                 return imageUrl;
             } else { // 안한 경우
-                String url = context.getString(R.string.server)+context.getString(R.string.server_img_path)+imageUrl;
+                String url = context.getString(R.string.server_url)+context.getString(R.string.server_img_path)+imageUrl;
                 return url;
             }
         }

@@ -19,7 +19,6 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Base64;
 import android.util.Log;
@@ -267,7 +266,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                     getRequestQueue();
         }
 
-        String url = getString(R.string.server)+getString(R.string.server_updateProfile);
+        String url = getString(R.string.server_url)+getString(R.string.server_updateProfile);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
             @Override
@@ -380,7 +379,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         }
 //        final String id = pref.getString("id");
 
-        String url = getString(R.string.server)+getString(R.string.server_getThumbnail)+"?thumb_url="+thumb_url;
+        String url = getString(R.string.server_url)+getString(R.string.server_getThumbnail)+"?thumb_url="+thumb_url;
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET,url, new Response.Listener<String>() {
             @Override
