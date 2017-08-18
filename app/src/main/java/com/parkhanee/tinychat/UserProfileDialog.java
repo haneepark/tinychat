@@ -201,14 +201,14 @@ public class UserProfileDialog extends DialogFragment {
                     positive.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            if (builder.getFriend_id()!=null){
+                            if (builder.getRid()!=null){
                                 Intent i =  new Intent(getActivity(),ChatActivity.class);
                                 // 채팅방 정보 번들로 넘겨주기 !
-                                i.putExtra("friend_id",builder.getFriend_id());
+                                i.putExtra("rid",builder.getRid());
                                 startActivity(i);
                                 dismiss();
                             } else {
-                                Toast.makeText(getActivity(), "친구 아이디 가져올 수 없음?", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), "방 아이디 가져올 수 없음?", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -295,7 +295,7 @@ public class UserProfileDialog extends DialogFragment {
         private String textNumber;
 
         // 친구프로필에서 1:1 대화방으로 넘어갈때 필요
-        private String friend_id;
+        private String rid;
 
         // 내 프로필에서 이름 수정 했을 때
         private String editedName;
@@ -316,7 +316,7 @@ public class UserProfileDialog extends DialogFragment {
         protected Builder(Parcel in) {
             textName = in.readString();
             textNumber = in.readString();
-            friend_id = in.readString();
+            rid = in.readString();
             editedName = in.readString();
             isMine = in.readByte() != 0;
             imageUrl = in.readString();
@@ -412,13 +412,13 @@ public class UserProfileDialog extends DialogFragment {
             return this;
         }
 
-        public Builder setFriend_id(String friend_id) {
-            this.friend_id = friend_id;
+        public Builder setRid(String rid) {
+            this.rid = rid;
             return this;
         }
 
-        public String getFriend_id() {
-            return friend_id;
+        public String getRid() {
+            return rid;
         }
 
         public Builder setEditedName(String editedName) {
@@ -490,7 +490,7 @@ public class UserProfileDialog extends DialogFragment {
         public void writeToParcel(Parcel parcel, int i) {
             parcel.writeString(textName);
             parcel.writeString(textNumber);
-            parcel.writeString(friend_id);
+            parcel.writeString(rid);
             parcel.writeString(editedName);
             parcel.writeByte((byte) (isMine ? 1 : 0));
             parcel.writeValue(imageBitmap);

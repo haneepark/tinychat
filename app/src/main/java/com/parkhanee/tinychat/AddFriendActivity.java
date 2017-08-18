@@ -76,6 +76,8 @@ public class AddFriendActivity extends AppCompatActivity {
 
         setSearchViews();
 
+
+
     }
 
     public void setSearchViews(){
@@ -436,15 +438,68 @@ public class AddFriendActivity extends AppCompatActivity {
                     String resultCode = jsonObject.getString("resultCode");
                     String result = jsonObject.getString("result");
 
+
+
                     // result code 확인
-                    if (resultCode.equals("302")&jsonObject.getJSONArray("followings:"+id).toString().contains(friendId)){
-                        // TODO: 2017. 8. 9. 알림
-                        Toast.makeText(context, "이미 서버db에서 친구입니다", Toast.LENGTH_SHORT).show();
-                        if (db.getFriend(friend.getId()) == null){
+                    if (!resultCode.equals("100")&!resultCode.equals("302")){ // 에러 !
+                        // TODO: 2017. 8. 9. 실패 경고
+                        Toast.makeText(context, "result "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "getAllUserRequested : "+resultCode+" "+result);
+                        return;
+
+                    } else { // 에러 없음
+
+                        // TODO: 2017. 8. 18. 서버에서 방 번호 받아오기
+                        String rid="0";
+                        String id = pref.getString("id");
+                        if (id.equals("68620823")){
+                            switch (friend.getId()){
+                                case "91433734" : rid="1"; break;
+                                case "11111111" : rid="2"; break;
+                            }
+                        } else if (id.equals("11111111")){
+                            switch (friend.getId()){
+                                case "68620823" : rid="2"; break;
+                                case "91433734" : rid="3"; break;
+                            }
+                        } else if (id.equals("91433734")){
+                            switch (friend.getId()){
+                                case "68620823" : rid="1"; break;
+                                case "11111111" : rid="3"; break;
+                            }
+                        }
+
+                        if (resultCode.equals("302")&jsonObject.getJSONArray("followings:"+id).toString().contains(friendId)){
+                            // TODO: 2017. 8. 9. 알림
+                            Toast.makeText(context, "이미 서버db에서 친구입니다", Toast.LENGTH_SHORT).show();
+                            if (db.getFriend(friend.getId()) == null){
+
+                                // local db에 친구관계 추가
+                                friend.setRid(rid);
+                                db.addFriend(friend);
+                                db.getAllFriends(); // TODO: 2017. 8. 18. test
+
+                                Toast.makeText(context, "local db에 친구 등록 완료", Toast.LENGTH_SHORT).show();
+
+                                // TODO: 2017. 8. 16. get thumbnail path
+                                if (thumb_url!=null){
+                                    Log.d(TAG, "onResponse: Sending Thumbnail request");
+                                    onGetThumbnailRequested(friend, thumb_url);
+                                }
+
+                            }
+                        } else {
+                            // 서버 친구등록 성공
+                            Toast.makeText(context, "100", Toast.LENGTH_SHORT).show();
+
+
+
 
                             // local db에 친구관계 추가
+                            // 방번호를 꼭 여기서 넣어주어야 함 !
+                            friend.setRid(rid);
                             db.addFriend(friend);
-                            Toast.makeText(context, "local db에 친구 등록 완료", Toast.LENGTH_SHORT).show();
+
 
                             // TODO: 2017. 8. 16. get thumbnail path
                             if (thumb_url!=null){
@@ -452,25 +507,9 @@ public class AddFriendActivity extends AppCompatActivity {
                                 onGetThumbnailRequested(friend, thumb_url);
                             }
 
+                            // TODO: 2017. 8. 9. 친구등록 완료 알림
+                            Toast.makeText(context, "친구 등록 완료", Toast.LENGTH_SHORT).show();
                         }
-                    } else if (!resultCode.equals("100")){
-                        // TODO: 2017. 8. 9. 실패 경고
-                        Toast.makeText(context, "result "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "getAllUserRequested : "+resultCode+" "+result);
-                        return;
-                    } else {
-                        Toast.makeText(context, "100", Toast.LENGTH_SHORT).show();
-
-                        // local db에 친구관계 추가
-                        db.addFriend(friend);
-                        // TODO: 2017. 8. 16. get thumbnail path
-                        if (thumb_url!=null){
-                            Log.d(TAG, "onResponse: Sending Thumbnail request");
-                            onGetThumbnailRequested(friend, thumb_url);
-                        }
-
-                        // TODO: 2017. 8. 9. 친구등록 완료 알림
-                        Toast.makeText(context, "친구 등록 완료", Toast.LENGTH_SHORT).show();
                     }
 
                     // 1 메인 액티비티로 가고 나서 새로 등록된 친구 바로 보여야 함

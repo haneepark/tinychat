@@ -5,21 +5,24 @@ package com.parkhanee.tinychat.classbox;
  */
 
 public class Friend {
-    private String id, nid, name, img_url;
+    private String id, nid, name, img_url, rid;
     private byte[] img_blob;
     private int  created;
 
     // TODO: 2017. 8. 2. 일대일 RID ??
 
-    public Friend (String id, String nid, String name, String img_url,byte[] img_blob, int created ){
+    public Friend (String id, String nid, String name,String rid, String img_url,byte[] img_blob,  int created ){
         this.id = id;
         this.nid = nid;
         this.name = name;
+        this.rid = rid;
         this.img_url = img_url; // 서버 이미지 url
         this.img_blob = img_blob; // 서버 이미지 url
         this.created = created; // 친구 된 시간 unixtime
     }
-    public Friend (String id, String nid, String name, String img_url, int created ){
+
+    // 친구 추가하기 전에 썸네일 이미지 가지고 있을 필요 없을 때 쓰는 생성자 !
+    public Friend (String id, String nid, String name,String img_url,  int created ){
         this.id = id;
         this.nid = nid;
         this.name = name;
@@ -75,6 +78,10 @@ public class Friend {
         this.img_blob = img_blob;
     }
 
+    public void setRid(String rid) {
+        this.rid = rid;
+    }
+
     public boolean isBlobSet(){
         // true when it exists
         // false when it is not
@@ -91,6 +98,10 @@ public class Friend {
 
     public String getName() {
         return name;
+    }
+
+    public String getRid() {
+        return rid;
     }
 
     public String getImgUrl() {
@@ -111,6 +122,7 @@ public class Friend {
                 "id='" + id + '\'' +
                 ", nid='" + nid + '\'' +
                 ", name='" + name + '\'' +
+                ", rid='" + rid + '\'' +
                 ", img_url='" + img_url + '\'' +
                 ", img_blob=" + (img_blob!=null)  +
                 ", created=" + created +

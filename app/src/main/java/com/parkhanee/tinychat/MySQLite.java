@@ -95,6 +95,7 @@ public final class MySQLite {
         static final String ID = "id";
         static final String NID = "nid";
         static final String NAME = "name";
+        static final String RID = "rid";
         static final String IMG_URL = "img_url";
         static final String IMG_BLOB = "img_blob";
         static final String CREATED = "created";
@@ -106,6 +107,7 @@ public final class MySQLite {
         contentValues.put(FriendTable.ID, friend.getId());
         contentValues.put(FriendTable.NID, friend.getNid());
         contentValues.put(FriendTable.NAME, friend.getName());
+        contentValues.put(FriendTable.RID, friend.getRid());
         contentValues.put(FriendTable.IMG_URL, friend.getImgUrl());
         contentValues.put(FriendTable.IMG_BLOB, friend.getImgBlob());
         contentValues.put(FriendTable.CREATED, friend.getCreated());
@@ -124,9 +126,10 @@ public final class MySQLite {
                     cursor.getString(0), //id
                     cursor.getString(1), //nid
                     cursor.getString(2), //name
-                    cursor.getString(3), //img_url
-                    cursor.getBlob(4), //img_blob
-                    cursor.getInt(5) // created
+                    cursor.getString(3), //rid
+                    cursor.getString(4), //img_url
+                    cursor.getBlob(5), //img_blob
+                    cursor.getInt(6) // created
             );
             Log.d(TAG, "getFriend: "+friend.toString());
             return friend;
@@ -145,11 +148,21 @@ public final class MySQLite {
         return name;
     }
 
+    public String getFriendRid(String id) {
+        Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ FriendTable.TABLE_NAME+" where "+ FriendTable.ID+"="+id+";", null );
+        if (cursor != null)
+            cursor.moveToFirst();
+            String rid = cursor.getString(3);  //name
+        Log.d(TAG, "getFriendRid : "+ rid);
+        return rid;
+    }
+
     public boolean updateFriend (Friend friend) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(FriendTable.ID, friend.getId());
         contentValues.put(FriendTable.NID, friend.getNid());
         contentValues.put(FriendTable.NAME, friend.getName());
+        contentValues.put(FriendTable.RID, friend.getRid());
         contentValues.put(FriendTable.IMG_URL, friend.getImgUrl());
         contentValues.put(FriendTable.IMG_BLOB, friend.getImgBlob());
         contentValues.put(FriendTable.CREATED, friend.getCreated());
@@ -184,9 +197,10 @@ public final class MySQLite {
                         cursor.getString(0), //id
                         cursor.getString(1), //nid
                         cursor.getString(2), //name
-                        cursor.getString(3), //img_url
-                        cursor.getBlob(4), //img_blob
-                        cursor.getInt(5) // created
+                        cursor.getString(3), //rid
+                        cursor.getString(4), //img_url
+                        cursor.getBlob(5), //img_blob
+                        cursor.getInt(6) // created
                 );
 
                 friends.add(friend);
@@ -291,13 +305,14 @@ public final class MySQLite {
                     + FriendTable.ID + " TEXT PRIMARY KEY,"
                     + FriendTable.NID + " TEXT,"
                     + FriendTable.NAME + " TEXT,"
+                    + FriendTable.RID + " TEXT,"
                     + FriendTable.IMG_URL + " TEXT,"
                     + FriendTable.IMG_BLOB + " BLOB,"
                     + FriendTable.CREATED + " INTEGER );"
             );
 
 //            // sample friend
-//            db.execSQL("INSERT INTO FRIEND VALUES ( '91433734', '01091433734', '규백', '', 1501659026 )");
+//            db.execSQL("INSERT INTO FRIEND VALUES ( '91433734', '01091433734', '규백','1', '','', 1501659026 )");
 //            db.execSQL("INSERT INTO FRIEND VALUES ( '11111111', '01011111111', '일일일', '', 1501659469 )");
 
         }

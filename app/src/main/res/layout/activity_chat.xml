@@ -7,10 +7,13 @@
     tools:context="com.parkhanee.tinychat.ChatActivity">
 
     <EditText
-        android:id="@+id/EditText01"
+        android:id="@+id/et_chat"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="hello" >
+        android:text="hello"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
     </EditText>
 
     <Button
@@ -19,20 +22,18 @@
         android:layout_height="wrap_content"
         android:onClick="onClick"
         android:text="Send"
-        android:layout_marginTop="24dp"
-        android:layout_below="@+id/EditText01"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
     </Button>
 
     <TextView
         android:text="TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/myButton"
-        android:layout_toRightOf="@+id/myButton"
-        android:layout_toEndOf="@+id/myButton"
-        android:layout_marginTop="45dp"
-        android:id="@+id/textView"/>
+        android:id="@+id/textView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
 
 </RelativeLayout>

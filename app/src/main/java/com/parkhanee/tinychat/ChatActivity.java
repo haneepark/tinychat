@@ -31,7 +31,7 @@ public class ChatActivity extends AppCompatActivity {
 
     String id; // 내 아이디
     String friend_id; // 일대일 방의 친구 아이디
-    String room_id; // 채팅방 아이디
+    String rid; // 채팅방 아이디
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,12 +43,11 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         id = pref.getString("id");
-        friend_id = getIntent().getStringExtra("friend_id");
-        // TODO: 2017. 8. 18. get room id
-        Toast.makeText(this, id, Toast.LENGTH_SHORT).show();
+        rid = getIntent().getStringExtra("rid");
+        // TODO: 2017. 8. 18. pref에서 참여자 아이디 가져오기
 
         chatTextView = (TextView) findViewById(R.id.textView);
-        et = (EditText) findViewById(R.id.EditText01);
+        et = (EditText) findViewById(R.id.et_chat);
         clientHandler = new Handler();
 
         new Thread(new ClientThread()).start();
@@ -93,8 +92,8 @@ public class ChatActivity extends AppCompatActivity {
 
                 // TODO: 2017. 8. 18. 이렇게 room_id와 id를 따로 보내면 뭐가먼저 도착할지 모름. pool 만들어서 관리 해야 .
 
-                // send room_id
-                WriteThread writeThread = new WriteThread(out,"123");
+                // send rid
+                WriteThread writeThread = new WriteThread(out,rid);
                 new Thread(writeThread).start();
 
                 // send id
