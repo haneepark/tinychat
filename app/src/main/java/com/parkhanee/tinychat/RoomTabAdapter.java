@@ -1,6 +1,8 @@
 package com.parkhanee.tinychat;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,20 +30,20 @@ public class RoomTabAdapter extends BaseAdapter {
     }
 
     private void setDummy(){
-        roomArrayList.add(new Room("123345",1));
-        roomArrayList.add(new Room("384935",4));
-        roomArrayList.add(new Room("123334",3));
-        roomArrayList.add(new Room("123346",1));
-        roomArrayList.add(new Room("123347",2));
-        roomArrayList.add(new Room("123348",1));
-        roomArrayList.add(new Room("123349",1));
-        roomArrayList.add(new Room("123350",1));
-        roomArrayList.add(new Room("123351",1));
-        roomArrayList.add(new Room("123352",1));
-        roomArrayList.add(new Room("123353",1));
-        roomArrayList.add(new Room("123354",1));
-        roomArrayList.add(new Room("123355",1));
-        roomArrayList.add(new Room("123356",1));
+//        roomArrayList.add(new Room("123345",1));
+//        roomArrayList.add(new Room("384935",4));
+//        roomArrayList.add(new Room("123334",3));
+//        roomArrayList.add(new Room("123346",1));
+//        roomArrayList.add(new Room("123347",2));
+//        roomArrayList.add(new Room("123348",1));
+//        roomArrayList.add(new Room("123349",1));
+//        roomArrayList.add(new Room("123350",1));
+//        roomArrayList.add(new Room("123351",1));
+//        roomArrayList.add(new Room("123352",1));
+//        roomArrayList.add(new Room("123353",1));
+//        roomArrayList.add(new Room("123354",1));
+//        roomArrayList.add(new Room("123355",1));
+//        roomArrayList.add(new Room("123356",1));
     }
 
     @Override
@@ -97,17 +99,42 @@ public class RoomTabAdapter extends BaseAdapter {
             Room room = roomArrayList.get(position);
 
             String title="";
-            for (Friend friend : room.getParticipants()){
-                String name = friend.getName();
-                title += name+" ";
+            if (room.isPrivate()){ // 일대일방
+                title = room.getParticipant().getName();
+            }else { //여러명방
+                for (Friend friend : room.getParticipants()){
+                    String name = friend.getName();
+                    title += name+" ";
+                }
             }
 
+
             holder.title.setText(title);
-            holder.msg.setText(room.getPpl()+" "+room.isPrivateRoom().toString());
-            if (!room.isPrivateRoom()){
+            holder.msg.setText(room.getPpl()+" "+room.isPrivate().toString());
+
+            // 이미지 설정
+            if (!room.isPrivate()){
                 holder.img.setImageResource(R.drawable.tab_friends);
-            } else {
-                holder.img.setImageResource(R.drawable.ic_profile);
+            } else { // 일대일방
+
+                Friend friend = room.getParticipant();
+                if (friend.isBlobSet()){
+                    byte[] byteArray = friend.getImgBlob();
+                    Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+
+                    // get size of imageView
+                    holder.img.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                    int targetHeight = holder.img.getMeasuredHeight();
+                    int targetWidth = holder.img.getMeasuredWidth();
+
+                    // set image
+                    holder.img.setImageBitmap(Bitmap.createScaledBitmap(bmp, targetWidth,
+                            targetHeight, false));
+                } else {
+                    holder.img.setImageResource(R.drawable.ic_profile);
+                }
+                 
+
             }
         }
 

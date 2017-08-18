@@ -19,21 +19,24 @@ public class Room {
     private String rid;
     private int ppl;
     private Boolean isPrivateRoom=null;
-    private ArrayList<Friend> participants = new ArrayList<>();
     private MySQLite db =null;
+    private Context context;
+
+    private ArrayList<Friend> participants = new ArrayList<>(); // 여러명방일때
+    private Friend participant; // 일대일방일때
+
+
 
     // TODO: 2017. 8. 2. 최근 대화 sharedPreferences는 어디서 뽑지?
 
-    public Room(String rid, int ppl){
+    public Room(String rid, int ppl,String string, Context context){
         this.rid = rid;
         this.ppl = ppl;
-        this.isPrivateRoom = isPrivateRoom();
+        this.context = context;
+        initRoom(string);
     }
 
-    public Boolean isPrivateRoom(){
-        if (isPrivateRoom==null){
-            isPrivateRoom = ppl == 1;
-        }
+    public Boolean isPrivate(){
         return isPrivateRoom;
     }
 
@@ -46,25 +49,51 @@ public class Room {
     }
 
     public ArrayList<Friend> getParticipants() {
-        return participants;
+        if (ppl>1){
+            return participants;
+        } else {
+            return null;
+        }
     }
 
-    public boolean setParticipants (String string, Context context) {
+    public Friend getParticipant() {
+        if (ppl==1){
+            return participant;
+        }else {
+            return null;
+        }
+
+    }
+
+    public boolean initRoom(String string) {
 
         if (db==null){
             db = MySQLite.getInstance(context);
         }
 
-        // pplListString에 들어있는 id 쪼개서 어레이리스트에 넣기
-        ArrayList<String> arrayList =  new ArrayList<>(Arrays.asList(string.split(":")));
-        if (arrayList.size()!=ppl){
-            Log.d(TAG, "setParticipants: participants.size()!=ppl ");
-            return false;
+        if (ppl==1){ // 일대일 방
+
+            isPrivateRoom = true;
+            participant = db.getFriend(string);
+
+        }else { // 멀티방
+
+            isPrivateRoom = false;
+
+            // pplListString에 들어있는 id 쪼개서 어레이리스트에 넣기
+            ArrayList<String> arrayList =  new ArrayList<>(Arrays.asList(string.split(",")));
+            if (arrayList.size()!=ppl){
+                Log.d(TAG, "initRoom: participants.size()!=ppl ");
+                return false;
+            }
+
+            for (String id : arrayList){
+                participants.add(db.getFriend(id));
+            }
         }
 
-        for (String id : arrayList){
-            participants.add(db.getFriend(id));
-        }
+        Log.d(TAG, "initRoom: "+ this.toString());
+
         return true;
     }
 

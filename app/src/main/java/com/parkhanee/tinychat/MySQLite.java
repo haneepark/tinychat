@@ -56,9 +56,9 @@ public final class MySQLite {
         // TODO: 2017. 8. 12. 여기서 drop table해버리면 로그아웃 했다가 다시 로그인 할때 테이블이 없어서 에러 남.
         // 그러니까 deleteAllFriends / deleteAllRooms 하자 !
         mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ FriendTable.TABLE_NAME);
-        mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ RoomTable.TABLE_NAME);
+//        mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ RoomTable.TABLE_NAME);
         mySQLiteHelper.createFriendTable(mySQLiteDatabase);
-        mySQLiteHelper.createRoomTable(mySQLiteDatabase);
+//        mySQLiteHelper.createRoomTable(mySQLiteDatabase);
     }
 
     private boolean isOpen() {
@@ -210,10 +210,12 @@ public final class MySQLite {
         return friends;
     }
 
+
     /**
      * room table 의 상수들 정의.
      * 테이블 이름과 컬럼들의 이름을 정의한다.
      */
+    /*
     private static final class RoomTable implements BaseColumns {
         static final String TABLE_NAME = "room";
         static final String RID = "rid";
@@ -264,6 +266,8 @@ public final class MySQLite {
         return rooms;
     }
 
+    */
+
 
 
     /**
@@ -281,7 +285,7 @@ public final class MySQLite {
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
             // table 늘어날 때 마다
             createFriendTable(sqLiteDatabase);
-            createRoomTable(sqLiteDatabase);
+//            createRoomTable(sqLiteDatabase);
         }
 
         @Override
@@ -294,7 +298,7 @@ public final class MySQLite {
         private void dropDatabase(SQLiteDatabase db){
             // table 늘어날 때 마다
             db.execSQL("DROP TABLE IF EXISTS "+ FriendTable.TABLE_NAME);
-            db.execSQL("DROP TABLE IF EXISTS "+ RoomTable.TABLE_NAME);
+//            db.execSQL("DROP TABLE IF EXISTS "+ RoomTable.TABLE_NAME);
         }
 
         private void createFriendTable(SQLiteDatabase db) {
@@ -317,20 +321,22 @@ public final class MySQLite {
 
         }
 
-        private void createRoomTable(SQLiteDatabase db){
-            // TODO: 2017. 8. 2. boolean isPrivateRoom ??
-            db.execSQL(
-                    "CREATE TABLE " + RoomTable.TABLE_NAME + " ("
-                            + RoomTable.RID + " TEXT PRIMARY KEY,"
-                            + RoomTable.PPL + " INTEGER );"
-            );
 
-//            db.execSQL("INSERT INTO ROOM VALUES ( '1', 1 )" );
-//            db.execSQL("INSERT INTO ROOM VALUES ( '2', 1 )" );
-//            db.execSQL("INSERT INTO ROOM VALUES ( '3', 2 )" );
-//            db.execSQL("INSERT INTO ROOM VALUES ( '4', 3 )" );
-//            db.execSQL("INSERT INTO ROOM VALUES ( '5', 1 )" );
-        }
+
+//        private void createRoomTable(SQLiteDatabase db){
+//            // TODO: 2017. 8. 2. boolean isPrivateRoom ??
+//            db.execSQL(
+//                    "CREATE TABLE " + RoomTable.TABLE_NAME + " ("
+//                            + RoomTable.RID + " TEXT PRIMARY KEY,"
+//                            + RoomTable.PPL + " INTEGER );"
+//            );
+//
+////            db.execSQL("INSERT INTO ROOM VALUES ( '1', 1 )" );
+////            db.execSQL("INSERT INTO ROOM VALUES ( '2', 1 )" );
+////            db.execSQL("INSERT INTO ROOM VALUES ( '3', 2 )" );
+////            db.execSQL("INSERT INTO ROOM VALUES ( '4', 3 )" );
+////            db.execSQL("INSERT INTO ROOM VALUES ( '5', 1 )" );
+//        }
     }
 
 }

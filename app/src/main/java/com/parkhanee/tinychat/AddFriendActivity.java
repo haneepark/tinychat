@@ -346,7 +346,6 @@ public class AddFriendActivity extends AppCompatActivity {
             return v;
         }
 
-
         private class ViewHolder {
             TextView name = null;
             ImageView img = null;
