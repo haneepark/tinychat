@@ -18,6 +18,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.parkhanee.tinychat.classbox.Friend;
+import com.parkhanee.tinychat.classbox.Room;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,6 +78,21 @@ public final class MyUtil {
         Intent i = new Intent(context,LoginActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         context.startActivity(i);
+    }
+
+    /**
+     *  @param rid 방 아이디
+     *  @return rid에 해당하는 방에 들어있는 참가자를 pref 에서 찾아서 Room 객체를 리턴
+    * */
+    public static Room initRoom(Context context, MyPreferences pref,String rid){
+        Room room;
+
+        //ppl345 -  2:68620823,11111111
+        String pplString = pref.getString("ppl"+rid); // pplString = "2:68620823,11111111"
+        String[] pplStrings = pplString.split(":"); // pplStrings = [ "2" , "68620823,11111111" ]
+
+        room = new Room(rid,Integer.parseInt(pplStrings[0]),pplStrings[1],context);
+        return room;
     }
 
 

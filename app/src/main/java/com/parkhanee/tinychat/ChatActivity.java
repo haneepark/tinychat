@@ -9,6 +9,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parkhanee.tinychat.classbox.Room;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -26,6 +28,7 @@ public class ChatActivity extends AppCompatActivity {
     EditText et;
     PrintWriter out=null;
     Context context = this;
+    Room room ;
 
     MyPreferences pref;
 
@@ -45,6 +48,7 @@ public class ChatActivity extends AppCompatActivity {
         id = pref.getString("id");
         rid = getIntent().getStringExtra("rid");
         // TODO: 2017. 8. 18. pref에서 참여자 아이디 가져오기
+        room = MyUtil.initRoom(context,pref,rid);
 
         chatTextView = (TextView) findViewById(R.id.textView);
         et = (EditText) findViewById(R.id.et_chat);
@@ -66,6 +70,8 @@ public class ChatActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(context, "서버와 연결 중입니다. 잠시후 다시 시도 해 주십시오", Toast.LENGTH_SHORT).show();
             }
+
+            et.setText("");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -130,7 +136,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void run() {
                 // 택스트뷰에 있던 내용 + 새로 온 내용
-                chatTextView.setText(chatTextView.getText().toString() + "\n Client Says: " + msg);
+                chatTextView.setText(chatTextView.getText().toString() + "\n" + msg);
             }
         }
 

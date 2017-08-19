@@ -79,14 +79,7 @@ public class RoomTab extends Fragment implements View.OnClickListener {
 
             ArrayList<Room> roomArrayList = new ArrayList<>();
             for (String rid : arrayList){ // 방 개수만큼 반복.
-                Room room;
-
-                //ppl345 -  2:68620823,11111111
-                String pplString = pref.getString("ppl"+rid); // pplString = "2:68620823,11111111"
-                String[] pplStrings = pplString.split(":"); // pplStrings = [ "2" , "68620823,11111111" ]
-
-                room = new Room(rid,Integer.parseInt(pplStrings[0]),pplStrings[1],context);
-                roomArrayList.add(room);
+                roomArrayList.add(MyUtil.initRoom(context,pref,rid));
             }
 
             adapter.setRoomArrayList(roomArrayList);
