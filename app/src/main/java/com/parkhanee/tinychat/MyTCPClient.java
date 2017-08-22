@@ -13,16 +13,22 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
+/**
+ * 싱글톤으로 구현해야 함
+ * MyTcpAsync는 메세지 전송 누를 때 마다 생성되는 쓰레드 이고
+ * MyTcpClient 는 계속 객체 하나만, 소켓연결 하나만 실행,유지하면서 액티비티-->async-->tcpClient 로 받은 요청 처리.
+ * */
 public class MyTCPClient {
-
-    private final String TAG = "MyTCPClient";
+    public static MyTCPClient instance = null;
+    private static final String TAG = "MyTCPClient";
     private final Handler handler;
     private BufferedReader in;
     private PrintWriter out;
     private boolean run = false;
     private MessageCallback listener = null;
-    private String incomingMessage;
     private String server_ip, server_port, id, rid;
+    private Socket socket;
+
 
     /**
      * TCPClient class constructor, which is created in AsyncTasks after the button click.
@@ -31,6 +37,7 @@ public class MyTCPClient {
      * @param strings server ip, server tcp port, user id, room id
      */
     public MyTCPClient(Handler handler, MessageCallback listener, String... strings){
+        Log.d(TAG, "MyTCPClient: constructor");
         this.listener = listener;
         this.handler = handler;
         server_ip = strings[0];
@@ -39,7 +46,22 @@ public class MyTCPClient {
         rid = strings[3];
     }
 
-    public void run() {
+    public static synchronized MyTCPClient getInstance(Handler handler, MessageCallback listener, String... strings){
+        if (instance==null){
+            Log.d(TAG, "getInstance: return NEW instance");
+            instance = new MyTCPClient(handler, listener, strings);
+        } else {
+            Log.d(TAG, "getInstance: return existing instance");
+        }
+        return instance;
+    }
+
+    public void run(String firstMessage) {
+
+        if (run){
+            Log.d(TAG, "run: already running ㅠㅠㅠ ");
+            return;
+        }
 
         run = true;
 
@@ -49,9 +71,9 @@ public class MyTCPClient {
 
             Log.d(TAG, "run: connecting . . .");
 
-            handler.sendEmptyMessageDelayed(ChatActivity.CONNECTING,1000);
+            handler.sendEmptyMessage(ChatActivity.CONNECTING);
 
-            Socket socket = new Socket(serverAddr, Integer.parseInt(server_port));
+            socket = new Socket(serverAddr, Integer.parseInt(server_port));
 
             try {
                 out = new PrintWriter(new BufferedWriter(
@@ -60,63 +82,103 @@ public class MyTCPClient {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 Log.d(TAG, "run: in/out created");
-                handler.sendEmptyMessageDelayed(ChatActivity.CONNECTED,1000);
-
-                // TODO: 2017. 8. 18. 이렇게 room_id와 id를 따로 보내면 보낸대로 도착하나 ??? 아니면 pool 만들어서 관리 해야 .
-                this.sendMessage(rid);
-                this.sendMessage(id);
+                handler.sendEmptyMessage(ChatActivity.CONNECTED);
 
                 while (run){
-                    incomingMessage= in.readLine();
-                    if (incomingMessage!=null && listener !=null){
+                    String incomingMessage = in.readLine();
+
+                    if (incomingMessage !=null && listener !=null){
                         /**
                          * Incoming message is passed to MessageCallback object.
                          * Next it is retrieved by AsyncTask and passed to onPublishProgress method.
                          *
                          */
-                        listener.callbackMessageReceiver(incomingMessage);
-                        Log.d(TAG, "run: received message : "+incomingMessage);
+                        switch (incomingMessage){
+                            case "SUBMIT NAME":
+                                sendMessage(id);
+                                break;
+                            case "SUBMIT ROOM":
+                                sendMessage(rid);
+                                break;
+                            case "NEW NAME ACCEPTED" :
+                                break;
+                            case "NEW ROOM CREATED" :
+                                break;
+                            case "NAME ACKNOWLEDGED" :
+                                break;
+                            case "ENTER THE ROOM" :
+                                break;
+                            case "READY TO TALK": // 채팅방, 이름 식별 끝남
+                                handler.sendEmptyMessage(ChatActivity.READY_TO_TALK);
+                                sendMessage(firstMessage);
+                                break;
+                            default: // 채팅 메세지 받은 경우에만 asyncTask로 넘김
+                                listener.callbackMessageReceiver(incomingMessage);
+                                break;
+                        }
+
+
+                        Log.d(TAG, "run: received message : "+ incomingMessage);
+//                        incomingMessage = null;
                     }
-                    incomingMessage = null;
                 }
+
+                Log.d(TAG, "run: false"); // FIXME: 2017. 8. 19. 여기도 안오는 것 같은데 ?
 
 
             } catch (IOException e) {
                 e.printStackTrace();
-                handler.sendEmptyMessageDelayed(ChatActivity.ERROR,2000);
-            } finally {
-                out.flush();
-                out.close();
-                in.close();
-                socket.close();
-//                    handler.sendEmptyMessageDelayed(SENT,3000); // TODO: 2017. 8. 19.  sent 가 아니라 shutdown ?
-                Log.d(TAG, "run: socket closed");
+                handler.sendEmptyMessage(ChatActivity.ERROR);
             }
+
+
+
 
         } catch (IOException e1) {
             e1.printStackTrace();
             Log.d(TAG, "run: 서버와 연결 실패");
-            handler.sendEmptyMessageDelayed(ChatActivity.ERROR,2000);
+            handler.sendEmptyMessage(ChatActivity.ERROR);
         }
 
     }
 
     // 서버에 메세지 전송
     public void sendMessage(String message){
+        // TODO: 2017. 8. 19. out 이 아직 안만들어져서 null 일때 기다렸다가 보내는거 처리 ?? 이것때문에 첫번째 메세지가 안보내진다 .
+        // 그렇다고 액티비티 들어갈 때 asyncTask 돌리면, 메세지 안보내고 보기만 하고 싶을 때도 socket 연결 되기 때문에  안됨.
         if (out != null && !out.checkError()){
             out.println(message);
             out.flush(); // TODO: 2017. 8. 19. flush ?
             Message msg = new Message();
             msg.obj = message;
-            msg.what = ChatActivity.SENDING;
-            handler.sendMessageDelayed(msg,1000);// TODO: 2017. 8. 19. SENT는 어디에 ?
+            msg.what = ChatActivity.SENT;
+            handler.sendMessage(msg);
             Log.d(TAG, "sendMessage: "+message);
         }
     }
 
     public void stopClient(){
-        Log.d(TAG, "stopClient: ");
-        run = false;
+
+        if (run){
+            run = false;
+            try {
+                out.flush();
+                out.close();
+                in.close();
+                socket.close();
+                handler.sendEmptyMessage(ChatActivity.SHUTDOWN); // TODO: 2017. 8. 19.  sent 가 아니라 shutdown ?
+                Log.d(TAG, "run: socket closed");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            instance = null;
+            Log.d(TAG, "stopClient: OK");
+        }else{
+            Log.d(TAG, "stopClient: tcp client is NOT running, thus not stopping");
+            instance = null;
+        }
+
+
     }
 
     public boolean isRunning(){

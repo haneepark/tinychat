@@ -17,10 +17,9 @@
     </EditText>
 
     <Button
-        android:id="@+id/myButton"
+        android:id="@+id/btn_sendMsg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
         android:text="Send"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
