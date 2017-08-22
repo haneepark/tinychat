@@ -60,10 +60,11 @@ public class RoomTab extends Fragment implements View.OnClickListener {
         * */
 //        ArrayList<Room> roomArrayList = db.getAllRooms();
 
-        pref.putString("rid","2:1,232,2");
-        pref.putString("ppl1","1:91433734");
-        pref.putString("ppl232","2:11111111,91433734");
-        pref.putString("ppl2","1:11111111");
+        // TODO: 2017. 8. 22. 이걸 어디에서 넣어주어야 하지 ?
+//        pref.putString("rid","2:1,232,2");   // TODO: 2017. 8. 22. 첫번째 메세지를 보낼 때 여기에 추가해야..
+//        pref.putString("ppl1","1:91433734");
+//        pref.putString("ppl232","2:11111111,91433734");
+//        pref.putString("ppl2","1:11111111");
 
         if (pref.contains("rid")){ // 채팅 방 존재
                /*

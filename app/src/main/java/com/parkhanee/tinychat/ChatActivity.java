@@ -33,7 +33,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     String rid; // 채팅방 아이디
 
     private Handler handler;
-     static final int CONNECTING = 1; // 서버와 연결중
+    static final int CONNECTING = 1; // 서버와 연결중
     static final int CONNECTED = 0; // 서버와 연결중
     static final int READY_TO_TALK = 7; // 사용자 아이디, 방아이디 식별 완료
     static final int SENDING = 2; // 서버로 메세지 보내는 중
@@ -106,10 +106,13 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()){
             case R.id.btn_sendMsg : // 메세지 "전송" 버튼
                 String msg = et.getText().toString();
-                //  send msg
-                executeAsyncTask(msg);
-                et.setText("");
+                if (!msg.equals("")){ // TODO: 2017. 8. 22. 메세지 입력 안된 경우에는 전송안됨. 이때 전송 버튼 비활성화 할까 ?
+                    //  send msg
+                    executeAsyncTask(msg);
+                    et.setText("");
 //                handler.sendEmptyMessage(SENDING);
+                }
+
                 break;
         }
     }
