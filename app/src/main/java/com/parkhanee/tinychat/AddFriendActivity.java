@@ -449,6 +449,7 @@ public class AddFriendActivity extends AppCompatActivity {
                     } else { // 에러 없음
 
                         String rid = jsonObject.getString("rid");
+                        Toast.makeText(AddFriendActivity.this, "rid : "+rid, Toast.LENGTH_SHORT).show();
 
 //                        // TODO: 2017. 8. 18. 서버에서 방 번호 받아오기
 //                        String rid="0";

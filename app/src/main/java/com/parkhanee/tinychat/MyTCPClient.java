@@ -4,6 +4,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -26,8 +29,13 @@ public class MyTCPClient {
     private PrintWriter out;
     private boolean run = false;
     private MessageCallback listener = null;
-    private String server_ip, server_port, id, rid;
+    private String server_ip, server_port, id;
     private Socket socket;
+
+    // 서버에 tcp 주고받을 때  json 형식 이름
+    public static final String ID = "id";
+    public static final String MSG = "msg";
+    public static final String INFO = "info";
 
 
     /**
@@ -43,7 +51,6 @@ public class MyTCPClient {
         server_ip = strings[0];
         server_port = strings[1];
         id = strings[2];
-        rid = strings[3];
     }
 
     public static synchronized MyTCPClient getInstance(Handler handler, MessageCallback listener, String... strings){
@@ -56,7 +63,7 @@ public class MyTCPClient {
         return instance;
     }
 
-    public void run(String firstMessage) {
+    public void run(String firstRid, String firstMessage) {
 
         if (run){
             Log.d(TAG, "run: already running ㅠㅠㅠ ");
@@ -94,23 +101,25 @@ public class MyTCPClient {
                          *
                          */
                         switch (incomingMessage){
-                            case "SUBMIT NAME":
-                                sendMessage(id);
+
+//                            case "SUBMIT ROOM":
+//                                // TODO: 2017. 8. 22. 한 tcp연결에 방이 정해저있는게 아니라 메세지 보낼 때 마다 방정보 알려주어야 . .  (아니면 방마다 tcp 연결 ?)
+//                                sendMessage(rid);
+//                                break;
+//                            case "NEW ROOM CREATED" :
+//                                break;
+                            case "SUBMIT USER ID":
+                                sendMessage(ID,"",id);
                                 break;
-                            case "SUBMIT ROOM":
-                                sendMessage(rid);
+                            case "NEW USER ID ACCEPTED" :
                                 break;
-                            case "NEW NAME ACCEPTED" :
+                            case "USER ID ACKNOWLEDGED" :
                                 break;
-                            case "NEW ROOM CREATED" :
-                                break;
-                            case "NAME ACKNOWLEDGED" :
-                                break;
-                            case "ENTER THE ROOM" :
-                                break;
+//                            case "ENTER THE ROOM" :
+//                                break;
                             case "READY TO TALK": // 채팅방, 이름 식별 끝남
                                 handler.sendEmptyMessage(ChatActivity.READY_TO_TALK);
-                                sendMessage(firstMessage);
+                                sendMessage(MSG,firstRid,firstMessage);
                                 break;
                             default: // 채팅 메세지 받은 경우에만 asyncTask로 넘김
                                 listener.callbackMessageReceiver(incomingMessage);
@@ -143,17 +152,52 @@ public class MyTCPClient {
     }
 
     // 서버에 메세지 전송
-    public void sendMessage(String message){
-        // TODO: 2017. 8. 19. out 이 아직 안만들어져서 null 일때 기다렸다가 보내는거 처리 ?? 이것때문에 첫번째 메세지가 안보내진다 .
-        // 그렇다고 액티비티 들어갈 때 asyncTask 돌리면, 메세지 안보내고 보기만 하고 싶을 때도 socket 연결 되기 때문에  안됨.
+    public void sendMessage(String type,String rid, String message){
         if (out != null && !out.checkError()){
-            out.println(message);
-            out.flush(); // TODO: 2017. 8. 19. flush ?
+            try {
+                JSONObject object = new JSONObject();
+                switch (type){
+                    case ID :
+                        object.put(ID,message);
+                        break;
+                    case MSG :
+                        JSONObject msgObject = new JSONObject();
+                        msgObject.put("rid",rid);
+                        msgObject.put("body",message);
+                        object.put(MSG,msgObject);
+                        break;
+                    case INFO :
+                        object.put(INFO,message);
+                        break;
+                }
+                message = object.toString();
+
+
+                out.println(message);
+                out.flush(); // TODO: 2017. 8. 19. flush ?
+
+                Message msg = new Message();
+                msg.obj = message;
+                msg.what = ChatActivity.SENT;
+                handler.sendMessage(msg);
+                Log.d(TAG, "sendMessage: "+message);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Message msg = new Message();
+                msg.what = ChatActivity.ERROR;
+                msg.obj = "fail to send message due to json exception";
+                handler.sendMessage(msg);
+                Log.d(TAG, "sendMessage: fail to send message due to json exception");
+            }
+
+
+        } else {
             Message msg = new Message();
-            msg.obj = message;
-            msg.what = ChatActivity.SENT;
+            msg.what = ChatActivity.ERROR;
+            msg.obj = "fail to send message due to printwriter error";
             handler.sendMessage(msg);
-            Log.d(TAG, "sendMessage: "+message);
+            Log.d(TAG, "sendMessage: fail to send message due to printwriter error");
         }
     }
 

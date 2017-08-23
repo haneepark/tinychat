@@ -70,9 +70,9 @@ public class MyTcpAsync extends AsyncTask<String, String, MyTCPClient> {
 
                 // tcpClient를 run시키는 async의 경우에는 sendMessage메서드가 아니라 run의 parameter로 메세지를 보낸다.
                 // 왜냐하면 해당 async의 쓰레드가 tcpClient run 하는 곳에 가기 때문에 !! run이 다 종료가 된 후에야 async에 와서 이 줄 이후 코드(sendMessage메서드)가 실행되기 때문에, run이 종료되고 나서야 닫힌 socket에 메세지를 보내려고 시도하게 된다.
-                tcpClient.run(strings[4]);
+                tcpClient.run(strings[3],strings[4]);
             } else {
-                tcpClient.sendMessage(strings[4]);
+                tcpClient.sendMessage(MyTCPClient.MSG,strings[3],strings[4]);
             }
 
         } // 메세지 보내는 경우
