@@ -7,17 +7,8 @@ import android.graphics.Matrix;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.util.Base64;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.parkhanee.tinychat.classbox.Friend;
 import com.parkhanee.tinychat.classbox.Room;
 
 import org.json.JSONException;
@@ -28,8 +19,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.parkhanee.tinychat.MyTCPClient.JSON_INFO;
+import static com.parkhanee.tinychat.MyTCPClient.JSON_MSG;
 
 /**
  * Created by parkhanee on 2017. 7. 21..
@@ -97,6 +91,44 @@ public final class MyUtil {
 
         room = new Room(rid,Integer.parseInt(pplStrings[0]),pplStrings[1],context);
         return room;
+    }
+
+
+
+
+    /**
+     * return
+     * null (on jsonException)
+     * or [ JSON_MSG , rid , id , body ]
+     * or [ JSON_INFO , info ]
+     * */
+    public static List<String> readJSONObject(String source){
+
+        try {
+
+            List<String> result = new ArrayList<>();
+
+            JSONObject object = new JSONObject(source);
+            if (object.has(JSON_MSG)){
+                JSONObject msgObject = object.getJSONObject(JSON_MSG);
+                result.clear();
+                result.add(0, JSON_MSG);
+                result.add(1,msgObject.getString("rid"));
+                result.add(2,msgObject.getString("id")); // 이 메세지 보낸사람 아이디
+                result.add(3,msgObject.getString("body"));
+            } else if (object.has(JSON_INFO)){
+                result.clear();
+                result.add(0, JSON_INFO);
+                result.add(1,object.getString("info"));
+            } else {
+                result.add(source);
+            }
+
+            return result;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 

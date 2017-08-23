@@ -1,9 +1,7 @@
 package com.parkhanee.tinychat;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +14,13 @@ import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Room;
 
+import static com.parkhanee.tinychat.MyTCPClient.ERROR;
+import static com.parkhanee.tinychat.MyTCPClient.INFO;
+import static com.parkhanee.tinychat.MyTCPClient.READY_TO_TALK;
+import static com.parkhanee.tinychat.MyTCPClient.RECEIVED;
+import static com.parkhanee.tinychat.MyTCPClient.SENDING;
+import static com.parkhanee.tinychat.MyTCPClient.SENT;
+import static com.parkhanee.tinychat.MyTCPClient.SHUTDOWN;
 
 
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
@@ -33,14 +38,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     String rid; // 채팅방 아이디
 
     private Handler handler;
-    static final int CONNECTING = 1; // 서버와 연결중
-    static final int CONNECTED = 0; // 서버와 연결중
-    static final int READY_TO_TALK = 7; // 사용자 아이디, 방아이디 식별 완료
-    static final int SENDING = 2; // 서버로 메세지 보내는 중
-    static final int SENT = 3;
-    static final int RECEIVED = 4;  // 서버로부터 메세지 받음
-    static final int SHUTDOWN = 5;
-    static final int ERROR = 6;
 
 
     @Override
@@ -82,14 +79,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case SENT :
                         Toast.makeText(context, "sent : "+msg.obj, Toast.LENGTH_SHORT).show();
-//                        chatTextView.setText(chatTextView.getText().toString()+" \n 나 : "+msg.obj);
+                        chatTextView.setText(chatTextView.getText().toString()+" \n"+msg.obj);
                         break;
                     case SENDING :
                         Toast.makeText(context, "sending", Toast.LENGTH_SHORT).show();
                         break;
-                    case RECEIVED : // 메세지 도착
+                    case RECEIVED : // 친구에게서 채팅 메세지 도착
 //                        Toast.makeText(context, "received : "+msg.obj, Toast.LENGTH_SHORT).show();
                         chatTextView.setText(chatTextView.getText().toString()+"\n"+msg.obj);
+                        break;
+                    case INFO : // 서버의 알림 메세지 도착
+                        chatTextView.setText(chatTextView.getText().toString()+"\n 알림 : "+msg.obj);
                         break;
                     case SHUTDOWN :
                         Toast.makeText(context, "shutdown", Toast.LENGTH_SHORT).show();
@@ -97,6 +97,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                     case ERROR :
                         Toast.makeText(context, "error", Toast.LENGTH_SHORT).show();
                         break;
+                    case  100 : // async exit 100
+                        Toast.makeText(context, "async exit : "+msg.obj, Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -132,11 +134,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         MyTcpAsync m = new MyTcpAsync(handler);
         m.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,getString(R.string.server_ip),getString(R.string.server_tcp_port),id,rid,msg);
         if (AsyncTask.Status.RUNNING != m.getStatus()){
-            Toast.makeText(context, "async is NOT running", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "async is NOT running : "+ msg, Toast.LENGTH_SHORT).show();
             Log.d(TAG, "executeAsyncTask: async is NOT running : "+ msg);
         } else{
-            Toast.makeText(context, "async is RUNNING", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "executeAsyncTask: async is RUNNING : " + msg);
+            Toast.makeText(context, "run async : "+ msg, Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "executeAsyncTask: run async : " + msg);
         }
     }
 }
