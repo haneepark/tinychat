@@ -18,7 +18,7 @@ public class Main2Activity extends AppCompatActivity {
         setContentView(R.layout.activity_main2);
         button = (Button) findViewById(R.id.service_button);
 
-        if (MyTcpClientService.isRunning()){
+        if (MyTcpService.isRunning()){
             button.setText("stop service");
         } else {
             button.setText("start service");
@@ -28,13 +28,13 @@ public class Main2Activity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (MyTcpClientService.isRunning()){
+                if (MyTcpService.isRunning()){
                     // todo stop the connection thus stop service
 
                     button.setText("start service");
                 }else {
                     // start service
-                    Intent i = new Intent(Main2Activity.this, MyTcpClientService.class);
+                    Intent i = new Intent(Main2Activity.this, MyTcpService.class);
                     startService(i);
                     button.setText("stop service");
                 }

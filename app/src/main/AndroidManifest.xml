@@ -47,7 +47,7 @@
             android:exported="false">
         </service>
         <service
-            android:name=".MyTcpClientService"
+            android:name=".MyTcpService"
             android:exported="false">
         </service>
 
