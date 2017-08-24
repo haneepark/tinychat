@@ -11,6 +11,17 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
+
+import static com.parkhanee.tinychat.MyTCPClient.CONNECTED;
+import static com.parkhanee.tinychat.MyTCPClient.CONNECTING;
+import static com.parkhanee.tinychat.MyTCPClient.ERROR;
+import static com.parkhanee.tinychat.MyTCPClient.INFO;
+import static com.parkhanee.tinychat.MyTCPClient.READY_TO_TALK;
+import static com.parkhanee.tinychat.MyTCPClient.RECEIVED;
+import static com.parkhanee.tinychat.MyTCPClient.SENDING;
+import static com.parkhanee.tinychat.MyTCPClient.SENT;
+import static com.parkhanee.tinychat.MyTCPClient.SHUTDOWN;
 
 /**
  * Created by parkhanee on 2017. 8. 23..
@@ -85,31 +96,68 @@ public class MyTCPService extends IntentService {
                 @Override
                 public void handleMessage(Message msg) {
                     super.handleMessage(msg);
-                    Log.d(TAG, "handleMessage: "+msg.what+" "+msg.obj);
-                    if (msg.what==999){ // 메세지 받은 경우
-                        //pref에 최근메세지 등록 + pref의 방목록에 없으면 새로운방 등록
 
-                        // 노티 띄우기
-                        Intent intent = new Intent(MyTCPService.this, Main2Activity.class);
-                        PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    switch (msg.what){
+                        case RECEIVED :  // 친구에게서 메세지 도착
+                            Log.d(TAG, "handleMessage: received");
+                            // TODO: 2017. 8. 24. pref에 최근메세지 등록 + pref의 방목록에 없으면 새로운방 등록
+
+                            // 노티 띄우기
+                            Intent intent = new Intent(MyTCPService.this, Main2Activity.class);
+                            PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
 
-                        NotificationManager notificationManager =
-                                (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-                        Notification notification
-                                = new Notification.Builder(getApplicationContext())
-                                .setContentTitle(msg.obj.toString())
-                                .setContentText("Content Text")
-                                .setSmallIcon(R.drawable.ic_add_room)
-                                .setTicker("알림!!!")
-                                .setContentIntent(pendingIntent)
-                                .build();
+                            NotificationManager notificationManager =
+                                    (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+                            Notification notification
+                                    = new Notification.Builder(getApplicationContext())
+                                    .setContentTitle(msg.obj.toString())
+                                    .setContentText("Content Text")
+                                    .setSmallIcon(R.drawable.ic_add_room)
+                                    .setTicker("알림!!!")
+                                    .setContentIntent(pendingIntent)
+                                    .build();
 
-                        notification.defaults = Notification.DEFAULT_SOUND;//소리추가
-                        notification.flags = Notification.FLAG_ONLY_ALERT_ONCE; //알림 소리를 한번만 내도록
-                        notification.flags = Notification.FLAG_AUTO_CANCEL;//확인하면 자동으로 알림이 제거 되도록
+                            notification.defaults = Notification.DEFAULT_SOUND;//소리추가
+                            notification.flags = Notification.FLAG_ONLY_ALERT_ONCE; //알림 소리를 한번만 내도록
+                            notification.flags = Notification.FLAG_AUTO_CANCEL;//확인하면 자동으로 알림이 제거 되도록
 
-                        notificationManager.notify(999, notification);
+                            notificationManager.notify(999, notification);
+                            break;
+
+                        case CONNECTING :
+                            Toast.makeText(MyTCPService.this, "connecting", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "handleMessage: connecting");
+                            break;
+                        case CONNECTED :
+                            Toast.makeText(MyTCPService.this, "connected", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "handleMessage: connected");
+                            break;
+                        case READY_TO_TALK:
+                        Toast.makeText(MyTCPService.this, "ready to talk", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "handleMessage: ready to talk");
+                            break;
+                        case SENT :
+                            Toast.makeText(MyTCPService.this, "sent : "+msg.obj, Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "handleMessage: sent");
+                            break;
+                        case SENDING :
+                            Toast.makeText(MyTCPService.this, "sending", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "handleMessage: sending " + msg.obj);
+                            break;
+                        case INFO : // 서버의 알림 메세지 도착
+                            Log.d(TAG, "handleMessage: info");
+                            break;
+                        case SHUTDOWN : // 소켓 연결 종료
+                            Toast.makeText(MyTCPService.this, "shutdown", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "handleMessage: shutdown");
+                            break;
+                        case ERROR :
+                            Toast.makeText(MyTCPService.this, "error", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "handleMessage: error");
+                            break;
+                        default:
+                            Log.d(TAG, "handleMessage: default "+msg.what+" "+msg.obj);
                     }
                 }
             };

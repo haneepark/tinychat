@@ -40,8 +40,8 @@ public class MyTCPClient {
     static final int READY_TO_TALK = 7; // 사용자 아이디 식별 완료
     // 메세지
     static final int SENDING = 2; // 서버로 메세지 보내는 중
-    static final int SENT = 3;
-    static final int RECEIVED = 4;  // 서버로부터 다른 유저가 보낸 채팅 메세지 받음 or 내가 보냈던 메세지 돌려받음
+    static final int SENT = 3; // 내가 보냈던 메세지 돌려받음
+    static final int RECEIVED = 4;  // 서버로부터 다른 유저가 보낸 채팅 메세지 받음
     static final int INFO = 8; // 서버로부터 알림 메세지 받음
 
 
@@ -77,7 +77,7 @@ public class MyTCPClient {
     public void run() {
 
         if (run){
-            Log.d(TAG, "alive: already running ㅠㅠㅠ ");
+            Log.d(TAG, "run: already running ㅠㅠㅠ ");
             return;
         }
 
@@ -87,7 +87,7 @@ public class MyTCPClient {
 
             InetAddress serverAddr = InetAddress.getByName(server_ip);
 
-            Log.d(TAG, "alive: connecting . . .");
+            Log.d(TAG, "run: connecting . . .");
 
             handler.sendEmptyMessage(CONNECTING);
 
@@ -99,7 +99,7 @@ public class MyTCPClient {
                         true);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                Log.d(TAG, "alive: in/out created");
+                Log.d(TAG, "run: in/out created");
                 handler.sendEmptyMessage(CONNECTED);
 
                 while (run){
@@ -114,13 +114,13 @@ public class MyTCPClient {
                     if (incomingMessage !=null){
                         List<String> result = MyUtil.readJSONObject(incomingMessage);
                         if (result != null){
-                            if (result.get(0).equals(JSON_MSG)){
+                            if (result.get(0).equals(JSON_MSG)){ // 메세지 받은 경우
 
                                 // rid, id, body listener대신 handler에게 넘기기
 //                                listener.callbackMessageReceiver(result.get(1),result.get(2),result.get(3));
                                 Message m = new Message();
                                 m.obj = result.get(2) +" : "+ result.get(3) ;
-                                m.what = 999;
+                                m.what = RECEIVED;
                                 handler.sendMessage(m);
 
                             } else if (result.get(0).equals(JSON_INFO)){
@@ -143,7 +143,7 @@ public class MyTCPClient {
                             }
                         }
 
-                        Log.d(TAG, "alive: received message : "+ incomingMessage);
+                        Log.d(TAG, "run : received message : "+ incomingMessage);
                     }
 
 
@@ -159,7 +159,7 @@ public class MyTCPClient {
 
         } catch (IOException e1) {
             e1.printStackTrace();
-            Log.d(TAG, "alive: 서버와 연결 실패");
+            Log.d(TAG, "run : 서버와 연결 실패");
             handler.sendEmptyMessage(ERROR);
         }
 
@@ -225,8 +225,8 @@ public class MyTCPClient {
                 out.close();
                 in.close();
                 socket.close();
-                handler.sendEmptyMessage(SHUTDOWN); // TODO: 2017. 8. 19.  sent 가 아니라 shutdown ?
-                Log.d(TAG, "alive: socket closed");
+                handler.sendEmptyMessage(SHUTDOWN);
+                Log.d(TAG, "stopClient : socket closed");
             } catch (IOException e) {
                 e.printStackTrace();
             }
