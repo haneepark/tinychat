@@ -46,14 +46,14 @@ public class MyTcpAsync extends AsyncTask<String, String, MyTCPClient> {
             try {
                 tcpClient = MyTCPClient.getInstance(
                         handler,
-                        new MyTCPClient.MessageCallback() {
-
-                            @Override
-                            public void callbackMessageReceiver(String... values) {
-                                // tcpClient 에서 메세지를 받으면 여기로 넘어옴
-                                publishProgress(values);
-                            }
-                        },
+//                        new MyTCPClient.MessageCallback() {
+//
+//                            @Override
+//                            public void callbackMessageReceiver(String... values) {
+//                                // tcpClient 에서 메세지를 받으면 여기로 넘어옴
+//                                publishProgress(values);
+//                            }
+//                        },
                         strings
                 );
             } catch (NullPointerException e) {
@@ -69,7 +69,7 @@ public class MyTcpAsync extends AsyncTask<String, String, MyTCPClient> {
         if (messageToSend.equals(STOP)){ // tcp 연결 종료
 
             Log.d(TAG, "doInBackground: tcp client is null ? "+ (tcpClient ==null));
-            // run == true 이면 멈추고, tcpClient객체 없앰.
+            // alive == true 이면 멈추고, tcpClient객체 없앰.
             if (tcpClient.isRunning()){
                 tcpClient.stopClient();
             }
@@ -80,8 +80,8 @@ public class MyTcpAsync extends AsyncTask<String, String, MyTCPClient> {
             if (!tcpClient.isRunning()) { // socket연결 안되어 있던 경우
 
                 // tcpClient를 run시키는 async의 경우에는 sendMessage메서드가 아니라 run의 parameter로 메세지를 보낸다.
-                // 왜냐하면 해당 async의 쓰레드가 tcpClient run 하는 곳에 가기 때문에 !! run이 다 종료가 된 후에야 async에 와서 이 줄 이후 코드(sendMessage메서드)가 실행되기 때문에, run이 종료되고 나서야 닫힌 socket에 메세지를 보내려고 시도하게 된다.
-                tcpClient.run(strings[3],strings[4]);
+                // 왜냐하면 해당 async의 쓰레드가 tcpClient alive 하는 곳에 가기 때문에 !! run이 다 종료가 된 후에야 async에 와서 이 줄 이후 코드(sendMessage메서드)가 실행되기 때문에, run이 종료되고 나서야 닫힌 socket에 메세지를 보내려고 시도하게 된다.
+//                tcpClient.alive(strings[3],strings[4]);
             } else {
                 tcpClient.sendMessage(JSON_MSG,rid,messageToSend);
             }

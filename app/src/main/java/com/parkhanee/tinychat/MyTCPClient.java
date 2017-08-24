@@ -18,7 +18,7 @@ import java.net.Socket;
 import java.util.List;
 
 /**
- * 싱글톤으로 구현해야 함
+ * 싱글톤으로 구현해야 함    -->   서비스 에서만 새로 객체 생성하고 채팅액티비티의 async에서 객체를 받음.
  * MyTcpAsync는 메세지 전송 누를 때 마다 생성되는 쓰레드 이고
  * MyTcpClient 는 계속 객체 하나만, 소켓연결 하나만 실행,유지하면서 액티비티-->async-->tcpClient 로 받은 요청 처리.
  * */
@@ -29,7 +29,6 @@ public class MyTCPClient {
     private BufferedReader in;
     private PrintWriter out;
     private boolean run = false;
-    private MessageCallback listener = null;
     private String server_ip, server_port, id;
     private Socket socket;
 
@@ -55,32 +54,30 @@ public class MyTCPClient {
     /**
      * TCPClient class constructor, which is created in AsyncTasks after the button click.
      * @param handler Handler passed as an argument for updating the UI with sent messages
-     * @param listener Callback interface object
      * @param strings server ip, server tcp port, user id, room id
      */
-    public MyTCPClient(Handler handler, MessageCallback listener, String... strings){
+    public MyTCPClient(Handler handler, String... strings){
         Log.d(TAG, "MyTCPClient: constructor");
-        this.listener = listener;
         this.handler = handler;
         server_ip = strings[0];
         server_port = strings[1];
         id = strings[2];
     }
 
-    public static synchronized MyTCPClient getInstance(Handler handler, MessageCallback listener, String... strings){
+    public static synchronized MyTCPClient getInstance(Handler handler, String... strings){
         if (instance==null){
             Log.d(TAG, "getInstance: return NEW instance");
-            instance = new MyTCPClient(handler, listener, strings);
+            instance = new MyTCPClient(handler, strings);
         } else {
             Log.d(TAG, "getInstance: return existing instance");
         }
         return instance;
     }
 
-    public void run(String firstRid, String firstMessage) {
+    public void run() {
 
         if (run){
-            Log.d(TAG, "run: already running ㅠㅠㅠ ");
+            Log.d(TAG, "alive: already running ㅠㅠㅠ ");
             return;
         }
 
@@ -90,7 +87,7 @@ public class MyTCPClient {
 
             InetAddress serverAddr = InetAddress.getByName(server_ip);
 
-            Log.d(TAG, "run: connecting . . .");
+            Log.d(TAG, "alive: connecting . . .");
 
             handler.sendEmptyMessage(CONNECTING);
 
@@ -102,7 +99,7 @@ public class MyTCPClient {
                         true);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                Log.d(TAG, "run: in/out created");
+                Log.d(TAG, "alive: in/out created");
                 handler.sendEmptyMessage(CONNECTED);
 
                 while (run){
@@ -114,12 +111,17 @@ public class MyTCPClient {
                      *
                      */
                     // todo jsonObject 확인해서 MSG 이면 Async에 넘기고, INFO이면 여기서 처리.
-                    if (incomingMessage !=null && listener !=null){
+                    if (incomingMessage !=null){
                         List<String> result = MyUtil.readJSONObject(incomingMessage);
                         if (result != null){
                             if (result.get(0).equals(JSON_MSG)){
-                                // rid, id, body
-                                listener.callbackMessageReceiver(result.get(1),result.get(2),result.get(3));
+
+                                // rid, id, body listener대신 handler에게 넘기기
+//                                listener.callbackMessageReceiver(result.get(1),result.get(2),result.get(3));
+                                Message m = new Message();
+                                m.obj = result.get(2) +" : "+ result.get(3) ;
+                                m.what = 999;
+                                handler.sendMessage(m);
 
                             } else if (result.get(0).equals(JSON_INFO)){
 
@@ -129,7 +131,7 @@ public class MyTCPClient {
                                         break;
                                     case "READY TO TALK":
                                         // 첫번째로 보내는 메세지
-                                        sendMessage(JSON_MSG,firstRid,firstMessage);
+//                                        sendMessage(JSON_MSG,firstRid,firstMessage);
                                         handler.sendEmptyMessage(READY_TO_TALK);
                                         break;
                                     default:
@@ -141,7 +143,7 @@ public class MyTCPClient {
                             }
                         }
 
-                        Log.d(TAG, "run: received message : "+ incomingMessage);
+                        Log.d(TAG, "alive: received message : "+ incomingMessage);
                     }
 
 
@@ -157,7 +159,7 @@ public class MyTCPClient {
 
         } catch (IOException e1) {
             e1.printStackTrace();
-            Log.d(TAG, "run: 서버와 연결 실패");
+            Log.d(TAG, "alive: 서버와 연결 실패");
             handler.sendEmptyMessage(ERROR);
         }
 
@@ -224,7 +226,7 @@ public class MyTCPClient {
                 in.close();
                 socket.close();
                 handler.sendEmptyMessage(SHUTDOWN); // TODO: 2017. 8. 19.  sent 가 아니라 shutdown ?
-                Log.d(TAG, "run: socket closed");
+                Log.d(TAG, "alive: socket closed");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -242,14 +244,5 @@ public class MyTCPClient {
         return run;
     }
 
-    public interface MessageCallback {
-        /**
-         * Method overriden in AsyncTask 'doInBackground' method while creating the MyTCPClient object.
-         * @param values Received message from server app.
-         */
-//        void callbackMessageReceiver(String message);
-
-        void callbackMessageReceiver(String... values);
-    }
 
 } //MyTCPClient

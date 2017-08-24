@@ -115,7 +115,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 String msg = et.getText().toString();
                 if (!msg.equals("")){ // TODO: 2017. 8. 22. 메세지 입력 안된 경우에는 전송안됨. 이때 전송 버튼 비활성화 할까 ?
                     //  send msg
-                    executeAsyncTask(msg);
+//                    executeAsyncTask(msg);
                     et.setText("");
 //                handler.sendEmptyMessage(SENDING);
                 }
@@ -127,19 +127,19 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStop() {
         super.onStop();
-        executeAsyncTask(MyTcpAsync.STOP);
+//        executeAsyncTask(MyTcpAsync.STOP);
     }
 
-    public void executeAsyncTask(String msg){
-        MyTcpAsync m = new MyTcpAsync(handler);
-        m.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,getString(R.string.server_ip),getString(R.string.server_tcp_port),id,rid,msg);
-        if (AsyncTask.Status.RUNNING != m.getStatus()){
-            Toast.makeText(context, "async is NOT running : "+ msg, Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "executeAsyncTask: async is NOT running : "+ msg);
-        } else{
-            Toast.makeText(context, "run async : "+ msg, Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "executeAsyncTask: run async : " + msg);
-        }
-    }
+//    public void executeAsyncTask(String msg){
+//        MyTcpAsync m = new MyTcpAsync(handler);
+//        m.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,getString(R.string.server_ip),getString(R.string.server_tcp_port),id,rid,msg);
+//        if (AsyncTask.Status.RUNNING != m.getStatus()){
+//            Toast.makeText(context, "async is NOT running : "+ msg, Toast.LENGTH_SHORT).show();
+//            Log.d(TAG, "executeAsyncTask: async is NOT running : "+ msg);
+//        } else{
+//            Toast.makeText(context, "alive async : "+ msg, Toast.LENGTH_SHORT).show();
+//            Log.d(TAG, "executeAsyncTask: alive async : " + msg);
+//        }
+//    }
 }
 
