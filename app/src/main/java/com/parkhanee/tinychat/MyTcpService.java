@@ -17,8 +17,10 @@ import java.net.Socket;
 /**
  * Created by parkhanee on 2017. 8. 23..
  *
- * 처음 tcp 연결을 생성하고 관리하는 MyTcpAsync와 같은 역할 ! + tcpClient의 역할 !
- * tcp 연결을 생성, 유지, 서버와 데이터 주고받기.
+ * tcpClient : 서버와 소켓연결 생성, 유지, 데이터 주고받기
+ * tcpService(쓰레드1) : tcpClient 객체를 만들고 받은 메세지에 대해서 처리
+ * tcpAsync(전송 할 때마다 새로운 쓰레드) : chatActivity 내부에서 존재하면서 "전송" 버튼을 누를 때 마다 새로 생성되어 메세지 전송 역할.
+ *          메세지 전송 및 메인 액티비티와 interact
  *
  *
  * 1)
@@ -34,9 +36,9 @@ import java.net.Socket;
  * 채팅 액티비티 들어가서 전송버튼 누르면
  * --> if 바인드 안되어 있으면, 서비스와 채팅 액티비티를 바인드 (서비스가 현재 활성중인 rid 기억하도록)
  * --> 액티비티에 전송중인 메세지 그려주기
- * --> 전송하고자 하는 채팅 메세지를 서비스에게 인텐트로 전달
- * --> 서비스가 해당 메세지를 서버에게 전송
- * --> 전송 잘 되었다는 걸 액티비티에 알림
+ * --> async를 새로 만들고 실행하여 전송하고자 하는 채팅 메세지를 전달
+ * --> async가 tcpClient의 객체 받아오고, 해당 메세지를 tcpClient 통해 서버에게 전송
+ * --> tcpClient가 async에게, async가 액티비티 에게 전송 잘 되었다는 걸 알림
  * --> 액티비티에서 해당 메세지 전송완료 표시
  *
  * 4)
@@ -51,16 +53,16 @@ import java.net.Socket;
  *
  */
 
-public class MyTcpClientService extends IntentService {
+public class MyTcpService extends IntentService {
     public static boolean run=false;
-    private static final String TAG = "MyTcpClientService";
+    private static final String TAG = "MyTcpService";
 
-    public MyTcpClientService(String name) {
+    public MyTcpService(String name) {
         super(name);
     }
 
-    public MyTcpClientService() {
-        super("MyTcpClientService");
+    public MyTcpService() {
+        super("MyTcpService");
     }
 
     @Override
