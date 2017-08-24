@@ -41,6 +41,23 @@
         </activity>
         <activity android:name=".ChatActivity">
         </activity>
+
+        <service
+            android:name=".MyIntentService"
+            android:exported="false">
+        </service>
+        <service
+            android:name=".MyTcpClientService"
+            android:exported="false">
+        </service>
+
+        <activity android:name=".Main2Activity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
