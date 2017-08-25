@@ -52,6 +52,7 @@ import static com.parkhanee.tinychat.MyTCPClient.SHUTDOWN;
  * --> async를 새로 만들고 실행하여 전송하고자 하는 채팅 메세지를 전달
  * --> async가 tcpClient의 객체 받아오고, 해당 메세지를 tcpClient 통해 서버에게 전송
  * --> tcpClient가 async에게, async가 액티비티 에게 전송 잘 되었다는 걸 알림
+ * --> 1:1방이면 sqlite에서 아이디 받아와서 pref에 새로운 방 생성.
  * --> 액티비티에서 해당 메세지 전송완료 표시
  *
  * 4)
@@ -120,7 +121,7 @@ public class MyTCPService extends IntentService {
                             List<String> result = (List<String>) msg.obj;
 
                             if (result.get(2).equals(id)){ // 내가 보냈던 메세지 인 경우
-                                this.sendMessage(msg); // 받은 msg 객체를 SENT로 전달
+//                                this.sendMessage(msg); // 받은 msg 객체를 SENT로 전달
 
                             } else { // 친구에게서 받은 메세지
 
@@ -131,14 +132,13 @@ public class MyTCPService extends IntentService {
                                 MySQLite sqLite = MySQLite.getInstance(MyTCPService.this);
                                 String from_name = sqLite.getFriendName(from); // 보낸 사람 이름
 
-                                // TODO: 2017. 8. 24. pref에 최근메세지 등록 + pref의 방목록에 없으면 새로운방 등록
+                                // pref의 방목록에 없으면 새로운방 등록
                                 if (!pref.isRoomSet(rid)){
-                                    // TODO: 2017. 8. 24. 방 정보(명수, 참여자아이디) 받아오기 ?
-                                    // 이건.... tcpClient 통해서 서버 에다 요청해야 ... ? 근데 여긴 핸들러인데 ? .....
-                                    // 이걸 그냥 통채로 ChatActivity에 보내서 거기서 처리할까 ?
-//                                    Room room = new Room(rid,1,"11111111",MyTCPService.this);
-//                                    pref.addRoom(room);
+                                    Room room = new Room(rid,1,from,MyTCPService.this);
+                                    pref.addRoom(room);
                                 }
+
+                                // TODO: 2017. 8. 24. pref에 최근메세지 등록
 
                                 // 노티 띄우기
                                 Intent intent = new Intent(MyTCPService.this, ChatActivity.class);
@@ -147,7 +147,6 @@ public class MyTCPService extends IntentService {
                                 PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
                                 sendMyNotification(pendingIntent,from_name,body);
-
                             }
 
                             break;
@@ -164,7 +163,7 @@ public class MyTCPService extends IntentService {
                         Toast.makeText(MyTCPService.this, "ready to talk", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: ready to talk");
                             break;
-                        case SENT : // TODO: 2017. 8. 24.  내가 보낸 메세지가 서버에 갔다가 다시 온 경우 ! 이거 무시해야 하나 ?
+                        case SENT : // TODO: 2017. 8. 24.  내가 보낸 메세지가 서버에 갔다가 다시 온 경우 ! 이거 무시해야 함.
                             Toast.makeText(MyTCPService.this, "sent : "+msg.obj, Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: sent");
                             break;

@@ -143,7 +143,13 @@ public final class MySQLite {
         Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ FriendTable.TABLE_NAME+" where "+ FriendTable.ID+"="+id+";", null );
         if (cursor != null)
             cursor.moveToFirst();
-            String name = cursor.getString(2);  //name
+        String name = null;  //name
+        try {
+            name = cursor.getString(2);
+        } catch (Exception e) {
+            e.printStackTrace();
+            name = "알수없는 친구";
+        }
         Log.d(TAG, "getFriendName : "+ name);
         return name;
     }

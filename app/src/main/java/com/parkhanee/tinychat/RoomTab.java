@@ -60,31 +60,24 @@ public class RoomTab extends Fragment implements View.OnClickListener {
         * */
 //        ArrayList<Room> roomArrayList = db.getAllRooms();
 
-        // TODO: 2017. 8. 22. 이걸 어디에서 넣어주어야 하지 ?
-//        pref.putString("rid","2:1,232,2");   // TODO: 2017. 8. 22. 첫번째 메세지를 보낼 때 여기에 추가해야..
-//        pref.putString("ppl1","1:91433734");
-//        pref.putString("ppl232","2:11111111,91433734");
-//        pref.putString("ppl2","1:11111111");
 
-        if (pref.contains("rid")){ // 채팅 방 존재
+
+        if (pref.contains("rooms")){ // 채팅 방 존재
                /*
                *   rid - 충방개수:rid1,rid2,rid3,  . . .
                *    e.g.) rid - 3:345,232,222
                *    pref string 에서 roomArrayList 만들기
                */
-            String string = pref.getString("rid"); // string = "3:345,343,222"
-            String[] strings = string.split(":"); // strings = [ "3" , "345:343:333" ]
-            ArrayList<String> arrayList =  new ArrayList<>(Arrays.asList(strings[1].split(",")));
 
-            Log.d(TAG, "onViewCreated: 방 개수 "+strings[0]+" == "+arrayList.size());
 
-            ArrayList<Room> roomArrayList = new ArrayList<>();
-            for (String rid : arrayList){ // 방 개수만큼 반복.
-//                roomArrayList.add(MyUtil.initRoom(context,pref,rid));
+            ArrayList<Room> roomArrayList = pref.getAllRooms();
+
+            if (roomArrayList!=null){
+                adapter.setRoomArrayList(roomArrayList);
+                adapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(context, "there is no room", Toast.LENGTH_SHORT).show();
             }
-
-            adapter.setRoomArrayList(roomArrayList);
-            adapter.notifyDataSetChanged();
         }
 
 

@@ -9,6 +9,7 @@ import com.parkhanee.tinychat.classbox.Friend;
 import com.parkhanee.tinychat.classbox.Room;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -168,23 +169,36 @@ public final class MyPreferences {
         return false;
     }
 
+    /**
+     * @param room 방 아이디, 참여자 정보를 담고있는 방 객체. pref에 추가하거나 참여자 정보를 수정하고 싶은 방의 개체.
+     * */
     public boolean addRoom(Room room){
 
         // "rid" 에다가 123 하나 추가, 방 개수 하나 늘리기
         String rid = room.getRid();
-        if (!isRoomSet(rid)){
+        if (!isRoomSet(rid)){ // 방이 이미 pref에 추가되지 않았음
             String string = getString("rooms");
-            String[] strings = string.split(":");
-            String count = String.valueOf(Integer.parseInt(strings[0]) + 1) ; // 방 개수 하나 늘림
-            String rooms = strings[1] + ","+rid;
+            String count,rooms;
+            if (string.equals("")){// 방이 아직 아무것도 없는 경우
+                count = "1";
+                rooms = rid;
+            } else {
+                String[] strings = string.split(":");
+                count = String.valueOf(Integer.parseInt(strings[0]) + 1) ; // 방 개수 하나 늘림
+                rooms = strings[1] + ","+rid;
+            }
+
 
             putString("rooms",count+":"+rooms); // 새로운 rid 정보 저장
+
+            Log.d(TAG, "addRoom: "+"rooms : "+count+":"+rooms);
 
         } else { // 방이 이미 추가되어 있음.
             return false;
         }
 
         // "ppl123"에 참여자 목록 넣기
+        // 원래 같은 방아이디로 항목이 있었어도 덮어씀.
         if (room.isPrivate()){
             String participant = room.getParticipant().getId();
             putString("ppl"+rid,"1:"+participant);
@@ -200,9 +214,31 @@ public final class MyPreferences {
                 i++;
             }
             putString("ppl"+rid,count+":"+ppl);
+            Log.d(TAG, "addRoom: ppl"+rid+" : "+count+":"+ppl);
         }
+
+        Log.d(TAG, "addRoom: ");
 
         return true;
 
+    }
+
+    public ArrayList<Room> getAllRooms(){
+        ArrayList<Room> roomsArrayList = new ArrayList<>();
+        String string = getString("rooms");
+        int count;
+        if (string.equals("")){// 방이 아직 아무것도 없는 경우
+            return null;
+        } else {
+            String[] strings = string.split(":");
+            count = Integer.parseInt(strings[0]) ; // 방 개수 하나 늘림
+            String[] roomIdList = strings[1].split(",");
+            for (String rid : roomIdList){
+                roomsArrayList.add(getRoomFromId(rid));
+            }
+        }
+
+        Log.d(TAG, "getAllRooms: "+count+" "+roomsArrayList.toString());
+        return roomsArrayList;
     }
 }
