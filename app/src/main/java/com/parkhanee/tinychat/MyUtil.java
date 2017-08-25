@@ -75,24 +75,7 @@ public final class MyUtil {
         context.startActivity(i);
     }
 
-    /**
-     *  @param rid 방 아이디
-     *  @return rid에 해당하는 방에 들어있는 참가자를 pref 에서 찾아서 Room 객체를 리턴
-    * */
-    public static Room initRoom(Context context, MyPreferences pref,String rid){
-        Room room;
 
-        //ppl345 -  2:68620823,11111111
-        String pplString = pref.getString("ppl"+rid); // pplString = "2:68620823,11111111"
-        String[] pplStrings = pplString.split(":"); // pplStrings = [ "2" , "68620823,11111111" ]
-
-        if (pplString.equals("")){ // pref에 해당 방 정보가 없는 경우
-            return null;
-        }
-
-        room = new Room(rid,Integer.parseInt(pplStrings[0]),pplStrings[1],context);
-        return room;
-    }
 
 
 

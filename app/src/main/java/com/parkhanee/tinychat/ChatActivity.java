@@ -40,8 +40,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         // 방 정보 설정하기 .
         rid = getIntent().getStringExtra("rid");
-        // TODO: 2017. 8. 18. pref에서 참여자 아이디 가져오기
-//        room = MyUtil.initRoom(context, pref, rid);
+//        room = pref.getRoomFromId(rid);
+
         if (room==null){
             // TODO: 2017. 8. 22. it's an empty room !
         }

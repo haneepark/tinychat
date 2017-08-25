@@ -5,6 +5,11 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 
+import com.parkhanee.tinychat.classbox.Friend;
+import com.parkhanee.tinychat.classbox.Room;
+
+import java.util.ArrayList;
+
 import static android.content.Context.MODE_PRIVATE;
 
 /**
@@ -18,9 +23,11 @@ public final class MyPreferences {
     private static final String PREF_NAME = "pref";
     private static final String LOGIN_KEY = "login";
     private final String TAG = "MyPreferences";
+    private Context context;
 
     private MyPreferences(Context context){
         pref = context.getSharedPreferences(PREF_NAME,MODE_PRIVATE);
+        this.context = context.getApplicationContext();
     }
 
     public static synchronized MyPreferences getInstance(Context context) {
@@ -125,5 +132,77 @@ public final class MyPreferences {
 
     public boolean ifLoggedIn(){
         return pref.getBoolean(LOGIN_KEY,false);
+    }
+
+    /**
+     *  @param rid 방 아이디
+     *  @return rid에 해당하는 방에 들어있는 참가자를 pref 에서 찾아서 Room 객체를 리턴
+     * */
+    public Room getRoomFromId(String rid){
+        Room room;
+
+        //ppl345 -  2:68620823,11111111
+        String pplString = getString("ppl"+rid); // pplString = "2:68620823,11111111"
+        String[] pplStrings = pplString.split(":"); // pplStrings = [ "2" , "68620823,11111111" ]
+
+        if (pplString.equals("")){ // pref에 해당 방 정보가 없는 경우
+            return null;
+        }
+
+        room = new Room(rid,Integer.parseInt(pplStrings[0]),pplStrings[1],context);
+        return room;
+    }
+
+    public boolean isRoomSet(String rid){
+        String string = getString("rooms");
+        if (string.equals("")){ // 방이 아무것도 없는 경우
+            return false;
+        } else { // 방 목록을 가져와서 하나씩 검사
+            String[] rooms = (string.split(":"))[1].split(",");
+            for (String room : rooms){
+                if (room.equals(rid)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean addRoom(Room room){
+
+        // "rid" 에다가 123 하나 추가, 방 개수 하나 늘리기
+        String rid = room.getRid();
+        if (!isRoomSet(rid)){
+            String string = getString("rooms");
+            String[] strings = string.split(":");
+            String count = String.valueOf(Integer.parseInt(strings[0]) + 1) ; // 방 개수 하나 늘림
+            String rooms = strings[1] + ","+rid;
+
+            putString("rooms",count+":"+rooms); // 새로운 rid 정보 저장
+
+        } else { // 방이 이미 추가되어 있음.
+            return false;
+        }
+
+        // "ppl123"에 참여자 목록 넣기
+        if (room.isPrivate()){
+            String participant = room.getParticipant().getId();
+            putString("ppl"+rid,"1:"+participant);
+        } else {
+            String count = String.valueOf(room.getPpl());
+            String ppl = "";
+            int i=0;
+            for (Friend friend : room.getParticipants()){
+                if (i!=0){
+                    ppl += ",";
+                }
+                ppl += friend.getId();
+                i++;
+            }
+            putString("ppl"+rid,count+":"+ppl);
+        }
+
+        return true;
+
     }
 }

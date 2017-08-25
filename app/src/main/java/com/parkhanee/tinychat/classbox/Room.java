@@ -29,6 +29,9 @@ public class Room {
 
     // TODO: 2017. 8. 2. 최근 대화 sharedPreferences는 어디서 뽑지?
 
+    /**
+     * @param string 참여자 목록을 콤마(,)로 구분해서 나열한 String
+     * */
     public Room(String rid, int ppl,String string, Context context){
         this.rid = rid;
         this.ppl = ppl;
