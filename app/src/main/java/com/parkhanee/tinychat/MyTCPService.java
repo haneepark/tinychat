@@ -13,6 +13,10 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.parkhanee.tinychat.classbox.Room;
+
+import java.util.List;
+
 import static com.parkhanee.tinychat.MyTCPClient.CONNECTED;
 import static com.parkhanee.tinychat.MyTCPClient.CONNECTING;
 import static com.parkhanee.tinychat.MyTCPClient.ERROR;
@@ -72,6 +76,7 @@ public class MyTCPService extends IntentService {
     private MyPreferences pref=null;
     private static MyTCPClient tcpClient=null;
     public static boolean alive = false;
+    String id ;
 
     public MyTCPService(String name) {
         super(name);
@@ -90,6 +95,17 @@ public class MyTCPService extends IntentService {
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand: ");
+
+        if (pref==null){
+            Log.d(TAG, "onStartCommand: init pref");
+            pref = MyPreferences.getInstance(this);
+        }
+
+        id = pref.getId();
+        if (id.equals("")){
+            Log.e(TAG, "onStartCommand: id is empty");
+        }
+
         if (handler==null){
             Log.d(TAG, "onStartCommand: init handler");
             handler = new Handler(){
@@ -98,31 +114,42 @@ public class MyTCPService extends IntentService {
                     super.handleMessage(msg);
 
                     switch (msg.what){
-                        case RECEIVED :  // 친구에게서 메세지 도착
-                            Log.d(TAG, "handleMessage: received");
-                            // TODO: 2017. 8. 24. pref에 최근메세지 등록 + pref의 방목록에 없으면 새로운방 등록
+                        case RECEIVED :  // 채팅 메세지 도착 - 내가 보냈던거 / 친구에게서 온거
+                             Log.d(TAG, "handleMessage: received");
 
-                            // 노티 띄우기
-                            Intent intent = new Intent(MyTCPService.this, Main2Activity.class);
-                            PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                            List<String> result = (List<String>) msg.obj;
 
+                            if (result.get(2).equals(id)){ // 내가 보냈던 메세지 인 경우
+                                this.sendMessage(msg); // 받은 msg 객체를 SENT로 전달
 
-                            NotificationManager notificationManager =
-                                    (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-                            Notification notification
-                                    = new Notification.Builder(getApplicationContext())
-                                    .setContentTitle(msg.obj.toString())
-                                    .setContentText("Content Text")
-                                    .setSmallIcon(R.drawable.ic_add_room)
-                                    .setTicker("알림!!!")
-                                    .setContentIntent(pendingIntent)
-                                    .build();
+                            } else { // 친구에게서 받은 메세지
 
-                            notification.defaults = Notification.DEFAULT_SOUND;//소리추가
-                            notification.flags = Notification.FLAG_ONLY_ALERT_ONCE; //알림 소리를 한번만 내도록
-                            notification.flags = Notification.FLAG_AUTO_CANCEL;//확인하면 자동으로 알림이 제거 되도록
+                                String rid = result.get(1);
+                                String from = result.get(2); // 메세지 보낸 사람 아이디
+                                String body = result.get(3);
 
-                            notificationManager.notify(999, notification);
+                                MySQLite sqLite = MySQLite.getInstance(MyTCPService.this);
+                                String from_name = sqLite.getFriendName(from); // 보낸 사람 이름
+
+                                // TODO: 2017. 8. 24. pref에 최근메세지 등록 + pref의 방목록에 없으면 새로운방 등록
+                                if (!pref.isRoomSet(rid)){
+                                    // TODO: 2017. 8. 24. 방 정보(명수, 참여자아이디) 받아오기 ?
+                                    // 이건.... tcpClient 통해서 서버 에다 요청해야 ... ? 근데 여긴 핸들러인데 ? .....
+                                    // 이걸 그냥 통채로 ChatActivity에 보내서 거기서 처리할까 ?
+//                                    Room room = new Room(rid,1,"11111111",MyTCPService.this);
+//                                    pref.addRoom(room);
+                                }
+
+                                // 노티 띄우기
+                                Intent intent = new Intent(MyTCPService.this, ChatActivity.class);
+                                // TODO: 2017. 8. 24.  ChatActivity로 넘어갈 때 다른 extra는 안필요힌가 ?
+                                intent.putExtra("rid",rid);
+                                PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
+
+                                sendMyNotification(pendingIntent,from_name,body);
+
+                            }
+
                             break;
 
                         case CONNECTING :
@@ -137,11 +164,11 @@ public class MyTCPService extends IntentService {
                         Toast.makeText(MyTCPService.this, "ready to talk", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: ready to talk");
                             break;
-                        case SENT :
+                        case SENT : // TODO: 2017. 8. 24.  내가 보낸 메세지가 서버에 갔다가 다시 온 경우 ! 이거 무시해야 하나 ?
                             Toast.makeText(MyTCPService.this, "sent : "+msg.obj, Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: sent");
                             break;
-                        case SENDING :
+                        case SENDING : // tcpClient에서 정상적으로 보냄.
                             Toast.makeText(MyTCPService.this, "sending", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: sending " + msg.obj);
                             break;
@@ -163,22 +190,13 @@ public class MyTCPService extends IntentService {
             };
         }
 
-        if (pref==null){
-            Log.d(TAG, "onStartCommand: init pref");
-            pref = MyPreferences.getInstance(this);
-        }
-
         if (tcpClient == null){
+            // 여긴 언제 실행되고 언제 안되는지 잘 모르겠다
             Log.d(TAG, "onStartCommand: init tcpClient");
-            // 소켓연결 안되어있을 때 만 아래의 코드 실행.
-            // handler, serverIp, serverPort, userId
+
             String server_ip = getString(R.string.server_ip);
             String server_port = getString(R.string.server_tcp_port);
-            String id = pref.getId();
-            if (id.equals("")){
-                Log.e(TAG, "onStartCommand: id is empty");
-            }
-            tcpClient = MyTCPClient.getInstance(handler,server_ip,server_port,id);
+            tcpClient = MyTCPClient.getInstance(handler,server_ip,server_port,id); // handler, serverIp, serverPort, userId
         }
         return super.onStartCommand(intent, flags, startId);
     }
@@ -224,5 +242,24 @@ public class MyTCPService extends IntentService {
         }
         tcpClient.stopClient();
         Log.d(TAG, "onDestroy: ");
+    }
+
+    private void sendMyNotification(PendingIntent pendingIntent, String title, String body){
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        Notification notification
+                = new Notification.Builder(getApplicationContext())
+                .setContentTitle(title)
+                .setContentText(body)
+                .setSmallIcon(R.drawable.ic_add_room)
+                .setTicker("새로운 메세지가 도착했습니다")
+                .setContentIntent(pendingIntent)
+                .build();
+
+        notification.defaults = Notification.DEFAULT_SOUND;//소리추가
+        notification.flags = Notification.FLAG_ONLY_ALERT_ONCE; //알림 소리를 한번만 내도록
+        notification.flags = Notification.FLAG_AUTO_CANCEL;//확인하면 자동으로 알림이 제거 되도록
+
+        notificationManager.notify(999, notification);
     }
 }

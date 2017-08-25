@@ -119,7 +119,8 @@ public class MyTCPClient {
                                 // rid, id, body listener대신 handler에게 넘기기
 //                                listener.callbackMessageReceiver(result.get(1),result.get(2),result.get(3));
                                 Message m = new Message();
-                                m.obj = result.get(2) +" : "+ result.get(3) ;
+                                m.obj = result;
+//                                m.obj = result.get(2) +" : "+ result.get(3) ;
                                 m.what = RECEIVED;
                                 handler.sendMessage(m);
 
