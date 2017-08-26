@@ -13,11 +13,10 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.parkhanee.tinychat.classbox.Chat;
 import com.parkhanee.tinychat.classbox.Room;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Locale;
 
 import static com.parkhanee.tinychat.MyTCPClient.CONNECTED;
 import static com.parkhanee.tinychat.MyTCPClient.CONNECTING;
@@ -138,12 +137,9 @@ public class MyTCPService extends IntentService {
                                 String from = result.get(2); // 메세지 보낸 사람 아이디
                                 String body = result.get(3);
                                 String unixTime = result.get(4);
+                                String mid = result.get(5);
 //                                long time = Long.valueOf(unixTime)*1000;
-
-
-                                String date = MyUtil.UnixTimeToDate(unixTime); // TODO: 2017. 8. 26.
-
-
+                                String date = MyUtil.UnixTimeToDate(unixTime);
                                 String from_name = sqLite.getFriendName(from); // 보낸 사람 이름
 
                                 // pref의 방목록에 없으면 새로운방 등록
@@ -153,6 +149,14 @@ public class MyTCPService extends IntentService {
                                 }
 
                                 // TODO: 2017. 8. 24. pref에 최근메세지 등록
+
+                                // SQLite에 메세지 등록
+                                if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime))){ // addChat실패하면
+                                    Toast.makeText(MyTCPService.this, "addChat failed", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(MyTCPService.this, "addChat OK", Toast.LENGTH_SHORT).show();
+                                }
+
 
                                 // 노티 띄우기
                                 Intent intent = new Intent(MyTCPService.this, ChatActivity.class);
@@ -194,16 +198,29 @@ public class MyTCPService extends IntentService {
                             String rid = result1.get(1);
                             String from = result1.get(2); // 메세지 보낸 사람 아이디, 여기서는 내 아이디 여야 함.
                             String body = result1.get(3);
+                            String unixTime = result1.get(4);
+                            String mid = result1.get(5);
 
-                            if (from.equals(id)){
-                                if (!pref.isRoomSet(rid)){ // pref.rooms 에  rid 존재하지 않으면 방 새로 만들기
+                            if (from.equals(id)){ // 보낸사람이 나인거 확인
+                                // pref.rooms 에  rid 존재하지 않으면 방 새로 만들기
+                                if (!pref.isRoomSet(rid)){
                                     //  from 에 넣을 상대방 아이디를 db에서 찾아서  friend객체 넣어줌
                                     Room room = new Room(rid,sqLite.getFriendFromRid(rid),MyTCPService.this);
                                     pref.addRoom(room);
                                 }
-                            } else {
-                                Log.d(TAG, "handleMessage: 내가 보낸 메세지가 아닌데 SENT로 옴");
+
+                                // SQLite에 메세지 등록
+                                if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime))){ // addChat실패하면
+                                    Toast.makeText(MyTCPService.this, "addChat failed", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(MyTCPService.this, "addChat OK", Toast.LENGTH_SHORT).show();
+                                }
+
                             }
+//                            else {
+                                // 여기오는 일은 있으면 안 됨 !
+//                                Log.d(TAG, "handleMessage: 내가 보낸 메세지가 아닌데 SENT로 옴");
+//                            }
 
                             Toast.makeText(MyTCPService.this, "sent : "+body, Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: sent");

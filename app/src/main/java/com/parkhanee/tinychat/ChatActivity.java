@@ -45,8 +45,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         if (pref == null) {
             pref = MyPreferences.getInstance(context);
         }
-
+        if (sqLite==null){ sqLite = MySQLite.getInstance(ChatActivity.this); }
         id = pref.getString("id");
+
+        chatTextView = (TextView) findViewById(R.id.textView);
+        et = (EditText) findViewById(R.id.et_chat);
+        (findViewById(R.id.btn_sendMsg)).setOnClickListener(this);
 
         // 방 정보 설정하기 .
         rid = getIntent().getStringExtra("rid");
@@ -54,7 +58,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         // set up toolbar title
         if (room==null){ // empty room (== not saved in pref)
-            if (sqLite==null){ sqLite = MySQLite.getInstance(ChatActivity.this); }
             if(sqLite.getFriendFromRid(rid)!=null) { // 일대일 방인데 방이 만들어진건 아닌 경우.
                 String name = sqLite.getFriendFromRid(rid).getName();
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("empty room : "+name);
@@ -67,11 +70,13 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
             }
+
+            if (sqLite.getAllChatInARoom(rid)!=null){
+                chatTextView.setText(sqLite.getAllChatInARoom(rid).toString());
+            }
+
         }
 
-        chatTextView = (TextView) findViewById(R.id.textView);
-        et = (EditText) findViewById(R.id.et_chat);
-        (findViewById(R.id.btn_sendMsg)).setOnClickListener(this);
     }
 
     @Override
@@ -118,6 +123,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             Log.d(TAG, "onPostExecute: "+msg);
+            // TODO: 2017. 8. 26. adapter.notifyDateSetChanged
+            if (sqLite.getAllChatInARoom(rid)!=null){
+                chatTextView.setText(sqLite.getAllChatInARoom(rid).toString());
+            }
         }
     }
 

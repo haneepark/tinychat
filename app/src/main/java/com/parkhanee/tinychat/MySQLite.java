@@ -10,8 +10,8 @@ import android.provider.BaseColumns;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.parkhanee.tinychat.classbox.Chat;
 import com.parkhanee.tinychat.classbox.Friend;
-import com.parkhanee.tinychat.classbox.Room;
 
 import java.util.ArrayList;
 
@@ -54,12 +54,11 @@ public final class MySQLite {
     }
 
     public void logout(){
-        // TODO: 2017. 8. 12. 여기서 drop table해버리면 로그아웃 했다가 다시 로그인 할때 테이블이 없어서 에러 남.
-        // 그러니까 deleteAllFriends / deleteAllRooms 하자 !
+        // 여기서 drop table만 해버리면 로그아웃 했다가 다시 로그인 할때 테이블이 없어서 에러 남. 없앴다가 미리 다시 만듦.
         mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ FriendTable.TABLE_NAME);
-//        mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ RoomTable.TABLE_NAME);
+        mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ ChatTable.TABLE_NAME);
         mySQLiteHelper.createFriendTable(mySQLiteDatabase);
-//        mySQLiteHelper.createRoomTable(mySQLiteDatabase);
+        mySQLiteHelper.createChatTable(mySQLiteDatabase);
     }
 
     private boolean isOpen() {
@@ -302,6 +301,69 @@ public final class MySQLite {
 
     */
 
+    private static final class ChatTable implements BaseColumns {
+        static final String TABLE_NAME = "chat";
+        static final String MID = "mid"; // PK
+        static final String RID = "rid";
+        static final String ID = "id"; // 보낸사람 id
+        static final String BODY = "body";
+        static final String UNIXTIME = "unixTime";
+    }
+
+    public boolean addChat(Chat chat){
+        try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(ChatTable.MID, chat.getMid());
+            contentValues.put(ChatTable.RID, chat.getRid());
+            contentValues.put(ChatTable.ID, chat.getId());
+            contentValues.put(ChatTable.BODY, chat.getBody());
+            contentValues.put(ChatTable.UNIXTIME, chat.getUnitTime());
+            mySQLiteDatabase.insert(ChatTable.TABLE_NAME, null, contentValues);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Nullable
+    public ArrayList<Chat> getAllChatInARoom(String rid){
+        ArrayList<Chat> chatArrayList = new ArrayList<>();
+
+        try {
+            // 1. build the query
+            Cursor cursor =  mySQLiteDatabase.rawQuery(
+                    "select * from "+ ChatTable.TABLE_NAME +
+                    " where "+ ChatTable.RID+"="+rid +
+                    " order by "+ChatTable.UNIXTIME+ " ;"
+                    , null ); // 최신역순으로 출력
+
+            // 2. go over each row, build room and add it to arraylist
+            if (cursor.moveToFirst()) {
+                do {
+                    Chat chat = new Chat(
+                            cursor.getString(0), //mid
+                            cursor.getString(1), //rid
+                            cursor.getString(2), //id
+                            cursor.getString(3), //body
+                            cursor.getString(4) //unixtime
+                    );
+                    chatArrayList.add(chat);
+                } while (cursor.moveToNext());
+            }
+
+            Log.d(TAG, "getAllChatInARoom: "+chatArrayList.toString());
+
+            cursor.close();
+            return chatArrayList;
+
+        } catch (CursorIndexOutOfBoundsException e) {
+            Log.d(TAG, "getAllChatInARoom: CursorIndexOutOfBoundsException");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 
     /**
@@ -319,7 +381,7 @@ public final class MySQLite {
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
             // table 늘어날 때 마다
             createFriendTable(sqLiteDatabase);
-//            createRoomTable(sqLiteDatabase);
+            createChatTable(sqLiteDatabase);
         }
 
         @Override
@@ -332,7 +394,7 @@ public final class MySQLite {
         private void dropDatabase(SQLiteDatabase db){
             // table 늘어날 때 마다
             db.execSQL("DROP TABLE IF EXISTS "+ FriendTable.TABLE_NAME);
-//            db.execSQL("DROP TABLE IF EXISTS "+ RoomTable.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS "+ ChatTable.TABLE_NAME);
         }
 
         private void createFriendTable(SQLiteDatabase db) {
@@ -355,22 +417,22 @@ public final class MySQLite {
 
         }
 
-
-
-//        private void createRoomTable(SQLiteDatabase db){
-//            // TODO: 2017. 8. 2. boolean isPrivateRoom ??
-//            db.execSQL(
-//                    "CREATE TABLE " + RoomTable.TABLE_NAME + " ("
-//                            + RoomTable.RID + " TEXT PRIMARY KEY,"
-//                            + RoomTable.PPL + " INTEGER );"
-//            );
+        private void createChatTable(SQLiteDatabase db) {
+            // TODO: 2017. 8. 2. save Thumbnail image into a new column with blob type
+            db.execSQL(
+                    "CREATE TABLE " + ChatTable.TABLE_NAME + " ("
+//                    + FriendTable._ID + " INTEGER PRIMARY KEY,"
+                            + ChatTable.MID + " TEXT PRIMARY KEY,"
+                            + ChatTable.RID + " TEXT,"
+                            + ChatTable.ID + " TEXT,"
+                            + ChatTable.BODY + " TEXT,"
+                            + ChatTable.UNIXTIME + " TEXT );"
+            );
 //
-////            db.execSQL("INSERT INTO ROOM VALUES ( '1', 1 )" );
-////            db.execSQL("INSERT INTO ROOM VALUES ( '2', 1 )" );
-////            db.execSQL("INSERT INTO ROOM VALUES ( '3', 2 )" );
-////            db.execSQL("INSERT INTO ROOM VALUES ( '4', 3 )" );
-////            db.execSQL("INSERT INTO ROOM VALUES ( '5', 1 )" );
-//        }
+//            db.execSQL("INSERT INTO "+ChatTable.TABLE_NAME+" VALUES ( '1', '1', '11111111','안녕안녕 메세지', '1501659026' )");
+//            db.execSQL("INSERT INTO "+ChatTable.TABLE_NAME+" VALUES ( '2', '1', '11111111','안녕안녕 메세지2222', '1501659048' )");
+//            db.execSQL("INSERT INTO "+ChatTable.TABLE_NAME+" VALUES ( '3', '1', '11111111','하핳', '1501659704' )");
+        }
     }
 
 }

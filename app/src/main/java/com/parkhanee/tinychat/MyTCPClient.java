@@ -17,6 +17,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 싱글톤으로 구현해야 함    -->   서비스 에서만 새로 객체 생성하고 채팅액티비티의 async에서 객체를 받음.
@@ -185,6 +186,18 @@ public class MyTCPClient {
                         msgObject.put("rid",rid);
                         msgObject.put("body",message);
                         msgObject.put("id",id); // 아래에 핸들러에게 보낼 때 경우 때문에 넣음.
+
+                        int randomNum = 0;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                            randomNum = ThreadLocalRandom.
+                                    current().nextInt(10, 100 + 1); // generage random within 10 to 100
+                        }
+                        String mid = String.valueOf(randomNum)+rid+id;
+
+                        Log.d(TAG, "sendMessage: mid "+mid);
+
+                        msgObject.put("mid",mid);
+
                         object.put(JSON_MSG,msgObject);
 
                         break;
