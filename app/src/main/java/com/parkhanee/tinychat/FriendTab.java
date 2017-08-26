@@ -119,6 +119,15 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         ListView listView = (ListView) view.findViewById(R.id.friend_list_view);
         listView.setAdapter(adapter);
         listView.addHeaderView(header, null, false);
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (db==null){
+            db = MySQLite.getInstance(getActivity());
+        }
         adapter.setFriendArrayList(db.getAllFriends());
         adapter.notifyDataSetChanged();
     }

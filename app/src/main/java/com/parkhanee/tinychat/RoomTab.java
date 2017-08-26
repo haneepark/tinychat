@@ -27,7 +27,6 @@ public class RoomTab extends Fragment implements View.OnClickListener {
     private RoomTabAdapter adapter;
     MySQLite db = null;
     MyPreferences pref = null;
-    Context context = getActivity();
 
     @Nullable
     @Override
@@ -58,28 +57,6 @@ public class RoomTab extends Fragment implements View.OnClickListener {
         * getView의 역할 자체가 아이템 하나하나를 inflate하는 건데, getView하기전에 적어도 아이템이 몇개가 있을지는 결정되어있어야지.
         * 아이템 개수는 사실 Adapter의 getCount매써드에서 정할수도 있긴 하지만..
         * */
-//        ArrayList<Room> roomArrayList = db.getAllRooms();
-
-
-
-        if (pref.contains("rooms")){ // 채팅 방 존재
-               /*
-               *   rid - 충방개수:rid1,rid2,rid3,  . . .
-               *    e.g.) rid - 3:345,232,222
-               *    pref string 에서 roomArrayList 만들기
-               */
-
-
-            ArrayList<Room> roomArrayList = pref.getAllRooms();
-
-            if (roomArrayList!=null){
-                adapter.setRoomArrayList(roomArrayList);
-                adapter.notifyDataSetChanged();
-            } else {
-                Toast.makeText(context, "there is no room", Toast.LENGTH_SHORT).show();
-            }
-        }
-
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -92,6 +69,29 @@ public class RoomTab extends Fragment implements View.OnClickListener {
                 startActivity(i);
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // TODO: 2017. 8. 26. 채팅방 늘어나면 이 작업 다시 하기 위해서 onViewCreated 에 있던걸 여기로 옮김 !!
+        // onResume은 MainActivity가 백스택에 있다가 focus를 새로 받을 때 마다 실행 된다.
+        if (pref.contains("rooms")){ // 채팅 방 존재
+               /*
+               *   rid - 충방개수:rid1,rid2,rid3,  . . .
+               *    e.g.) rid - 3:345,232,222
+               *    pref string 에서 roomArrayList 만들기
+               */
+            ArrayList<Room> roomArrayList = pref.getAllRooms();
+
+            if (roomArrayList!=null){
+                adapter.setRoomArrayList(roomArrayList);
+                adapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(getActivity(), "there is no room", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
