@@ -11,7 +11,7 @@ public class Chat {
     private String mid, rid, from, body, unitTime,from_name,
             date;  // date와 from_name은 sqLite 에는 저장하지 않지만 Chat 객체를 만들 때 생성해서 각 객체에 가지고 있는다.
 
-    public Chat(String mid, String rid, String from, String body, String unitTime,String from_name){
+    /*public Chat(String mid, String rid, String from, String body, String unitTime,String from_name){
         this.mid = mid;
         this.rid = rid;
         this.from = from;
@@ -19,7 +19,7 @@ public class Chat {
         this.unitTime = unitTime;
         setDate(unitTime);
         from_name = from_name;
-    }
+    }*/
 
     public Chat(String mid, String rid, String from, String body, String unitTime){
         this.mid = mid;
@@ -28,7 +28,6 @@ public class Chat {
         this.body =body;
         this.unitTime = unitTime;
         setDate(unitTime);
-        from_name = null;
     }
 
     /*public Chat(String rid, String from, String body, String unitTime,String from_name){

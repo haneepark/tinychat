@@ -197,7 +197,7 @@ public final class MyPreferences {
 
             putString("rooms",count+":"+rooms); // 새로운 rid 정보 저장
 
-            Log.d(TAG, "addRoom: "+"rooms : "+count+":"+rooms);
+            Log.d(TAG, "addRoom: 1 "+"rooms : "+count+":"+rooms);
 
         } else { // 방이 이미 추가되어 있음.
             return false;
@@ -220,7 +220,7 @@ public final class MyPreferences {
                 i++;
             }
             putString("ppl"+rid,count+":"+ppl);
-            Log.d(TAG, "addRoom: ppl"+rid+" : "+count+":"+ppl);
+            Log.d(TAG, "addRoom: 2 ppl"+rid+" : "+count+":"+ppl);
         }
         return true;
 

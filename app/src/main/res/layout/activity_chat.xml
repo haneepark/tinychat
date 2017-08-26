@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.parkhanee.tinychat.ChatActivity">
+    tools:context="com.parkhanee.tinychat.ChatActivity"
+    >
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -19,15 +20,16 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v7.widget.RecyclerView
+    <com.parkhanee.tinychat.MyRecyclerView
         android:id="@+id/chat_recycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fadeScrollbars="false"
+        android:scrollbars="vertical"
         android:layout_below="@+id/appBar"
         android:layout_above="@+id/et_chat"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        />
+        android:layout_alignParentStart="true"/>
 
     <EditText
         android:id="@+id/et_chat"

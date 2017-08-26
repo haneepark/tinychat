@@ -5,17 +5,17 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Room;
 
 
-public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
+public class ChatActivity extends AppCompatActivity implements View.OnClickListener, MyRecyclerView.OnKeyboardFocusChangeListener {
     private final String TAG = "ChatActivity";
 
     EditText et;
@@ -29,17 +29,15 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     String friend_id, friend_name; // 일대일 방의 친구 아이디, 이름
     String rid; // 채팅방 아이디
 
-    private RecyclerView mRecyclerView;
+    private MyRecyclerView mRecyclerView;
     private ChatAdapter mAdapter;
     private LinearLayoutManager mLayoutManager;
     Toolbar toolbar;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
 
         toolbar = (Toolbar) findViewById(R.id.toolbar22);
         setSupportActionBar(toolbar);
@@ -56,14 +54,21 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         et = (EditText) findViewById(R.id.et_chat);
         (findViewById(R.id.btn_sendMsg)).setOnClickListener(this);
+        /*et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                Toast.makeText(context, "onFocusChange", Toast.LENGTH_SHORT).show();
+            }
+        });*/
 
         // recycler view
-        mRecyclerView = (RecyclerView) findViewById(R.id.chat_recycler);
+        mRecyclerView = (MyRecyclerView) findViewById(R.id.chat_recycler);
         // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(this);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
-
+        mRecyclerView.setOnKeyboardFocusChangeListener(this);
 
         // 방 정보 설정하기 .
         rid = getIntent().getStringExtra("rid");
@@ -88,13 +93,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 // specify an adapter (see also next example)
                 mAdapter = new ChatAdapter(ChatActivity.this,sqLite.getAllChatInARoom(rid));
                 mRecyclerView.setAdapter(mAdapter);
+                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
             }
 
         }
-
-
-
     }
+
 
     @Override
     protected void onResume() {
@@ -117,6 +121,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    public void onKeyboardFocusChangeCallback(boolean shown) { // keyboard hide/shown 상태 바뀔 때 마다 실행
+        if (shown){
+            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+            Toast.makeText(context, "shown", Toast.LENGTH_SHORT).show();
+        }else {
+            Toast.makeText(context, "hidden", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
     private class TcpAsyncTask extends AsyncTask<String, Void, Void> {
         private static final String TAG = "TcpAsyncTask";
         String msg;
@@ -136,24 +151,36 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             return null;
         }
 
+        /**
+         * 메세지 전송 후 tcpService에서 로컬디비에 새 방 추가, 메세지 추가 함.
+         * 여기서! 그 후에 로컬디비에서 새로 저장된 내용을 출력해서 액티비티에 그려줌.
+         * */
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             Log.d(TAG, "onPostExecute: "+msg);
 
-                if (room==null){ // 빈 방에서 처음 메세지 보낸 경우.
-                    // TODO: 2017. 8. 26. 새로 방 저장
-                    // pref에 방
-                    // db에 방금보낸 채팅
-
-                } else { // 원래 존재하는 방에서 채팅메세지 보낸 경우.
-
-                    if (sqLite.getAllChatInARoom(rid)!=null){ // TODO: 2017. 8. 26. null 일때 처리
-                        // specify an adapter (see also next example)
-                        mAdapter = new ChatAdapter(ChatActivity.this,sqLite.getAllChatInARoom(rid));
-                        mRecyclerView.setAdapter(mAdapter);
+                // 빈 방에서 보통 방이 되는 경우 toolbar title 설정
+                if (room==null){
+                    room = pref.getRoomFromId(rid);
+                    if (room!=null) { // pref에서 새로 방이 생긴경우!
+                        if (room.isPrivate()){
+                            ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(room.getParticipant().getName());
+                        } else {
+                            ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
+                        }
                     }
+                }
 
+                // db에 방금 보낸 채팅을 넣는건 TCPService에서 했으므로, 여기서는 뷰 띄워주기만 하면 됨.
+                if (sqLite.getAllChatInARoom(rid)!=null){ // 여기서는 방금 하나 보냈으니까  null이 아닌게 정상
+                    // specify an adapter (see also next example)
+                    mAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
+                    mAdapter.notifyDataSetChanged();
+                    mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                } else {
+                    Toast.makeText(ChatActivity.this, "async : chat is null", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onPostExecute: chat is null ? ");
                 }
         }
     }
