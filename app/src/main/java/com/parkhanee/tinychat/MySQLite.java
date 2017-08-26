@@ -315,7 +315,7 @@ public final class MySQLite {
             ContentValues contentValues = new ContentValues();
             contentValues.put(ChatTable.MID, chat.getMid());
             contentValues.put(ChatTable.RID, chat.getRid());
-            contentValues.put(ChatTable.ID, chat.getId());
+            contentValues.put(ChatTable.ID, chat.getFrom());
             contentValues.put(ChatTable.BODY, chat.getBody());
             contentValues.put(ChatTable.UNIXTIME, chat.getUnitTime());
             mySQLiteDatabase.insert(ChatTable.TABLE_NAME, null, contentValues);
@@ -344,7 +344,7 @@ public final class MySQLite {
                     Chat chat = new Chat(
                             cursor.getString(0), //mid
                             cursor.getString(1), //rid
-                            cursor.getString(2), //id
+                            cursor.getString(2), //from
                             cursor.getString(3), //body
                             cursor.getString(4) //unixtime
                     );

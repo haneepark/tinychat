@@ -19,6 +19,16 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/chat_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/appBar"
+        android:layout_above="@+id/et_chat"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        />
+
     <EditText
         android:id="@+id/et_chat"
         android:layout_width="fill_parent"
@@ -38,14 +48,5 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true">
     </Button>
-
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView"
-        android:layout_below="@+id/appBar"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"/>
 
 </RelativeLayout>

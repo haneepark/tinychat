@@ -448,28 +448,9 @@ public class AddFriendActivity extends AppCompatActivity {
 
                     } else { // 에러 없음
 
+                        // 서버에서 방번호 받아옴
                         String rid = jsonObject.getString("rid");
                         Toast.makeText(AddFriendActivity.this, "rid : "+rid, Toast.LENGTH_SHORT).show();
-
-//                        // TODO: 2017. 8. 18. 서버에서 방 번호 받아오기
-//                        String rid="0";
-//                        String id = pref.getString("id");
-//                        if (id.equals("68620823")){
-//                            switch (friend.getId()){
-//                                case "91433734" : rid="1"; break;
-//                                case "11111111" : rid="2"; break;
-//                            }
-//                        } else if (id.equals("11111111")){
-//                            switch (friend.getId()){
-//                                case "68620823" : rid="2"; break;
-//                                case "91433734" : rid="3"; break;
-//                            }
-//                        } else if (id.equals("91433734")){
-//                            switch (friend.getId()){
-//                                case "68620823" : rid="1"; break;
-//                                case "11111111" : rid="3"; break;
-//                            }
-//                        }
 
                         if (resultCode.equals("302")&jsonObject.getJSONArray("followings:"+id).toString().contains(friendId)){
                             // TODO: 2017. 8. 9. 알림

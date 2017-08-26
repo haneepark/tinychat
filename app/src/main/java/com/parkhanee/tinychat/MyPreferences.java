@@ -64,6 +64,9 @@ public final class MyPreferences {
         // TODO: 2017. 8. 24. id 없을때 처리 ?
         return pref.getString("id","");
     }
+    public String getName(){
+        return pref.getString("name","");
+    }
 
     public int getInt(String key){
         return pref.getInt(key,0);

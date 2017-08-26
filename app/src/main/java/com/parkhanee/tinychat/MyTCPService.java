@@ -105,7 +105,7 @@ public class MyTCPService extends IntentService {
 
         id = pref.getId();
         if (id.equals("")){
-            Log.e(TAG, "onStartCommand: id is empty");
+            Log.e(TAG, "onStartCommand: id is empty !!! ");
         }
 
         if (sqLite==null){
@@ -209,8 +209,9 @@ public class MyTCPService extends IntentService {
                                     pref.addRoom(room);
                                 }
 
+
                                 // SQLite에 메세지 등록
-                                if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime))){ // addChat실패하면
+                                if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime))){ // addChat 실패하면
                                     Toast.makeText(MyTCPService.this, "addChat failed", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Toast.makeText(MyTCPService.this, "addChat OK", Toast.LENGTH_SHORT).show();

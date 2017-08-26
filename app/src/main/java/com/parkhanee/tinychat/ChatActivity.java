@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +17,6 @@ import com.parkhanee.tinychat.classbox.Room;
 
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
     private final String TAG = "ChatActivity";
-    private TextView chatTextView;
 
     EditText et;
     Context context = this;
@@ -28,6 +29,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     String friend_id, friend_name; // 일대일 방의 친구 아이디, 이름
     String rid; // 채팅방 아이디
 
+    private RecyclerView mRecyclerView;
+    private ChatAdapter mAdapter;
+    private LinearLayoutManager mLayoutManager;
+    Toolbar toolbar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +41,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_chat);
 
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar22);
+        toolbar = (Toolbar) findViewById(R.id.toolbar22);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false); // do not show default name text and instead, show the textView i included
         getSupportActionBar().setDisplayHomeAsUpEnabled(true); // show back button
@@ -48,9 +54,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         if (sqLite==null){ sqLite = MySQLite.getInstance(ChatActivity.this); }
         id = pref.getString("id");
 
-        chatTextView = (TextView) findViewById(R.id.textView);
         et = (EditText) findViewById(R.id.et_chat);
         (findViewById(R.id.btn_sendMsg)).setOnClickListener(this);
+
+        // recycler view
+        mRecyclerView = (RecyclerView) findViewById(R.id.chat_recycler);
+        // use a linear layout manager
+        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
 
         // 방 정보 설정하기 .
         rid = getIntent().getStringExtra("rid");
@@ -72,10 +85,14 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             if (sqLite.getAllChatInARoom(rid)!=null){
-                chatTextView.setText(sqLite.getAllChatInARoom(rid).toString());
+                // specify an adapter (see also next example)
+                mAdapter = new ChatAdapter(ChatActivity.this,sqLite.getAllChatInARoom(rid));
+                mRecyclerView.setAdapter(mAdapter);
             }
 
         }
+
+
 
     }
 
@@ -123,10 +140,21 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             Log.d(TAG, "onPostExecute: "+msg);
-            // TODO: 2017. 8. 26. adapter.notifyDateSetChanged
-            if (sqLite.getAllChatInARoom(rid)!=null){
-                chatTextView.setText(sqLite.getAllChatInARoom(rid).toString());
-            }
+
+                if (room==null){ // 빈 방에서 처음 메세지 보낸 경우.
+                    // TODO: 2017. 8. 26. 새로 방 저장
+                    // pref에 방
+                    // db에 방금보낸 채팅
+
+                } else { // 원래 존재하는 방에서 채팅메세지 보낸 경우.
+
+                    if (sqLite.getAllChatInARoom(rid)!=null){ // TODO: 2017. 8. 26. null 일때 처리
+                        // specify an adapter (see also next example)
+                        mAdapter = new ChatAdapter(ChatActivity.this,sqLite.getAllChatInARoom(rid));
+                        mRecyclerView.setAdapter(mAdapter);
+                    }
+
+                }
         }
     }
 

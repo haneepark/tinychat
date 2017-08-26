@@ -113,6 +113,7 @@ public class MyTCPClient {
                      */
                     // todo jsonObject 확인해서 MSG 이면 Async에 넘기고, INFO이면 여기서 처리.
                     if (incomingMessage !=null){
+                        Log.d(TAG, "run: incomingMessage != null");
                         List<String> result = MyUtil.readJSONObject(incomingMessage);
                         if (result != null){
                             if (result.get(0).equals(JSON_MSG)){ // 메세지 받은 경우
@@ -126,6 +127,8 @@ public class MyTCPClient {
                                 handler.sendMessage(m);
 
                             } else if (result.get(0).equals(JSON_INFO)){
+
+                                Log.d(TAG, "run: json_info");
 
                                 switch (result.get(1)){
                                     case "SUBMIT USER ID":

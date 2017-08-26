@@ -111,6 +111,8 @@ public final class MyUtil {
                 result.add(source);
             }
 
+            Log.d(TAG, "readJSONObject: "+ result);
+
             return result;
         } catch (JSONException e) {
             e.printStackTrace();
