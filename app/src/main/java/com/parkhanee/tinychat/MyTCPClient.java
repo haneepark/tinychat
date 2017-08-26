@@ -15,6 +15,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -176,7 +177,11 @@ public class MyTCPClient {
                         break;
                     case JSON_MSG:
                         JSONObject msgObject = new JSONObject();
-                        msgObject.put("client","true");
+                        // TODO: 2017. 8. 26. unix time !!
+                        Date date = new Date();
+                        long unixTime = date.getTime()/1000;
+                        Log.d(TAG, "sendMessage: unitTime " +unixTime );
+                        msgObject.put("unixTime",String.valueOf(unixTime));
                         msgObject.put("rid",rid);
                         msgObject.put("body",message);
                         msgObject.put("id",id); // 아래에 핸들러에게 보낼 때 경우 때문에 넣음.

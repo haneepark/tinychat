@@ -15,7 +15,9 @@ import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Room;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import static com.parkhanee.tinychat.MyTCPClient.CONNECTED;
 import static com.parkhanee.tinychat.MyTCPClient.CONNECTING;
@@ -135,6 +137,12 @@ public class MyTCPService extends IntentService {
                                 String rid = result.get(1);
                                 String from = result.get(2); // 메세지 보낸 사람 아이디
                                 String body = result.get(3);
+                                String unixTime = result.get(4);
+//                                long time = Long.valueOf(unixTime)*1000;
+
+
+                                String date = MyUtil.UnixTimeToDate(unixTime); // TODO: 2017. 8. 26.
+
 
                                 String from_name = sqLite.getFriendName(from); // 보낸 사람 이름
 
@@ -152,11 +160,12 @@ public class MyTCPService extends IntentService {
                                 intent.putExtra("rid",rid);
                                 PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
-                                sendMyNotification(pendingIntent,from_name,body);
-                            } else {
-                                // Log.e(TAG, "handleMessage: 내가 보낸 메세지인데 RECEIVED로 옴");
-                                // 무시
+                                sendMyNotification(pendingIntent,from_name,body,date);
                             }
+//                            else {
+//                                // Log.e(TAG, "handleMessage: 내가 보낸 메세지인데 RECEIVED로 옴");
+//                                // 무시
+//                            }
 
                             break;
 
@@ -272,7 +281,7 @@ public class MyTCPService extends IntentService {
         Log.d(TAG, "onDestroy: ");
     }
 
-    private void sendMyNotification(PendingIntent pendingIntent, String title, String body){
+    private void sendMyNotification(PendingIntent pendingIntent, String title, String body,String date){
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
         Notification notification
@@ -282,7 +291,10 @@ public class MyTCPService extends IntentService {
                 .setSmallIcon(R.drawable.ic_add_room)
                 .setTicker("새로운 메세지가 도착했습니다")
                 .setContentIntent(pendingIntent)
+                .setSubText(date)
+//                .setWhen(time)
                 .build();
+
 
         notification.defaults = Notification.DEFAULT_SOUND;//소리추가
         notification.flags = Notification.FLAG_ONLY_ALERT_ONCE; //알림 소리를 한번만 내도록

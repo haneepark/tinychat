@@ -8,6 +8,7 @@ import android.graphics.Matrix;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Room;
@@ -20,8 +21,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static com.parkhanee.tinychat.MyTCPClient.JSON_INFO;
 import static com.parkhanee.tinychat.MyTCPClient.JSON_MSG;
@@ -32,6 +36,8 @@ import static com.parkhanee.tinychat.MyTCPClient.JSON_MSG;
  */
 
 public final class MyUtil {
+
+    private static final String TAG = "MyUtil";
 
     public static boolean IsNetworkConnected(Context context){
         ConnectivityManager cm =
@@ -83,7 +89,7 @@ public final class MyUtil {
     /**
      * return
      * null (on jsonException)
-     * or [ JSON_MSG , rid , id , body ]
+     * or [ JSON_MSG , rid , id , body , unixTime ]
      * or [ JSON_INFO , info ]
      * */
     public static List<String> readJSONObject(String source){
@@ -100,6 +106,7 @@ public final class MyUtil {
                 result.add(1,msgObject.getString("rid"));
                 result.add(2,msgObject.getString("id")); // 이 메세지 보낸사람 아이디
                 result.add(3,msgObject.getString("body"));
+                result.add(4,msgObject.getString("unixTime"));
             } else if (object.has(JSON_INFO)){
                 result.clear();
                 result.add(0, JSON_INFO);
@@ -125,6 +132,33 @@ public final class MyUtil {
         return false;
     }
 
+    // TODO: 2017. 8. 26. unixTime to normal expression
+    public static String UnixTimeToDate(String unixTime){
+
+        Date date=new Date(Long.valueOf(unixTime)*1000);
+        Date todayDate = new Date();
+
+        String result;
+
+        SimpleDateFormat year = new SimpleDateFormat("yyyy", Locale.KOREA);
+
+        if (year.format(date).equals(year.format(todayDate))){ // 지금 연도와 비교하여 연도가 같음
+            SimpleDateFormat day = new SimpleDateFormat("MM/dd", Locale.KOREA);
+            if (day.format(date).equals(day.format(todayDate))){ // 오늘과 비교하여 날짜가 같음
+                SimpleDateFormat time = new SimpleDateFormat("HH:mm", Locale.KOREA);
+                result = time.format(date);
+            } else {
+                result = day.format(date);
+            }
+
+        } else {
+            SimpleDateFormat whole = new SimpleDateFormat("yy/MM/dd HH:mm", Locale.KOREA);
+            result = whole.format(date);
+        }
+        Log.d(TAG, "UnixTimeToDate: "+unixTime+" --> "+result);
+
+        return result;
+    }
 
     /**
      *  인텐트로 불러온 이미지를 비트맵으로 저장할 때 자동으로 -90도 돌아가는거 조정해주는 클래스
