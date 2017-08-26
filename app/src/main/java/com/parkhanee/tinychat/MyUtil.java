@@ -152,7 +152,7 @@ public final class MyUtil {
             }
 
         } else {
-            SimpleDateFormat whole = new SimpleDateFormat("yy/MM/dd HH:mm", Locale.KOREA);
+            SimpleDateFormat whole = new SimpleDateFormat("yy/MM/dd", Locale.KOREA);
             result = whole.format(date);
         }
         Log.d(TAG, "UnixTimeToDate: "+unixTime+" --> "+result);

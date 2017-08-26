@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -21,9 +22,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     Room room;
 
     MyPreferences pref;
+    MySQLite sqLite;
 
     String id; // 내 아이디
-    String friend_id; // 일대일 방의 친구 아이디
+    String friend_id, friend_name; // 일대일 방의 친구 아이디, 이름
     String rid; // 채팅방 아이디
 
 
@@ -31,6 +33,14 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar22);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false); // do not show default name text and instead, show the textView i included
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // show back button
+        // TODO: 2017. 8. 26. add onClick for back button presssed
+
 
         if (pref == null) {
             pref = MyPreferences.getInstance(context);
@@ -40,15 +50,33 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         // 방 정보 설정하기 .
         rid = getIntent().getStringExtra("rid");
-//        room = pref.getRoomFromId(rid);
+        room = pref.getRoomFromId(rid);
 
-        if (room==null){
-            // TODO: 2017. 8. 22. it's an empty room !
+        // set up toolbar title
+        if (room==null){ // empty room (== not saved in pref)
+            if (sqLite==null){ sqLite = MySQLite.getInstance(ChatActivity.this); }
+            if(sqLite.getFriendFromRid(rid)!=null) { // 일대일 방인데 방이 만들어진건 아닌 경우.
+                String name = sqLite.getFriendFromRid(rid).getName();
+                ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("empty room : "+name);
+            } else {
+                ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("empty room ! ");
+            }
+        } else { // not an empty room
+            if (room.isPrivate()){
+                ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(room.getParticipant().getName());
+            } else {
+                ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
+            }
         }
 
         chatTextView = (TextView) findViewById(R.id.textView);
         et = (EditText) findViewById(R.id.et_chat);
         (findViewById(R.id.btn_sendMsg)).setOnClickListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
     }
 
