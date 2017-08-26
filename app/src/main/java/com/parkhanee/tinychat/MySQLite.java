@@ -7,6 +7,7 @@ import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.parkhanee.tinychat.classbox.Friend;
@@ -216,6 +217,33 @@ public final class MySQLite {
         return friends;
     }
 
+    @Nullable
+    public Friend getFriendFromRid(String rid){
+        Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ FriendTable.TABLE_NAME+" where "+ FriendTable.RID+"="+rid+";", null );
+        Friend friend = null;
+        try {
+            if (cursor != null)
+                cursor.moveToFirst();
+                friend = new Friend(
+                    cursor.getString(0), //id
+                    cursor.getString(1), //nid
+                    cursor.getString(2), //name
+                    cursor.getString(3), //rid
+                    cursor.getString(4), //img_url
+                    cursor.getBlob(5), //img_blob
+                    cursor.getInt(6) // created
+                    );
+
+            Log.d(TAG, "getFriendFromRid : "+ friend.toString());
+            return friend;
+
+        } catch (CursorIndexOutOfBoundsException e) {
+            e.printStackTrace();
+            Log.d(TAG, "getFriendFromRid : is null");
+            return null;
+        }
+    }
+
 
     /**
      * room table 의 상수들 정의.
@@ -315,7 +343,7 @@ public final class MySQLite {
                     + FriendTable.ID + " TEXT PRIMARY KEY,"
                     + FriendTable.NID + " TEXT,"
                     + FriendTable.NAME + " TEXT,"
-                    + FriendTable.RID + " TEXT,"
+                    + FriendTable.RID + " TEXT UNIQUE,"
                     + FriendTable.IMG_URL + " TEXT,"
                     + FriendTable.IMG_BLOB + " BLOB,"
                     + FriendTable.CREATED + " INTEGER );"

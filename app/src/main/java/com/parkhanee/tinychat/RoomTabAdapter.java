@@ -74,6 +74,7 @@ public class RoomTabAdapter extends BaseAdapter {
     }
 
     public void setRoomArrayList(ArrayList<Room> rooms){
+        // TODO: 2017. 8. 25. null 인 room 있으면 제외해야 ...
         roomArrayList = rooms;
     }
 

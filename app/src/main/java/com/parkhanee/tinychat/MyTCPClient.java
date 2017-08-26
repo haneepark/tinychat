@@ -39,9 +39,8 @@ public class MyTCPClient {
     static final int ERROR = 6;
     static final int READY_TO_TALK = 7; // 사용자 아이디 식별 완료
     // 메세지
-    static final int SENDING = 2; // 서버로 메세지 보내는 중
-    static final int SENT = 3; // 내가 보냈던 메세지 돌려받음
-    static final int RECEIVED = 4;  // 서버로부터 다른 유저가 보낸 채팅 메세지 받음
+    static final int SENT = 3; // 서버로 메세지를 오류없이 보냄                   // 항상 obj의 타입은 List<String> !!
+    static final int RECEIVED = 4;  // 서버로부터 다른 유저가 보낸 채팅 메세지 받음   // 항상 obj의 타입은 List<String> !!
     static final int INFO = 8; // 서버로부터 알림 메세지 받음
 
 
@@ -180,7 +179,9 @@ public class MyTCPClient {
                         msgObject.put("client","true");
                         msgObject.put("rid",rid);
                         msgObject.put("body",message);
+                        msgObject.put("id",id); // 아래에 핸들러에게 보낼 때 경우 때문에 넣음.
                         object.put(JSON_MSG,msgObject);
+
                         break;
                     case JSON_INFO:
                         object.put(JSON_INFO,message);
@@ -188,14 +189,17 @@ public class MyTCPClient {
                 }
                 message = object.toString();
 
-
                 out.println(message);
                 out.flush(); // TODO: 2017. 8. 19. flush ?
 
-                Message msg = new Message();
-                msg.obj = message;
-                msg.what = SENDING;
-                handler.sendMessage(msg);
+                // 채팅 메세지 전송이 완료 된 것을 서비스의 핸들러에게 알림
+                if (type.equals(JSON_MSG)){
+                    Message msg = new Message();
+                    msg.obj = MyUtil.readJSONObject(message);
+                    msg.what = SENT;
+                    handler.sendMessage(msg);
+                }
+
                 Log.d(TAG, "sendMessage: "+message);
 
             } catch (JSONException e) {

@@ -39,6 +39,14 @@ public class Room {
         initRoom(string);
     }
 
+    public Room(String rid, Friend frined, Context context){ // 일대일 방 일 때
+        this.rid = rid;
+        this.ppl = 1;
+        this.context = context;
+        isPrivateRoom = true;
+        this.participant = frined;
+    }
+
     public Boolean isPrivate(){
         return isPrivateRoom;
     }

@@ -144,13 +144,16 @@ public final class MyPreferences {
 
         //ppl345 -  2:68620823,11111111
         String pplString = getString("ppl"+rid); // pplString = "2:68620823,11111111"
-        String[] pplStrings = pplString.split(":"); // pplStrings = [ "2" , "68620823,11111111" ]
 
         if (pplString.equals("")){ // pref에 해당 방 정보가 없는 경우
+            Log.d(TAG, "getRoomFromId: 'ppl"+rid+"' in pref is null");
             return null;
         }
 
+        String[] pplStrings = pplString.split(":"); // pplStrings = [ "2" , "68620823,11111111" ]
+
         room = new Room(rid,Integer.parseInt(pplStrings[0]),pplStrings[1],context);
+        Log.d(TAG, "getRoomFromId: "+room.toString());
         return room;
     }
 
@@ -216,9 +219,6 @@ public final class MyPreferences {
             putString("ppl"+rid,count+":"+ppl);
             Log.d(TAG, "addRoom: ppl"+rid+" : "+count+":"+ppl);
         }
-
-        Log.d(TAG, "addRoom: ");
-
         return true;
 
     }
