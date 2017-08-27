@@ -12,10 +12,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parkhanee.tinychat.classbox.Friend;
 import com.parkhanee.tinychat.classbox.Room;
 
 
-public class ChatActivity extends AppCompatActivity implements View.OnClickListener, MyRecyclerView.OnKeyboardFocusChangeListener {
+public class ChatActivity extends AppCompatActivity implements View.OnClickListener, MyRecyclerView.OnKeyboardStatusChangeListener {
     private final String TAG = "ChatActivity";
 
     EditText et;
@@ -26,7 +27,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     MySQLite sqLite;
 
     String id; // 내 아이디
-    String friend_id, friend_name; // 일대일 방의 친구 아이디, 이름
+    Friend friend; // 일대일 방의  --> 친구 이름, 프로필 사진 가지고 메세지 보이기
     String rid; // 채팅방 아이디
 
     private MyRecyclerView mRecyclerView;
@@ -68,7 +69,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         mLayoutManager = new LinearLayoutManager(this);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setOnKeyboardFocusChangeListener(this);
+        mRecyclerView.setOnKeyboardStatusChangeListener(this);
 
         // 방 정보 설정하기 .
         rid = getIntent().getStringExtra("rid");
@@ -84,7 +85,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         } else { // not an empty room
             if (room.isPrivate()){
-                ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(room.getParticipant().getName());
+                friend = room.getParticipant();
+                ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(friend.getName());
             } else {
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
             }
@@ -98,7 +100,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         }
     }
-
 
     @Override
     protected void onResume() {
@@ -122,12 +123,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onKeyboardFocusChangeCallback(boolean shown) { // keyboard hide/shown 상태 바뀔 때 마다 실행
+    public void onKeyboardStatusChangeCallback(boolean shown) { // keyboard hide/shown 상태 바뀔 때 마다 실행
         if (shown){
             mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
-            Toast.makeText(context, "shown", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(context, "shown", Toast.LENGTH_SHORT).show();
         }else {
-            Toast.makeText(context, "hidden", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(context, "hidden", Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -165,7 +166,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                     room = pref.getRoomFromId(rid);
                     if (room!=null) { // pref에서 새로 방이 생긴경우!
                         if (room.isPrivate()){
-                            ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(room.getParticipant().getName());
+                            friend = room.getParticipant();
+                            ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(friend.getName());
                         } else {
                             ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
                         }

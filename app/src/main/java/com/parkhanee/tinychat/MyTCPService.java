@@ -96,6 +96,8 @@ public class MyTCPService extends IntentService {
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        Toast.makeText(this, "서비스 시작", Toast.LENGTH_SHORT).show();
+
         Log.d(TAG, "onStartCommand: ");
 
         if (pref==null){
@@ -158,6 +160,10 @@ public class MyTCPService extends IntentService {
                                 }
 
 
+                                // TODO: 2017. 8. 27. 현재 활성화된 ChatActivity가 있으면 바인드 시키고 그 채팅방의 rid_now 를 기억.
+                                // TODO: 그리고 여기서, 방금 도착한 메세지의 rid와 rid_now를 비교해서 같으면 노티 대신에 ChatActivity에 알린다 !
+
+
                                 // 노티 띄우기
                                 Intent intent = new Intent(MyTCPService.this, ChatActivity.class);
                                 // TODO: 2017. 8. 24.  ChatActivity로 넘어갈 때 다른 extra는 안필요힌가 ?
@@ -174,11 +180,11 @@ public class MyTCPService extends IntentService {
                             break;
 
                         case CONNECTING :
-                            Toast.makeText(MyTCPService.this, "connecting", Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(MyTCPService.this, "connecting", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: connecting");
                             break;
                         case CONNECTED :
-                            Toast.makeText(MyTCPService.this, "connected", Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(MyTCPService.this, "connected", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: connected");
                             break;
                         case READY_TO_TALK:
@@ -213,8 +219,10 @@ public class MyTCPService extends IntentService {
                                 // SQLite에 메세지 등록
                                 if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime))){ // addChat 실패하면
                                     Toast.makeText(MyTCPService.this, "addChat failed", Toast.LENGTH_SHORT).show();
+                                    Log.e(TAG, "handleMessage: SENT: addChat failed" );
                                 } else {
-                                    Toast.makeText(MyTCPService.this, "addChat OK", Toast.LENGTH_SHORT).show();
+//                                    Toast.makeText(MyTCPService.this, "addChat OK", Toast.LENGTH_SHORT).show();
+                                    Log.d(TAG, "handleMessage: SENT: addChat OK");
                                 }
 
                             }
@@ -224,22 +232,22 @@ public class MyTCPService extends IntentService {
 //                            }
 
                             Toast.makeText(MyTCPService.this, "sent : "+body, Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "handleMessage: sent");
+                            Log.d(TAG, "handleMessage: sent: "+body);
 
                             break;
                         case INFO : // 서버의 알림 메세지 도착
                             Log.d(TAG, "handleMessage: info");
                             break;
                         case SHUTDOWN : // 소켓 연결 종료
-                            Toast.makeText(MyTCPService.this, "shutdown", Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(MyTCPService.this, "shutdown", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: shutdown");
                             break;
                         case ERROR :
-                            Toast.makeText(MyTCPService.this, "error", Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(MyTCPService.this, "error", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: error");
                             break;
                         default:
-                            Log.d(TAG, "handleMessage: default "+msg.what+" "+msg.obj);
+                            Log.d(TAG, "handleMessage: default? "+msg.what+" "+msg.obj);
                     }
                 }
             };
@@ -297,6 +305,7 @@ public class MyTCPService extends IntentService {
         }
         tcpClient.stopClient();
         Log.d(TAG, "onDestroy: ");
+        Toast.makeText(this, "서비스 종료", Toast.LENGTH_SHORT).show();
     }
 
     private void sendMyNotification(PendingIntent pendingIntent, String title, String body,String date){

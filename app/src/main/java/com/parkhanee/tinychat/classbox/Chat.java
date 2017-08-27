@@ -8,6 +8,10 @@ import com.parkhanee.tinychat.MyUtil;
  */
 
 public class Chat {
+
+    // TODO: 2017. 8. 27. friend 객체를 여기서 가지고 있어야, ChatAdapter 에서 친구 정보를 리사이클러뷰의 각 아이템에 넣어줄 수 있음
+    // 아니면 ChatAdapter에서 가지고 있어서 거기서 처리 ? . .
+
     private String mid, rid, from, body, unitTime,from_name,
             date;  // date와 from_name은 sqLite 에는 저장하지 않지만 Chat 객체를 만들 때 생성해서 각 객체에 가지고 있는다.
 
