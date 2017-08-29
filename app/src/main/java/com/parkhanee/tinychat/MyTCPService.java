@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -80,6 +81,12 @@ public class MyTCPService extends IntentService {
     public static boolean alive = false;
     String id ;
 
+    private IBinder binder = new MyBinder();
+
+    private boolean chatActivityBound = false; // 해당 rid에 대한 노티 띄우지 말하야 함.
+    String activeRoomId=null;
+
+
     public MyTCPService(String name) {
         super(name);
     }
@@ -91,7 +98,37 @@ public class MyTCPService extends IntentService {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        Log.d(TAG, "onBind: ");
+        if (intent.getBooleanExtra("chatActivityBound",false)){
+            chatActivityBound = true;
+            activeRoomId = intent.getStringExtra("rid");
+        }
+        return binder;
+    }
+
+    @Override
+    public void onRebind(Intent intent) {
+        Log.d(TAG, "onRebind: ");
+        super.onRebind(intent);
+        if (intent.getBooleanExtra("chatActivityBound",false)){
+            chatActivityBound = true;
+            activeRoomId = intent.getStringExtra("rid");
+        }
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.d(TAG, "onUnbind: ");
+
+        if (intent.getBooleanExtra("chatActivityBound",false)){
+            chatActivityBound = false;
+            activeRoomId = null;
+        }
+
+        return true;        // return super.onUnbind(intent);
+        // 한 서비스에 대해 bind가 여러번 생기면,
+        // true : 첫번째는 onBind-onUnBind 두번째부터는 onRebind-onUnBind 호출
+        // false : 첫번째는 onBind-onUnBind 호출, 그 뒤로는 아예 호출되지 않음
     }
 
     @Override
@@ -150,7 +187,7 @@ public class MyTCPService extends IntentService {
                                     pref.addRoom(room);
                                 }
 
-                                // TODO: 2017. 8. 24. pref에 최근메세지 등록
+                                // TODO: 2017. 8. 24. pref에 최근메세지 등록. . .  or sqLite ?
 
                                 // SQLite에 메세지 등록
                                 if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime))){ // addChat실패하면
@@ -160,17 +197,21 @@ public class MyTCPService extends IntentService {
                                 }
 
 
-                                // TODO: 2017. 8. 27. 현재 활성화된 ChatActivity가 있으면 바인드 시키고 그 채팅방의 rid_now 를 기억.
-                                // TODO: 그리고 여기서, 방금 도착한 메세지의 rid와 rid_now를 비교해서 같으면 노티 대신에 ChatActivity에 알린다 !
+                                // TODO: 2017. 8. 29.   방금 도착한 메세지의 rid와 activeRoomId를 비교해서 같으면 노티 대신에 ChatActivity에 알린다 !
+                                if (rid.equals(activeRoomId)){
 
+                                    // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal --> 액티비티에서  UI update
 
-                                // 노티 띄우기
-                                Intent intent = new Intent(MyTCPService.this, ChatActivity.class);
-                                // TODO: 2017. 8. 24.  ChatActivity로 넘어갈 때 다른 extra는 안필요힌가 ?
-                                intent.putExtra("rid",rid);
-                                PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                                } else {
+                                    // 노티 띄우기
+                                    Intent intent = new Intent(MyTCPService.this, ChatActivity.class);
+                                    // TODO: 2017. 8. 24.  ChatActivity로 넘어갈 때 다른 extra는 안필요힌가 ?
+                                    // TODO: 2017. 8. 29. intent FLAG !
+                                    intent.putExtra("rid",rid);
+                                    PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
-                                sendMyNotification(pendingIntent,from_name,body,date);
+                                    sendMyNotification(pendingIntent,from_name,body,date);
+                                }
                             }
 //                            else {
 //                                // Log.e(TAG, "handleMessage: 내가 보낸 메세지인데 RECEIVED로 옴");
@@ -226,10 +267,11 @@ public class MyTCPService extends IntentService {
                                 }
 
                             }
-//                            else {
-                                // 여기오는 일은 있으면 안 됨 !
-//                                Log.d(TAG, "handleMessage: 내가 보낸 메세지가 아닌데 SENT로 옴");
-//                            }
+
+                            if (rid.equals(activeRoomId)){
+
+                                // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal
+                            }
 
                             Toast.makeText(MyTCPService.this, "sent : "+body, Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: sent: "+body);
@@ -328,5 +370,19 @@ public class MyTCPService extends IntentService {
         notification.flags = Notification.FLAG_AUTO_CANCEL;//확인하면 자동으로 알림이 제거 되도록
 
         notificationManager.notify(999, notification);
+    }
+
+    public String getRid(){
+        return activeRoomId;
+    }
+
+    public class MyBinder extends Binder {
+        MyTCPService getService(){
+            return MyTCPService.this;
+        }
+
+        MyTCPClient getClient(){
+            return MyTCPService.tcpClient;
+        }
     }
 }

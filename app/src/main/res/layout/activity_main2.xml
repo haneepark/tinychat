@@ -20,4 +20,21 @@
         android:text="is it running?"
         />
 
+    <TextView
+        android:id="@+id/tv_main2"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="TextView"/>
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="unbind service"/>
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="is it bound?"/>
+
 </LinearLayout>
