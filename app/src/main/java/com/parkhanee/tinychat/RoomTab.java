@@ -1,7 +1,10 @@
 package com.parkhanee.tinychat;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,11 +27,14 @@ import java.util.HashMap;
  * Created by parkhanee on 2017. 8. 3..
  */
 
-public class RoomTab extends Fragment implements View.OnClickListener {
+public class RoomTab extends Fragment implements View.OnClickListener, MyTCPService.OnNewMessageRecievedListener {
     private final String TAG = "RoomTab";
     private RoomTabAdapter adapter;
     MySQLite db = null;
     MyPreferences pref = null;
+
+    boolean serviceBound=false;
+    MyTCPService tcpService;
 
     @Nullable
     @Override
@@ -77,14 +83,14 @@ public class RoomTab extends Fragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
 
+        Intent intent = new Intent(getActivity(),MyTCPService.class);
+        getActivity().bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE);
+        serviceBound = true;
+
         // TODO: 2017. 8. 26. 채팅방 늘어나면 이 작업 다시 하기 위해서 onViewCreated 에 있던걸 여기로 옮김 !!
         // onResume은 MainActivity가 백스택에 있다가 focus를 새로 받을 때 마다 실행 된다.
         if (pref.contains("rooms")){ // 채팅 방 존재
-               /*
-               *   rid - 충방개수:rid1,rid2,rid3,  . . .
-               *    e.g.) rid - 3:345,232,222
-               *    pref string 에서 roomArrayList 만들기
-               */
+
             ArrayList<Room> roomArrayList = pref.getAllRooms();
 
             if (roomArrayList!=null){
@@ -102,9 +108,57 @@ public class RoomTab extends Fragment implements View.OnClickListener {
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        if (serviceBound){
+            Log.d(TAG, "onStop: unbindService");
+            getActivity().unbindService(serviceConnection);
+            serviceBound = false;
+        }
+    }
+
+    @Override
     public void onClick(View view) {
         switch (view.getId()) {
 
         }
     }
+
+    @Override
+    public void onMessageRecievedCallback() {// refresh room ListView!
+        if (pref.contains("rooms")){ // 채팅 방 존재
+
+            ArrayList<Room> roomArrayList = pref.getAllRooms();
+
+            if (roomArrayList!=null){
+                HashMap<String,Chat> chatHashMap = db.getRecentChatInRooms(roomArrayList);
+                if (chatHashMap!=null){
+                    adapter.setRoomArrayList(roomArrayList,chatHashMap);
+                    adapter.notifyDataSetChanged();
+                }else {
+                    Log.e(TAG, "onResume: recent chat is null");
+                }
+            } else {
+                Log.e(TAG, "onResume: there is no room");
+            }
+        }
+    }
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            MyTCPService.MyBinder myBinder = (MyTCPService.MyBinder) iBinder;
+            tcpService = myBinder.getService();
+            tcpService.setOnNewMessageRecievedListener(RoomTab.this,null);
+            // tcpClient = myBinder.getClient();
+            serviceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            tcpService.unsetOnNewMessageRecievedListener(RoomTab.this);
+            serviceBound = false;
+        }
+    };
 }

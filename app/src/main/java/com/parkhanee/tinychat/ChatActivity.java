@@ -122,7 +122,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = new Intent(ChatActivity.this,MyTCPService.class);
 //        intent.putExtra("chatActivityBound",true);
 //        intent.putExtra("rid",rid);
-        Toast.makeText(context, "onResume: rid: "+rid, Toast.LENGTH_SHORT).show();
         bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE);
         serviceBound = true;
     }

@@ -86,7 +86,7 @@ public class MyTCPService extends IntentService {
 
     String activeRoomId=null;
     private final ArrayList<OnNewMessageRecievedListener> listeners = new ArrayList<>();
-
+    private static final String roomTabOnBindRID="roomTabOnBindRID";
 
     public MyTCPService(String name) {
         super(name);
@@ -189,7 +189,7 @@ public class MyTCPService extends IntentService {
 
 
                                 // TODO: 2017. 8. 29.   방금 도착한 메세지의 rid와 activeRoomId를 비교해서 같으면 노티 대신에 ChatActivity에 알린다 !
-                                if (rid.equals(activeRoomId)){
+                                if (rid.equals(activeRoomId) | activeRoomId.equals(roomTabOnBindRID)){
                                     // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal --> 액티비티에서  UI update
                                     for (OnNewMessageRecievedListener listener : listeners){
                                         listener.onMessageRecievedCallback();
@@ -261,7 +261,7 @@ public class MyTCPService extends IntentService {
 
                             }
 
-                            if (rid.equals(activeRoomId)){
+                            if (rid.equals(activeRoomId) | activeRoomId.equals(roomTabOnBindRID)){
 
                                 // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal
                                 for (OnNewMessageRecievedListener listener : listeners){
@@ -399,8 +399,15 @@ public class MyTCPService extends IntentService {
         Toast.makeText(this, "set listener", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "setOnNewMessageRecievedListener: ");
         listeners.add(listener);
-        activeRoomId = rid;
+        // TODO: 2017. 8. 29. roomTab에서 bind할 때 activeRoomId=null 되는데 문제 없나 ?
+        if (rid==null){
+            activeRoomId = roomTabOnBindRID;
+        } else {
+            activeRoomId = rid;
+        }
+
     }
+
 
     public void unsetOnNewMessageRecievedListener(OnNewMessageRecievedListener listener){
         Log.d(TAG, "unsetOnNewMessageRecievedListener: ");
