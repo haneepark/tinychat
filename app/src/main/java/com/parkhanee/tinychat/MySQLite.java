@@ -13,8 +13,10 @@ import android.util.Log;
 
 import com.parkhanee.tinychat.classbox.Chat;
 import com.parkhanee.tinychat.classbox.Friend;
+import com.parkhanee.tinychat.classbox.Room;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by parkhanee on 2017. 8. 2..
@@ -365,6 +367,49 @@ public final class MySQLite {
             return null;
         }
     }
+
+    @Nullable
+    public HashMap<String,Chat> getRecentChatInRooms(ArrayList<Room> rooms){
+        HashMap<String,Chat> chatHashMap = new HashMap<>();
+
+        for (Room room : rooms){
+            String rid=room.getRid();
+            try { // 방마다 max(unixtime) 인 chat 하나씩 select
+                Cursor cursor =  mySQLiteDatabase.rawQuery(
+                        "SELECT "+ChatTable.MID+", "+ChatTable.RID+", "+ChatTable.ID+", "+ChatTable.BODY+", MAX(" +ChatTable.UNIXTIME+") AS "+ChatTable.UNIXTIME+
+                                " FROM "+ ChatTable.TABLE_NAME +
+                                " WHERE "+ ChatTable.RID+"="+rid + " ;"
+                        , null ); // 최신역순으로 출력
+
+                if (cursor.moveToFirst()) {
+                    Chat chat = new Chat(
+                            cursor.getString(0), //mid
+                            cursor.getString(1), //rid
+                            cursor.getString(2), //from
+                            cursor.getString(3), //body
+                            cursor.getString(4) //unixtime
+                    );
+                    chatHashMap.put(rid,chat);
+                }
+
+                cursor.close();
+
+            } catch (CursorIndexOutOfBoundsException e) {
+                Log.d(TAG, "getRecentChatInRooms: CursorIndexOutOfBoundsException");
+                e.printStackTrace();
+                return null;
+            }
+
+            Log.d(TAG, "getRecentChatInRooms: count: "+chatHashMap.size());
+            Log.d(TAG, "getRecentChatInRooms: "+chatHashMap.toString());
+        }
+
+        return chatHashMap;
+
+
+    }
+
+
 
 
 

@@ -13,10 +13,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.parkhanee.tinychat.classbox.Chat;
 import com.parkhanee.tinychat.classbox.Room;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Created by parkhanee on 2017. 8. 3..
@@ -86,10 +88,15 @@ public class RoomTab extends Fragment implements View.OnClickListener {
             ArrayList<Room> roomArrayList = pref.getAllRooms();
 
             if (roomArrayList!=null){
-                adapter.setRoomArrayList(roomArrayList);
-                adapter.notifyDataSetChanged();
+                HashMap<String,Chat> chatHashMap = db.getRecentChatInRooms(roomArrayList);
+                if (chatHashMap!=null){
+                    adapter.setRoomArrayList(roomArrayList,chatHashMap);
+                    adapter.notifyDataSetChanged();
+                }else {
+                    Log.e(TAG, "onResume: recent chat is null");
+                }
             } else {
-                Toast.makeText(getActivity(), "there is no room", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "onResume: there is no room");
             }
         }
     }
