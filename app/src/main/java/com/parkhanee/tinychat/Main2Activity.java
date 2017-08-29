@@ -14,7 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class Main2Activity extends AppCompatActivity implements View.OnClickListener {
+public class Main2Activity extends AppCompatActivity implements View.OnClickListener, MyTCPService.OnNewMessageRecievedListener {
     Button button, button3;
     private static final String TAG = "Main2Activity";
     Intent intent;
@@ -31,8 +31,8 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_main2);
 
         intent = new Intent(Main2Activity.this,MyTCPService.class);
-        intent.putExtra("chatActivityBound",true);
-        intent.putExtra("rid",rid);
+//        intent.putExtra("chatActivityBound",true);
+//        intent.putExtra("rid",rid);
 
 
         tv = (TextView) findViewById(R.id.tv_main2);
@@ -109,6 +109,7 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             MyTCPService.MyBinder myBinder = (MyTCPService.MyBinder) iBinder;
             tcpService = myBinder.getService();
+            tcpService.setOnNewMessageRecievedListener(Main2Activity.this,rid);
             // tcpClient = myBinder.getClient();
             serviceBound = true;
         }
@@ -118,4 +119,9 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
             serviceBound = false;
         }
     };
+
+    @Override
+    public void onMessageRecievedCallback() {
+        tv.setText("new message");
+    }
 }

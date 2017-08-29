@@ -67,6 +67,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fab2.setOnClickListener(this);
         fab1.setVisibility(View.VISIBLE);
         fab2.setVisibility(View.INVISIBLE);
+
+        // TODO: 2017. 8. 29.
+        Intent intent = new Intent(MainActivity.this, MyTCPService.class);
+        startService(intent);
     }
 
     private void setupTabIcons() {

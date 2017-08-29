@@ -193,9 +193,9 @@ public class MyTCPClient {
                         int randomNum = 0;
                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                             randomNum = ThreadLocalRandom.
-                                    current().nextInt(10, 100 + 1); // generage random within 10 to 100
+                                    current().nextInt(0, 1000 + 1); // generage random within 10 to 100
                         }
-                        String mid = String.valueOf(randomNum)+rid+id;
+                        String mid = String.valueOf(randomNum)+rid+unixTime;
 
                         Log.d(TAG, "sendMessage: mid "+mid);
 

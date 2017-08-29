@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -320,10 +321,11 @@ public final class MySQLite {
             contentValues.put(ChatTable.UNIXTIME, chat.getUnitTime());
             mySQLiteDatabase.insert(ChatTable.TABLE_NAME, null, contentValues);
             return true;
-        } catch (Exception e) {
+        } catch (SQLiteConstraintException e) {
             e.printStackTrace();
             return false;
         }
+
     }
 
     @Nullable
@@ -352,7 +354,7 @@ public final class MySQLite {
                 } while (cursor.moveToNext());
             }
 
-            Log.d(TAG, "getAllChatInARoom: "+chatArrayList.toString());
+            Log.d(TAG, "getAllChatInARoom: chat개수: "+chatArrayList.size());
 
             cursor.close();
             return chatArrayList;

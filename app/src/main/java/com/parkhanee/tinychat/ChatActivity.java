@@ -1,7 +1,11 @@
 package com.parkhanee.tinychat;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,7 +20,8 @@ import com.parkhanee.tinychat.classbox.Friend;
 import com.parkhanee.tinychat.classbox.Room;
 
 
-public class ChatActivity extends AppCompatActivity implements View.OnClickListener, MyRecyclerView.OnKeyboardStatusChangeListener {
+public class ChatActivity extends AppCompatActivity implements View.OnClickListener, MyRecyclerView.OnKeyboardStatusChangeListener, MyTCPService.OnNewMessageRecievedListener {
+
     private final String TAG = "ChatActivity";
 
     EditText et;
@@ -34,6 +39,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private ChatAdapter mAdapter;
     private LinearLayoutManager mLayoutManager;
     Toolbar toolbar;
+
+    boolean serviceBound=false;
+    MyTCPService tcpService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,13 +63,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         et = (EditText) findViewById(R.id.et_chat);
         (findViewById(R.id.btn_sendMsg)).setOnClickListener(this);
-        /*et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
-                Toast.makeText(context, "onFocusChange", Toast.LENGTH_SHORT).show();
-            }
-        });*/
 
         // recycler view
         mRecyclerView = (MyRecyclerView) findViewById(R.id.chat_recycler);
@@ -70,10 +71,20 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setOnKeyboardStatusChangeListener(this);
+        mAdapter = new ChatAdapter(ChatActivity.this);
+        mRecyclerView.setAdapter(mAdapter);
 
         // 방 정보 설정하기 .
         rid = getIntent().getStringExtra("rid");
         room = pref.getRoomFromId(rid);
+
+        Log.d(TAG, "onCreate: rid: "+rid);
+        if (room!=null){
+            Log.d(TAG, "onCreate: room: "+room.toString());
+        } else {
+            Log.d(TAG, "onCreate: room: "+null);
+        }
+
 
         // set up toolbar title
         if (room==null){ // empty room (== not saved in pref)
@@ -93,8 +104,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
             if (sqLite.getAllChatInARoom(rid)!=null){
                 // specify an adapter (see also next example)
-                mAdapter = new ChatAdapter(ChatActivity.this,sqLite.getAllChatInARoom(rid));
-                mRecyclerView.setAdapter(mAdapter);
+                mAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
                 mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
             }
 
@@ -104,7 +114,80 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume: ");
+        if (rid==null){
+            Toast.makeText(context, "onResume : rid is null ?? ", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "onResume: rid is null?");
+        }
+        Intent intent = new Intent(ChatActivity.this,MyTCPService.class);
+//        intent.putExtra("chatActivityBound",true);
+//        intent.putExtra("rid",rid);
+        Toast.makeText(context, "onResume: rid: "+rid, Toast.LENGTH_SHORT).show();
+        bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE);
+        serviceBound = true;
+    }
 
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            MyTCPService.MyBinder myBinder = (MyTCPService.MyBinder) iBinder;
+            tcpService = myBinder.getService();
+            tcpService.setOnNewMessageRecievedListener(ChatActivity.this,rid);
+            // tcpClient = myBinder.getClient();
+            serviceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            tcpService.unsetOnNewMessageRecievedListener(ChatActivity.this);
+            serviceBound = false;
+        }
+    };
+
+    @Override
+    public void onMessageRecievedCallback() {
+
+        Log.d(TAG, "onMessageRecievedCallback: ");
+
+        // 빈 방에서 보통 방이 되는 경우 toolbar title 설정
+        if (room==null){
+            Log.d(TAG, "onMessageRecievedCallback: room is null");
+            room = pref.getRoomFromId(rid);
+            if (room!=null) { // pref에서 새로 방이 생긴경우!
+                Log.d(TAG, "onMessageRecievedCallback: room is not null now ! ");
+                if (room.isPrivate()){
+                    Log.d(TAG, "onMessageRecievedCallback: room is private");
+                    friend = room.getParticipant();
+                    ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(friend.getName());
+                } else {
+                    ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
+                }
+            }
+        }
+
+        // db에 방금 보낸 채팅을 넣는건 TCPService에서 했으므로, 여기서는 뷰 띄워주기만 하면 됨.
+        if (sqLite.getAllChatInARoom(rid)!=null){ // 여기서는 방금 하나 보냈으니까  null이 아닌게 정상
+            // specify an adapter (see also next example)
+            mAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
+            mAdapter.notifyDataSetChanged();
+            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+        } else {
+            Log.d(TAG, "onMessageRecievedCallback: chat is null?");
+        }
+    }
+
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (serviceBound){
+            Log.d(TAG, "onStop: unbind service: rid: "+rid);
+            unbindService(serviceConnection);
+            serviceBound = false;
+        }
     }
 
     public void onClick(View view) {
@@ -125,12 +208,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onKeyboardStatusChangeCallback(boolean shown) { // keyboard hide/shown 상태 바뀔 때 마다 실행
         if (shown){
-            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
-//            Toast.makeText(context, "shown", Toast.LENGTH_SHORT).show();
-        }else {
-//            Toast.makeText(context, "hidden", Toast.LENGTH_SHORT).show();
+            // 키보드가 보이면 레이아웃 위로 밀어줌
+            if (mAdapter.getItemCount()>2){ // 기존 채팅이 두개 이상 존재 하는 경우
+                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+            }
         }
-
     }
 
     private class TcpAsyncTask extends AsyncTask<String, Void, Void> {
@@ -161,29 +243,29 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             super.onPostExecute(aVoid);
             Log.d(TAG, "onPostExecute: "+msg);
 
-                // 빈 방에서 보통 방이 되는 경우 toolbar title 설정
-                if (room==null){
-                    room = pref.getRoomFromId(rid);
-                    if (room!=null) { // pref에서 새로 방이 생긴경우!
-                        if (room.isPrivate()){
-                            friend = room.getParticipant();
-                            ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(friend.getName());
-                        } else {
-                            ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
-                        }
-                    }
-                }
-
-                // db에 방금 보낸 채팅을 넣는건 TCPService에서 했으므로, 여기서는 뷰 띄워주기만 하면 됨.
-                if (sqLite.getAllChatInARoom(rid)!=null){ // 여기서는 방금 하나 보냈으니까  null이 아닌게 정상
-                    // specify an adapter (see also next example)
-                    mAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
-                    mAdapter.notifyDataSetChanged();
-                    mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
-                } else {
-                    Toast.makeText(ChatActivity.this, "async : chat is null", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "onPostExecute: chat is null ? ");
-                }
+//                // 빈 방에서 보통 방이 되는 경우 toolbar title 설정
+//                if (room==null){
+//                    room = pref.getRoomFromId(rid);
+//                    if (room!=null) { // pref에서 새로 방이 생긴경우!
+//                        if (room.isPrivate()){
+//                            friend = room.getParticipant();
+//                            ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(friend.getName());
+//                        } else {
+//                            ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
+//                        }
+//                    }
+//                }
+//
+//                // db에 방금 보낸 채팅을 넣는건 TCPService에서 했으므로, 여기서는 뷰 띄워주기만 하면 됨.
+//                if (sqLite.getAllChatInARoom(rid)!=null){ // 여기서는 방금 하나 보냈으니까  null이 아닌게 정상
+//                    // specify an adapter (see also next example)
+//                    mAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
+//                    mAdapter.notifyDataSetChanged();
+//                    mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+//                } else {
+//                    Toast.makeText(ChatActivity.this, "async : chat is null", Toast.LENGTH_SHORT).show();
+//                    Log.d(TAG, "onPostExecute: chat is null ? ");
+//                }
         }
     }
 

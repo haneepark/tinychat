@@ -65,7 +65,7 @@ public class AddFriendActivity extends AppCompatActivity {
 
         if (!MyUtil.IsNetworkConnected(this)) {
             // TODO: 2017. 8. 5. 경고
-            Toast.makeText(this, "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "인터넷 연결 안됨", Toast.LENGTH_SHORT).show();
         } else {
             getAllUserRequested();
         }
@@ -450,11 +450,13 @@ public class AddFriendActivity extends AppCompatActivity {
 
                         // 서버에서 방번호 받아옴
                         String rid = jsonObject.getString("rid");
-                        Toast.makeText(AddFriendActivity.this, "rid : "+rid, Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(AddFriendActivity.this, "rid : "+rid, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onResponse: rid from server: "+rid);
 
                         if (resultCode.equals("302")&jsonObject.getJSONArray("followings:"+id).toString().contains(friendId)){
                             // TODO: 2017. 8. 9. 알림
-                            Toast.makeText(context, "이미 서버db에서 친구입니다", Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(context, "이미 서버db에서 친구입니다", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "onResponse: 이미 서버db에서 친구");
                             if (db.getFriend(friend.getId()) == null){
 
                                 // local db에 친구관계 추가
@@ -462,7 +464,8 @@ public class AddFriendActivity extends AppCompatActivity {
                                 db.addFriend(friend);
                                 db.getAllFriends(); // TODO: 2017. 8. 18. test
 
-                                Toast.makeText(context, "local db에 친구 등록 완료", Toast.LENGTH_SHORT).show();
+//                                Toast.makeText(context, "local db에 친구 등록 완료", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "onResponse: local db에 친구 등록 완료");
 
                                 // TODO: 2017. 8. 16. get thumbnail path
                                 if (thumb_url!=null){
@@ -473,8 +476,8 @@ public class AddFriendActivity extends AppCompatActivity {
                             }
                         } else {
                             // 서버 친구등록 성공
-                            Toast.makeText(context, "100", Toast.LENGTH_SHORT).show();
-
+//                            Toast.makeText(context, "100", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "onResponse: 서버에 친구등록 성공");
 
 
 
@@ -560,7 +563,8 @@ public class AddFriendActivity extends AppCompatActivity {
 
                     if (resultCode.equals("100") & jsonObject.has("thumb_blob")) {
                         // TODO: 2017. 8. 16. 성공 알림
-                        Toast.makeText(context, "thumb 100", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(context, "thumb 100", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onResponse: thumb 100");
                         // TODO: 2017. 8. 16. save thumbnail on SQLite
                         byte[] bytes = Base64.decode(jsonObject.getString("thumb_blob"), Base64.DEFAULT);
                         friend.setImgBlob(bytes);
@@ -568,7 +572,7 @@ public class AddFriendActivity extends AppCompatActivity {
 
                     } else {
                         // TODO: 2017. 8. 9. 실패 경고
-                        Toast.makeText(context, "thumb "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(context, "thumb "+resultCode+" "+result, Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "onGetThumbnailRequested : "+resultCode+" "+result);
                         return;
                     }

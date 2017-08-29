@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.parkhanee.tinychat.classbox.Chat;
 import com.parkhanee.tinychat.classbox.Room;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.parkhanee.tinychat.MyTCPClient.CONNECTED;
@@ -83,8 +84,8 @@ public class MyTCPService extends IntentService {
 
     private IBinder binder = new MyBinder();
 
-    private boolean chatActivityBound = false; // 해당 rid에 대한 노티 띄우지 말하야 함.
     String activeRoomId=null;
+    private final ArrayList<OnNewMessageRecievedListener> listeners = new ArrayList<>();
 
 
     public MyTCPService(String name) {
@@ -99,10 +100,6 @@ public class MyTCPService extends IntentService {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind: ");
-        if (intent.getBooleanExtra("chatActivityBound",false)){
-            chatActivityBound = true;
-            activeRoomId = intent.getStringExtra("rid");
-        }
         return binder;
     }
 
@@ -110,27 +107,21 @@ public class MyTCPService extends IntentService {
     public void onRebind(Intent intent) {
         Log.d(TAG, "onRebind: ");
         super.onRebind(intent);
-        if (intent.getBooleanExtra("chatActivityBound",false)){
-            chatActivityBound = true;
-            activeRoomId = intent.getStringExtra("rid");
-        }
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
         Log.d(TAG, "onUnbind: ");
 
-        if (intent.getBooleanExtra("chatActivityBound",false)){
-            chatActivityBound = false;
-            activeRoomId = null;
-        }
-
-        return true;        // return super.onUnbind(intent);
+        return false;        // return super.onUnbind(intent);
         // 한 서비스에 대해 bind가 여러번 생기면,
         // true : 첫번째는 onBind-onUnBind 두번째부터는 onRebind-onUnBind 호출
         // false : 첫번째는 onBind-onUnBind 호출, 그 뒤로는 아예 호출되지 않음
     }
 
+    /**
+     * tcpClient로 서버와 소켓 연결 시작
+     * */
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         Toast.makeText(this, "서비스 시작", Toast.LENGTH_SHORT).show();
@@ -199,8 +190,10 @@ public class MyTCPService extends IntentService {
 
                                 // TODO: 2017. 8. 29.   방금 도착한 메세지의 rid와 activeRoomId를 비교해서 같으면 노티 대신에 ChatActivity에 알린다 !
                                 if (rid.equals(activeRoomId)){
-
                                     // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal --> 액티비티에서  UI update
+                                    for (OnNewMessageRecievedListener listener : listeners){
+                                        listener.onMessageRecievedCallback();
+                                    }
 
                                 } else {
                                     // 노티 띄우기
@@ -271,6 +264,10 @@ public class MyTCPService extends IntentService {
                             if (rid.equals(activeRoomId)){
 
                                 // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal
+                                for (OnNewMessageRecievedListener listener : listeners){
+                                    listener.onMessageRecievedCallback();
+                                }
+
                             }
 
                             Toast.makeText(MyTCPService.this, "sent : "+body, Toast.LENGTH_SHORT).show();
@@ -384,5 +381,30 @@ public class MyTCPService extends IntentService {
         MyTCPClient getClient(){
             return MyTCPService.tcpClient;
         }
+    }
+
+    public interface OnNewMessageRecievedListener {
+        void onMessageRecievedCallback();
+    }
+
+    /**
+     * should be called when an activity is bound
+     * it is both for ChatActivity and RoomTab in MainActivity
+     *
+     * 근데 두 액티비티가 동시에 bind 되어있을 경우는 이 리스너가 둘 중 하나에만 연결될 텐데 ?
+     * 현재 활성화된 액티비티에 리스너가 연결 되도록 !!
+     *
+     * */
+    public void setOnNewMessageRecievedListener(OnNewMessageRecievedListener listener,String rid){
+        Toast.makeText(this, "set listener", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "setOnNewMessageRecievedListener: ");
+        listeners.add(listener);
+        activeRoomId = rid;
+    }
+
+    public void unsetOnNewMessageRecievedListener(OnNewMessageRecievedListener listener){
+        Log.d(TAG, "unsetOnNewMessageRecievedListener: ");
+        listeners.remove(listener);
+        activeRoomId = null; // TODO: 2017. 8. 29. may cause error
     }
 }
