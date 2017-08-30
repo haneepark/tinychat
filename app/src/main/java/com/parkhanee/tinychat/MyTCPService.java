@@ -117,7 +117,7 @@ public class MyTCPService extends IntentService {
         // true : 첫번째는 onBind-onUnBind 두번째부터는 onRebind-onUnBind 호출
         // false : 첫번째는 onBind-onUnBind 호출, 그 뒤로는 아예 호출되지 않음
     }
-    
+
 
 /*    @Override
     public void onTaskRemoved(Intent rootIntent) {

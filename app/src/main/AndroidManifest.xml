@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <!-- permission to save image files into directories which are accessible by media provider. -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -41,15 +42,17 @@
         </activity>
         <activity android:name=".ChatActivity">
         </activity>
-
-        <service
-            android:name=".MyIntentService"
-            android:exported="false">
-        </service>
         <service
             android:name=".MyTCPService"
-            android:exported="false">
+            android:exported="true"
+            android:stopWithTask="false">
         </service>
+        <receiver android:name=".MyBroadCastReceiver" >
+            <intent-filter>
+                <action android:name="com.android.MY_TASK_KILLED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <activity android:name=".Main2Activity">
             <intent-filter>
