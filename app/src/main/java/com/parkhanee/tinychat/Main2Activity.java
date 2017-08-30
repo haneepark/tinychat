@@ -14,7 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class Main2Activity extends AppCompatActivity implements View.OnClickListener, MyTCPService.OnNewMessageRecievedListener {
+public class Main2Activity extends AppCompatActivity implements View.OnClickListener, MyTCPService.OnNewMessageReceivedListener {
     Button button, button3;
     private static final String TAG = "Main2Activity";
     Intent intent;
@@ -38,11 +38,8 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
         tv = (TextView) findViewById(R.id.tv_main2);
         tv.setOnClickListener(this);
         button = (Button) findViewById(R.id.service_button);
-        if (MyTCPService.isRunning()){
-            button.setText("stop service");
-        } else {
-            button.setText("start service");
-        }
+        button.setText("stop service");
+
         Button button1 = (Button) findViewById(R.id.button2);
         button1.setOnClickListener(this);
         button.setOnClickListener(this);
@@ -54,8 +51,6 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
             button3.setText("bind");
         }
         findViewById(R.id.button4).setOnClickListener(this);
-
-
     }
 
     @Override
@@ -67,16 +62,11 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.service_button :
-                if (MyTCPService.isRunning()){ // stop service
+//                if (MyTCPService.isRunning()){ // stop service
                     Log.d(TAG, "onClick: stop service");
                     // todo stop the connection thus stop service
                     stopService(intent);
-                    button.setText("start service");
-                }else { // start service
-                    Log.d(TAG, "onClick: start service");
-                    startService(intent);
-                    button.setText("stop service");
-                }
+//                }
                 break;
             case R.id.button2:
                 boolean run = MyUtil.isMyServiceRunning(Main2Activity.this,MyTCPService.class);
@@ -121,7 +111,7 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
     };
 
     @Override
-    public void onMessageRecievedCallback() {
+    public void onMessageReceivedCallback() {
         tv.setText("new message");
     }
 }

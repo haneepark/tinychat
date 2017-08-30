@@ -20,7 +20,7 @@ import com.parkhanee.tinychat.classbox.Friend;
 import com.parkhanee.tinychat.classbox.Room;
 
 
-public class ChatActivity extends AppCompatActivity implements View.OnClickListener, MyRecyclerView.OnKeyboardStatusChangeListener, MyTCPService.OnNewMessageRecievedListener {
+public class ChatActivity extends AppCompatActivity implements View.OnClickListener, MyRecyclerView.OnKeyboardStatusChangeListener, MyTCPService.OnNewMessageReceivedListener {
 
     private final String TAG = "ChatActivity";
 
@@ -146,18 +146,18 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     };
 
     @Override
-    public void onMessageRecievedCallback() {
+    public void onMessageReceivedCallback() {
 
-        Log.d(TAG, "onMessageRecievedCallback: ");
+        Log.d(TAG, "onMessageReceivedCallback: ");
 
         // 빈 방에서 보통 방이 되는 경우 toolbar title 설정
         if (room==null){
-            Log.d(TAG, "onMessageRecievedCallback: room is null");
+            Log.d(TAG, "onMessageReceivedCallback: room is null");
             room = pref.getRoomFromId(rid);
             if (room!=null) { // pref에서 새로 방이 생긴경우!
-                Log.d(TAG, "onMessageRecievedCallback: room is not null now ! ");
+                Log.d(TAG, "onMessageReceivedCallback: room is not null now ! ");
                 if (room.isPrivate()){
-                    Log.d(TAG, "onMessageRecievedCallback: room is private");
+                    Log.d(TAG, "onMessageReceivedCallback: room is private");
                     friend = room.getParticipant();
                     ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(friend.getName());
                 } else {
@@ -173,7 +173,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             mAdapter.notifyDataSetChanged();
             mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
         } else {
-            Log.d(TAG, "onMessageRecievedCallback: chat is null?");
+            Log.d(TAG, "onMessageReceivedCallback: chat is null?");
         }
     }
 

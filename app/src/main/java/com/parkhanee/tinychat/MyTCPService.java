@@ -79,13 +79,12 @@ public class MyTCPService extends IntentService {
     private MyPreferences pref=null;
     private MySQLite sqLite=null;
     private static MyTCPClient tcpClient=null;
-    public static boolean alive = false;
     String id ;
 
     private IBinder binder = new MyBinder();
 
     String activeRoomId=null;
-    private final ArrayList<OnNewMessageRecievedListener> listeners = new ArrayList<>();
+    private final ArrayList<OnNewMessageReceivedListener> listeners = new ArrayList<>();
     private static final String roomTabOnBindRID="roomTabOnBindRID";
 
     public MyTCPService(String name) {
@@ -118,13 +117,25 @@ public class MyTCPService extends IntentService {
         // true : 첫번째는 onBind-onUnBind 두번째부터는 onRebind-onUnBind 호출
         // false : 첫번째는 onBind-onUnBind 호출, 그 뒤로는 아예 호출되지 않음
     }
+    
+
+/*    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        Toast.makeText(this, "onTaskRemoved", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "onTaskRemoved: ");
+
+        Intent intent = new Intent("com.android.MY_TASK_KILLED");
+        sendBroadcast(intent);
+    }*/
+
 
     /**
      * tcpClient로 서버와 소켓 연결 시작
      * */
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-        Toast.makeText(this, "서비스 시작", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "서비스 onStartCommand", Toast.LENGTH_SHORT).show();
 
         Log.d(TAG, "onStartCommand: ");
 
@@ -191,8 +202,8 @@ public class MyTCPService extends IntentService {
                                 // TODO: 2017. 8. 29.   방금 도착한 메세지의 rid와 activeRoomId를 비교해서 같으면 노티 대신에 ChatActivity에 알린다 !
                                 if (rid.equals(activeRoomId) | activeRoomId.equals(roomTabOnBindRID)){
                                     // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal --> 액티비티에서  UI update
-                                    for (OnNewMessageRecievedListener listener : listeners){
-                                        listener.onMessageRecievedCallback();
+                                    for (OnNewMessageReceivedListener listener : listeners){
+                                        listener.onMessageReceivedCallback();
                                     }
 
                                 } else {
@@ -264,8 +275,8 @@ public class MyTCPService extends IntentService {
                             if (rid.equals(activeRoomId) | activeRoomId.equals(roomTabOnBindRID)){
 
                                 // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal
-                                for (OnNewMessageRecievedListener listener : listeners){
-                                    listener.onMessageRecievedCallback();
+                                for (OnNewMessageReceivedListener listener : listeners){
+                                    listener.onMessageReceivedCallback();
                                 }
 
                             }
@@ -300,35 +311,26 @@ public class MyTCPService extends IntentService {
             String server_port = getString(R.string.server_tcp_port);
             tcpClient = MyTCPClient.getInstance(handler,server_ip,server_port,id); // handler, serverIp, serverPort, userId
         }
-        return super.onStartCommand(intent, flags, startId);
+//        return super.onStartCommand(intent, flags, startId);
+        super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
+
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        Toast.makeText(this, "onHandleIntent "+ tcpClient.isRunning(), Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onHandleIntent: tcpClient.isRunning() ? "+ tcpClient.isRunning());
 
-        alive = true;
+        if (!tcpClient.isRunning()){
+            tcpClient.run();
 
-        while (alive){
-            Log.d(TAG, "onHandleIntent: while alive");
-
-            if (!tcpClient.isRunning()){
-
-                tcpClient.run();
-
-                // 이 아래는 tcpClient에서 run() 하다가 socketException 등으로 스레드가 빠져나왔을 때 실행된다.
-                Log.d(TAG, "onHandleIntent: stopSelf");
-                stopSelf();
-                alive =false;
-            }
+            // 이 아래는 tcpClient에서 run() 하다가 socketException 등으로 스레드가 빠져나왔을 때 실행된다.
+            Log.d(TAG, "onHandleIntent: stopSelf");
+            stopSelf();
         }
-
-
     }
 
-    public static boolean isRunning(){
-        return alive;
-    }
 
     @Override
     public boolean stopService(Intent name) {
@@ -339,12 +341,11 @@ public class MyTCPService extends IntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        synchronized (this){
-            alive = false;
+        if (tcpClient.isRunning()){
+            tcpClient.stopClient();
         }
-        tcpClient.stopClient();
         Log.d(TAG, "onDestroy: ");
-        Toast.makeText(this, "서비스 종료", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "서비스 onDestroy", Toast.LENGTH_SHORT).show();
     }
 
     private void sendMyNotification(PendingIntent pendingIntent, String title, String body,String date){
@@ -383,8 +384,8 @@ public class MyTCPService extends IntentService {
         }
     }
 
-    public interface OnNewMessageRecievedListener {
-        void onMessageRecievedCallback();
+    public interface OnNewMessageReceivedListener {
+        void onMessageReceivedCallback();
     }
 
     /**
@@ -395,8 +396,8 @@ public class MyTCPService extends IntentService {
      * 현재 활성화된 액티비티에 리스너가 연결 되도록 !!
      *
      * */
-    public void setOnNewMessageRecievedListener(OnNewMessageRecievedListener listener,String rid){
-        Toast.makeText(this, "set listener", Toast.LENGTH_SHORT).show();
+    public void setOnNewMessageRecievedListener(OnNewMessageReceivedListener listener, String rid){
+//        Toast.makeText(this, "set listener", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "setOnNewMessageRecievedListener: ");
         listeners.add(listener);
         // TODO: 2017. 8. 29. roomTab에서 bind할 때 activeRoomId=null 되는데 문제 없나 ?
@@ -409,9 +410,11 @@ public class MyTCPService extends IntentService {
     }
 
 
-    public void unsetOnNewMessageRecievedListener(OnNewMessageRecievedListener listener){
+    public void unsetOnNewMessageRecievedListener(OnNewMessageReceivedListener listener){
         Log.d(TAG, "unsetOnNewMessageRecievedListener: ");
         listeners.remove(listener);
         activeRoomId = null; // TODO: 2017. 8. 29. may cause error
     }
+
+
 }

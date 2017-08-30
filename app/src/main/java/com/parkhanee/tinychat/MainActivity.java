@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fab1.setVisibility(View.VISIBLE);
         fab2.setVisibility(View.INVISIBLE);
 
-        // TODO: 2017. 8. 29.
+        // start TCP service
         Intent intent = new Intent(MainActivity.this, MyTCPService.class);
         startService(intent);
     }

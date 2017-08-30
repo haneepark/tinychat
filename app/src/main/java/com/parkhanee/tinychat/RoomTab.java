@@ -14,20 +14,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.parkhanee.tinychat.classbox.Chat;
 import com.parkhanee.tinychat.classbox.Room;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
  * Created by parkhanee on 2017. 8. 3..
  */
 
-public class RoomTab extends Fragment implements View.OnClickListener, MyTCPService.OnNewMessageRecievedListener {
+public class RoomTab extends Fragment implements View.OnClickListener, MyTCPService.OnNewMessageReceivedListener {
     private final String TAG = "RoomTab";
     private RoomTabAdapter adapter;
     MySQLite db = null;
@@ -125,7 +123,7 @@ public class RoomTab extends Fragment implements View.OnClickListener, MyTCPServ
     }
 
     @Override
-    public void onMessageRecievedCallback() {// refresh room ListView!
+    public void onMessageReceivedCallback() {// refresh room ListView!
         if (pref.contains("rooms")){ // 채팅 방 존재
 
             ArrayList<Room> roomArrayList = pref.getAllRooms();

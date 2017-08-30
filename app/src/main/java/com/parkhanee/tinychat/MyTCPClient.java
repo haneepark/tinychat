@@ -92,6 +92,7 @@ public class MyTCPClient {
 
             handler.sendEmptyMessage(CONNECTING);
 
+            // 서버 실행해 놓지 않으면 java.net.ConnectException: Connection refused
             socket = new Socket(serverAddr, Integer.parseInt(server_port));
 
             try {
