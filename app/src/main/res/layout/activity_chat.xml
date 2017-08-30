@@ -38,17 +38,20 @@
         android:hint="메세지를 입력 해 주세요"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@id/btn_sendMsg"
+        android:layout_toStartOf="@id/btn_sendMsg">
     </EditText>
 
     <Button
         android:id="@+id/btn_sendMsg"
-        android:layout_width="wrap_content"
+        android:layout_width="70dp"
         android:layout_height="wrap_content"
-        android:text="Send"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true">
+        android:background="@android:color/transparent"
+        android:text="Send">
     </Button>
 
 </RelativeLayout>

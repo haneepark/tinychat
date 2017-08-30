@@ -1,13 +1,17 @@
 package com.parkhanee.tinychat;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.parkhanee.tinychat.classbox.Chat;
+import com.parkhanee.tinychat.classbox.Friend;
 
 import java.util.ArrayList;
 
@@ -19,14 +23,22 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
     ArrayList<Chat> chatArrayList = new ArrayList<>();
     Context context=null;
     private static final String TAG = "ChatAdapter";
+    private String id;
 
-    public ChatAdapter(Context context, ArrayList<Chat> chatArrayList) {
+    private static final int TYPE_MINE=1;
+    private static final int TYPE_CHAT=2;
+    private static final int TYPE_DATE=3; // TODO: 2017. 8. 30. 날짜 알림 선 넣기 !!
+
+
+    public ChatAdapter(Context context, String id, ArrayList<Chat> chatArrayList) {
         this.context = context;
         this.chatArrayList = chatArrayList;
+        this.id = id;
     }
 
-    public ChatAdapter(Context context){
+    public ChatAdapter(Context context,String id){
         this.context = context;
+        this.id = id;
     }
 
     public void setChatArrayList(ArrayList<Chat> chatArrayList) {
@@ -35,25 +47,70 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.recyclerview_chat,parent,false);
-        return new MyViewHolder(v);
+        switch (viewType){
+            case TYPE_CHAT:
+                View v = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.recyclerview_chat,parent,false);
+                return new MyViewHolder(v,viewType);
+            case TYPE_MINE:
+                View v1 = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.recyclerview_my_chat,parent,false);
+                return new MyViewHolder(v1,viewType);
+//            case TYPE_DATE:
+//                break;
+            default:
+                View v2 = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.recyclerview_chat,parent,false);
+                return new MyViewHolder(v2,viewType);
+        }
     }
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         Chat chat = chatArrayList.get(position);
-        String from = chat.getFrom();
-        String name;
-        if (from.equals( holder.pref.getId())){
-            name = holder.pref.getName(); // 내이름
-        }else {
-            name = holder.sqLite.getFriendName(chat.getFrom()); // 친구이름 찾아서 넣기
+        switch (holder.viewType){
+            case TYPE_CHAT:
+                holder.tv_body.setText(chat.getBody());
+                holder.tv_date.setText(chat.getDate());
+
+                Friend friend = holder.sqLite.getFriend(chat.getFrom());
+                if (friend!=null){
+                    String name = friend.getName(); // 친구이름 찾아서 넣기
+                    holder.tv_from.setText(name);
+
+                    // set blob type image on imageView
+                    if (friend.isBlobSet()){
+                        byte[] byteArray = friend.getImgBlob();
+                        Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+
+                        // get size of imageView
+                        holder.imageView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                        int targetHeight = holder.imageView.getMeasuredHeight();
+                        int targetWidth = holder.imageView.getMeasuredWidth();
+
+                        // set image
+                        holder.imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, targetWidth,
+                                targetHeight, false));
+                    }
+
+                }
+                break;
+            case TYPE_MINE:
+                holder.my_body.setText(chat.getBody());
+                holder.my_date.setText(chat.getDate());
+                break;
         }
 
-        holder.tv_from.setText(name);
-        holder.tv_body.setText(chat.getBody());
-        holder.tv_date.setText(chat.getDate());
+
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (chatArrayList.get(position).getFrom().equals(id)){
+            return TYPE_MINE;
+        }else {
+            return TYPE_CHAT;
+        }
     }
 
     @Override
@@ -62,17 +119,39 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
-        TextView tv_from, tv_date, tv_body;
-        MySQLite sqLite;
-        MyPreferences pref;
+        int viewType;
 
-        public MyViewHolder(View itemView) {
+        // TYPE_CHAT
+        TextView tv_from, tv_date, tv_body;
+        ImageView imageView;
+        MySQLite sqLite;
+//        MyPreferences pref;
+
+        // TYPE_MINE
+        TextView my_date,my_body;
+
+
+        public MyViewHolder(View itemView,int viewType) {
             super(itemView);
-            tv_from = (TextView) itemView.findViewById(R.id.textView15);
-            tv_date = (TextView) itemView.findViewById(R.id.textView16);
-            tv_body = (TextView) itemView.findViewById(R.id.textView17);
-            sqLite = MySQLite.getInstance(context);
-            pref = MyPreferences.getInstance(context);
+            this.viewType = viewType;
+
+            switch (viewType){
+                case TYPE_CHAT:
+                    tv_from = (TextView) itemView.findViewById(R.id.textView15);
+                    tv_date = (TextView) itemView.findViewById(R.id.textView16);
+                    tv_body = (TextView) itemView.findViewById(R.id.textView17);
+                    imageView = (ImageView) itemView.findViewById(R.id.imageView4);
+                    sqLite = MySQLite.getInstance(context);
+//                    pref = MyPreferences.getInstance(context);
+                    break;
+                case TYPE_MINE:
+                    my_date = (TextView) itemView.findViewById(R.id.textView13);
+                    my_body = (TextView) itemView.findViewById(R.id.textView18);
+                    break;
+                default:
+                    break;
+            }
+
         }
     }
 }

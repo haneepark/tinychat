@@ -59,7 +59,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             pref = MyPreferences.getInstance(context);
         }
         if (sqLite==null){ sqLite = MySQLite.getInstance(ChatActivity.this); }
-        id = pref.getString("id");
+        id = pref.getId();
 
         et = (EditText) findViewById(R.id.et_chat);
         (findViewById(R.id.btn_sendMsg)).setOnClickListener(this);
@@ -71,7 +71,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setOnKeyboardStatusChangeListener(this);
-        mAdapter = new ChatAdapter(ChatActivity.this);
+        mAdapter = new ChatAdapter(ChatActivity.this,id);
         mRecyclerView.setAdapter(mAdapter);
 
         // 방 정보 설정하기 .
