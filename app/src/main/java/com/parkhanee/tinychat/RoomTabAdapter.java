@@ -140,13 +140,12 @@ public class RoomTabAdapter extends BaseAdapter {
                 }
             }
 
-
             holder.title.setText(title);
 
             if (chatHashMap.containsKey(room.getRid())){
                 Chat chat = chatHashMap.get(room.getRid());
                 holder.msg.setText(chat.getBody());
-                holder.time.setText(chat.getDate());
+                holder.time.setText(chat.getDate(Chat.TYPE_CUSTOM));
             } else {
                 holder.msg.setText("no recent chat");
             }

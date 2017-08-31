@@ -8,6 +8,7 @@ import android.graphics.Matrix;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -130,8 +131,7 @@ public final class MyUtil {
         return false;
     }
 
-    // TODO: 2017. 8. 26. unixTime to normal expression
-    public static String UnixTimeToDate(String unixTime){
+    public static String UnixTimeToCustomDate(String unixTime){
 
         Date date=new Date(Long.valueOf(unixTime)*1000);
         Date todayDate = new Date();
@@ -150,12 +150,30 @@ public final class MyUtil {
             }
 
         } else {
-            SimpleDateFormat whole = new SimpleDateFormat("yy/MM/dd", Locale.KOREA);
+            SimpleDateFormat whole = new SimpleDateFormat("yyyy년 MM월 dd", Locale.KOREA);
             result = whole.format(date);
         }
-        Log.d(TAG, "UnixTimeToDate: "+unixTime+" --> "+result);
-
+//        Log.d(TAG, "UnixTimeToDate: "+unixTime+" --> "+result);
         return result;
+    }
+
+    public static String UnixTimeToTime(String unixTime){
+        Date date=new Date(Long.valueOf(unixTime)*1000);
+        SimpleDateFormat time = new SimpleDateFormat("HH:mm", Locale.KOREA);
+        return time.format(date);
+    }
+
+    public static String UnixTimeToDate(String unixTime){
+        Date date=new Date(Long.valueOf(unixTime)*1000);
+        SimpleDateFormat time = new SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA);
+        return time.format(date);
+    }
+
+    public static boolean FindDateChangeWithUnixTime(String before, String after){
+        Date date_before =new Date(Long.valueOf(before)*1000);
+        Date date_after  =new Date(Long.valueOf(after)*1000);
+        SimpleDateFormat time = new SimpleDateFormat("yyyyMMdd", Locale.KOREA);
+        return !time.format(date_before).equals(time.format(date_after));
     }
 
     /**

@@ -56,12 +56,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
                 View v1 = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.recyclerview_my_chat,parent,false);
                 return new MyViewHolder(v1,viewType);
-//            case TYPE_DATE:
-//                break;
-            default:
+            case TYPE_DATE:
                 View v2 = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.recyclerview_chat,parent,false);
+                        .inflate(R.layout.recyclerview_chat_date,parent,false);
                 return new MyViewHolder(v2,viewType);
+            default:
+                View v3 = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.recyclerview_chat,parent,false);
+                return new MyViewHolder(v3,viewType);
         }
     }
 
@@ -71,7 +73,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
         switch (holder.viewType){
             case TYPE_CHAT:
                 holder.tv_body.setText(chat.getBody());
-                holder.tv_date.setText(chat.getDate());
+                holder.tv_date.setText(chat.getDate(Chat.TYPE_TIME));
 
                 Friend friend = holder.sqLite.getFriend(chat.getFrom());
                 if (friend!=null){
@@ -97,15 +99,16 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
                 break;
             case TYPE_MINE:
                 holder.my_body.setText(chat.getBody());
-                holder.my_date.setText(chat.getDate());
+                holder.my_date.setText(chat.getDate(Chat.TYPE_TIME));
                 break;
+            case TYPE_DATE:
+                holder.date.setText(chat.getDate(Chat.TYPE_DATE));
         }
-
-
     }
 
     @Override
     public int getItemViewType(int position) {
+        if (chatArrayList.get(position).isDateObject()) return TYPE_DATE;
         if (chatArrayList.get(position).getFrom().equals(id)){
             return TYPE_MINE;
         }else {
@@ -130,6 +133,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
         // TYPE_MINE
         TextView my_date,my_body;
 
+        // TYPE_DATE
+        TextView date;
 
         public MyViewHolder(View itemView,int viewType) {
             super(itemView);
@@ -148,6 +153,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
                     my_date = (TextView) itemView.findViewById(R.id.textView13);
                     my_body = (TextView) itemView.findViewById(R.id.textView18);
                     break;
+                case TYPE_DATE:
+                    date = (TextView) itemView.findViewById(R.id.textView14);
                 default:
                     break;
             }

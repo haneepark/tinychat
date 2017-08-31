@@ -331,28 +331,31 @@ public final class MySQLite {
     }
 
     @Nullable
-    public ArrayList<Chat> getAllChatInARoom(String rid){
+    public ArrayList<Chat> getAllChatInARoom(String rid){ // todo chat 객체사이에 날짜가 바뀔 때 날짜객체 넣어주기 ??
         ArrayList<Chat> chatArrayList = new ArrayList<>();
 
         try {
-            // 1. build the query
             Cursor cursor =  mySQLiteDatabase.rawQuery(
                     "select * from "+ ChatTable.TABLE_NAME +
                     " where "+ ChatTable.RID+"="+rid +
                     " order by "+ChatTable.UNIXTIME+ " ;"
                     , null ); // 최신역순으로 출력
 
-            // 2. go over each row, build room and add it to arraylist
             if (cursor.moveToFirst()) {
+                String unixTime1=null; // 바로 이전항목의 날짜를(unixTime1) 저장해서, 현재 항목(unixTime)과 비교.
                 do {
-                    Chat chat = new Chat(
-                            cursor.getString(0), //mid
-                            cursor.getString(1), //rid
-                            cursor.getString(2), //from
-                            cursor.getString(3), //body
-                            cursor.getString(4) //unixtime
-                    );
+                    String mid=cursor.getString(0);
+                    String from = cursor.getString(2);
+                    String body = cursor.getString(3);
+                    String unixTime = cursor.getString(4);
+                    if (unixTime1==null){ // 맨 처음 항목 뽑을 때
+                        unixTime1 = unixTime;
+                    } else if(MyUtil.FindDateChangeWithUnixTime(unixTime1,unixTime)){// unixTime1 과 unixTime 사이에 날짜가 바뀌었으면 새로운 Chat 객체 저장
+                        chatArrayList.add(new Chat(unixTime));
+                    }
+                    Chat chat = new Chat(mid, rid, from, body, unixTime);
                     chatArrayList.add(chat);
+                    unixTime1 = unixTime;
                 } while (cursor.moveToNext());
             }
 

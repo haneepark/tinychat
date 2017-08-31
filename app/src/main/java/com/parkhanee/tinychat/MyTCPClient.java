@@ -243,6 +243,10 @@ public class MyTCPClient {
         }
     }
 
+    public void sendRequest(){
+
+    }
+
     public void stopClient(){
 
         if (run){

@@ -179,17 +179,23 @@ public class MyTCPService extends IntentService {
                                 String body = result.get(3);
                                 String unixTime = result.get(4);
                                 String mid = result.get(5);
-//                                long time = Long.valueOf(unixTime)*1000;
-                                String date = MyUtil.UnixTimeToDate(unixTime);
-                                String from_name = sqLite.getFriendName(from); // 보낸 사람 이름
+
+                                // TODO: 2017. 8. 31.  메세지 보낸사람이 친구로 등록 안 되어있을 경우 ?
+                                // TCPClient로 사람 정보 받아오기 요청 보내서 from의 정보 받아오기.
+                                // sqLite에 친구임/아님 boolean값 추가 해서, 친구목록 뽑을때는 false인 항목 무시하고 뽑고. 아이디로 이름이나 방번호 찾을 때는 db에서 쿼리가능하도록.
+
+                                /* 모르는 사람에게 메세지 오면(== from의 아이디를 가진 사람이 db에 없을 때)
+                                * 1 일단 RECEIVED로 여기서 받고
+                                * 2 메세지 정보 이외에 사람 정보도 같이 왔는지 확인하고 왔으면 db에 저장하고 아래 코드 실행,
+                                * 3 안왔으면 아래 코드 실행하지 않고 tcpClient 통해서 사람정보 받아오기 요청 보냄.
+                                * 4 1번부터 다시 실행
+                                * */
 
                                 // pref의 방목록에 없으면 새로운방 등록
                                 if (!pref.isRoomSet(rid)){
                                     Room room = new Room(rid,1,from,MyTCPService.this);
                                     pref.addRoom(room);
                                 }
-
-                                // TODO: 2017. 8. 24. pref에 최근메세지 등록. . .  or sqLite ?
 
                                 // SQLite에 메세지 등록
                                 if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime))){ // addChat실패하면
@@ -199,17 +205,19 @@ public class MyTCPService extends IntentService {
                                 }
 
 
-                                // TODO: 2017. 8. 29.   방금 도착한 메세지의 rid와 activeRoomId를 비교해서 같으면 노티 대신에 ChatActivity에 알린다 !
+                                // 방금 도착한 메세지의 rid와 activeRoomId를 비교해서 같으면 노티 대신에 ChatActivity에 알린다 ! -->  UI update
+                                // 또는 RoomTab에 bind되어 있는 걸 확인하고 그쪽으로 알림.                                  -->  UI update
                                 if (rid.equals(activeRoomId) | activeRoomId.equals(roomTabOnBindRID)){
-                                    // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal --> 액티비티에서  UI update
                                     for (OnNewMessageReceivedListener listener : listeners){
                                         listener.onMessageReceivedCallback();
                                     }
-
                                 } else {
+
+                                    String date = MyUtil.UnixTimeToCustomDate(unixTime);
+                                    String from_name = sqLite.getFriendName(from); // 보낸 사람 이름
+
                                     // 노티 띄우기
                                     Intent intent = new Intent(MyTCPService.this, ChatActivity.class);
-                                    // TODO: 2017. 8. 24.  ChatActivity로 넘어갈 때 다른 extra는 안필요힌가 ?
                                     // TODO: 2017. 8. 29. intent FLAG !
                                     intent.putExtra("rid",rid);
                                     PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
@@ -273,12 +281,9 @@ public class MyTCPService extends IntentService {
                             }
 
                             if (rid.equals(activeRoomId) | activeRoomId.equals(roomTabOnBindRID)){
-
-                                // TODO: 2017. 8. 29. 연결된 chatActivity에 send signal
                                 for (OnNewMessageReceivedListener listener : listeners){
                                     listener.onMessageReceivedCallback();
                                 }
-
                             }
 
                             Toast.makeText(MyTCPService.this, "sent : "+body, Toast.LENGTH_SHORT).show();
@@ -400,20 +405,17 @@ public class MyTCPService extends IntentService {
 //        Toast.makeText(this, "set listener", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "setOnNewMessageRecievedListener: ");
         listeners.add(listener);
-        // TODO: 2017. 8. 29. roomTab에서 bind할 때 activeRoomId=null 되는데 문제 없나 ?
         if (rid==null){
             activeRoomId = roomTabOnBindRID;
         } else {
             activeRoomId = rid;
         }
-
     }
-
 
     public void unsetOnNewMessageRecievedListener(OnNewMessageReceivedListener listener){
         Log.d(TAG, "unsetOnNewMessageRecievedListener: ");
         listeners.remove(listener);
-        activeRoomId = null; // TODO: 2017. 8. 29. may cause error
+        activeRoomId = null;
     }
 
 
