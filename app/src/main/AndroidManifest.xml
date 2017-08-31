@@ -51,6 +51,8 @@
             <intent-filter>
                 <action android:name="com.android.MY_TASK_KILLED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
             </intent-filter>
         </receiver>
 

@@ -142,6 +142,7 @@ public final class MySQLite {
         }
     }
 
+    @Nullable
     public String getFriendName(String id) {
         Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ FriendTable.TABLE_NAME+" where "+ FriendTable.ID+"="+id+";", null );
         if (cursor != null)
@@ -151,7 +152,7 @@ public final class MySQLite {
             name = cursor.getString(2);
         } catch (Exception e) {
             e.printStackTrace();
-            name = "알수없는 친구";
+            return null;
         }
         Log.d(TAG, "getFriendName : "+ name);
         return name;
@@ -176,6 +177,7 @@ public final class MySQLite {
         contentValues.put(FriendTable.IMG_BLOB, friend.getImgBlob());
         contentValues.put(FriendTable.CREATED, friend.getCreated());
         mySQLiteDatabase.update(FriendTable.TABLE_NAME, contentValues, "id = ? ", new String[] { friend.getId() } );
+        Log.d(TAG, "updateFriend: "+friend.toString());
         return true;
     }
 

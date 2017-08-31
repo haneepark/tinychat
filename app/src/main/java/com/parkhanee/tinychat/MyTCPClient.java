@@ -161,6 +161,9 @@ public class MyTCPClient {
             } catch (IOException e) {
                 e.printStackTrace();
                 handler.sendEmptyMessage(ERROR);
+                stopClient();
+                // TODO: 2017. 8. 31. run 실행중에 인터넷 끊기면  in.readline에서 exception 나와서 여기로 옴.
+                // 그런데 서버에서 사용자 나가는 것을 감지하지 못함. 상관없나.. ?
             }
 
         } catch (IOException e1) {
@@ -260,6 +263,9 @@ public class MyTCPClient {
                 Log.d(TAG, "stopClient : socket closed");
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (RuntimeException e1){
+                e1.printStackTrace();
+                Log.e(TAG, "stopClient: no established connection" );
             }
             instance = null;
             Log.d(TAG, "stopClient: OK");

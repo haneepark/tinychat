@@ -487,7 +487,6 @@ public class AddFriendActivity extends AppCompatActivity {
                             db.addFriend(friend);
 
 
-                            // TODO: 2017. 8. 16. get thumbnail path
                             if (thumb_url!=null){
                                 Log.d(TAG, "onResponse: Sending Thumbnail request");
                                 onGetThumbnailRequested(friend, thumb_url);

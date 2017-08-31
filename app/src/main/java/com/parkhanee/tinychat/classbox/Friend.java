@@ -30,6 +30,16 @@ public class Friend {
         this.created = created; // 친구 된 시간 unixtime
     }
 
+    // 친구 목록 새로고침해서 받아왔을 때 썸네일 blob받아오기 전 상태
+    public Friend (String id, String nid, String name,String rid,String img_url,  int created ){
+        this.id = id;
+        this.nid = nid;
+        this.name = name;
+        this.rid = rid;
+        this.img_url = img_url; // 서버 이미지 url
+        this.created = created; // 친구 된 시간 unixtime
+    }
+
     /**
      *
      * 근데 이 클래스의 인스턴스는 애초에 일회용인데.

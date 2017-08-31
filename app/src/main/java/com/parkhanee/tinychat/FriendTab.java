@@ -19,6 +19,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.util.Base64;
 import android.util.Log;
@@ -36,7 +37,9 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.parkhanee.tinychat.classbox.Friend;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,9 +49,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class FriendTab extends Fragment implements View.OnClickListener {
@@ -69,6 +74,8 @@ public class FriendTab extends Fragment implements View.OnClickListener {
 
     RequestQueue queue;
 
+    SwipeRefreshLayout swipeRefreshLayout;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -76,6 +83,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         header = (ViewGroup)inflater.inflate(R.layout.listview_friend_header, container, false);
         myprofile = header.findViewById(R.id.myprofile);
         myprofile.setOnClickListener(this); // header안에 있는 애니까 header에서 찾아줌 !!
+        swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.activity_main_swipe_refresh_layout);
         return v;
     }
 
@@ -120,6 +128,114 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         listView.setAdapter(adapter);
         listView.addHeaderView(header, null, false);
 
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // TODO: 2017. 8. 31. send get_all_Friend request
+               onRefreshFriendListRequested();
+
+            }
+        });
+
+    }
+
+    public void onRefreshFriendListRequested () {
+        final String TAG = "onRefreshFriendListRequested";
+
+        if (queue==null){
+            queue = MyVolley.getInstance(getActivity().getApplicationContext()).
+                    getRequestQueue();
+        }
+        final String id = pref.getString("id");
+
+        String url = getString(R.string.server_url)+getString(R.string.server_getAllFriend)+"?id="+id;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET,url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG, "onResponse: "+response);
+
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    String resultCode = jsonObject.getString("resultCode");
+                    String result = jsonObject.getString("result");
+
+                    if (resultCode.equals("100")) {
+                        // TODO: 2017. 8. 16. 성공 알림
+                        Toast.makeText(getActivity(), "friend list refreshed", Toast.LENGTH_SHORT).show();
+                        Object friendsObject = jsonObject.get("friends");
+                        if (friendsObject instanceof JSONArray){
+                            JSONArray friendJSONArray = (JSONArray) friendsObject;
+
+                            int length = friendJSONArray.length();
+                            for (int i=0;i<length;i++){
+                                JSONObject friend = (JSONObject) friendJSONArray.get(i);
+                                String img="";
+                                Friend f ;
+                                if (friend.has("img")) {
+                                    img = friend.getString("img");
+                                }
+
+                                f = new Friend(
+                                        friend.getString("id"),
+                                        friend.getString("nid"),
+                                        friend.getString("name"),
+                                        friend.getString("rid"),
+                                        img,
+                                        friend.getInt("created"));
+
+                                if (db.getFriendName(friend.getString("id"))!=null){
+                                    db.updateFriend(f);
+                                } else {
+                                    db.addFriend(f);
+                                }
+
+                                if (img.length()>3){ // img 길이가 3 이상이면
+                                    String thumb = friend.getString("thumb_url");
+                                    onGetThumbnailRequested(f,thumb);
+                                }
+                            }
+
+                        } else {
+                            Log.e(TAG, "onResponse: friends 객제가 array가 아님? " );
+                        }
+
+                    } else {
+                        // TODO: 2017. 8. 9. 실패 경고
+                        Log.d(TAG, "onGetThumbnailRequested : "+resultCode+" "+result);
+                        return;
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                swipeRefreshLayout.setRefreshing(false);
+
+                if (db==null){
+                    db = MySQLite.getInstance(getActivity());
+                }
+                adapter.setFriendArrayList(db.getAllFriends());
+                adapter.notifyDataSetChanged();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getActivity(), "volley error", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onErrorResponse: "+error.getMessage());
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<>();
+                params.put("Content-Type","application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+
+        // Add the request to the RequestQueue.
+        stringRequest.setTag(TAG);
+        queue.add(stringRequest);
     }
 
     @Override
@@ -311,7 +427,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                                 .setEditing(false);
 
                         // TODO: 2017. 8. 16. request Thumbnail !!
-                        onGetThumbnailRequested(jsonObject.getString("thumb_url"));
+                        onGetThumbnailRequested(null,jsonObject.getString("thumb_url"));
 
                         bitmap = null;
                     }
@@ -380,7 +496,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         // TODO: 2017. 8. 15. background? loading 프로그래스 다이알로그
     }
 
-    public void onGetThumbnailRequested (final String thumb_url) {
+    public void onGetThumbnailRequested (@Nullable final Friend friend, final String thumb_url) {
         final String TAG = "onGetMyThumbnailRequested";
 
         if (queue==null){
@@ -393,7 +509,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         StringRequest stringRequest = new StringRequest(Request.Method.GET,url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG,"onGetThumbnailRequested response : "+ response);
+//                Log.d(TAG,"onGetThumbnailRequested response : "+ response);
 
                 try {
 
@@ -403,9 +519,19 @@ public class FriendTab extends Fragment implements View.OnClickListener {
 
                     if (resultCode.equals("100") & jsonObject.has("thumb_blob")) {
                         // TODO: 2017. 8. 16. 성공 알림
-                        Toast.makeText(getActivity(), "thumb 100", Toast.LENGTH_SHORT).show();
-                        // TODO: 2017. 8. 16. save thumbnail
-                        pref.setThumb(jsonObject.getString("thumb_blob"));
+//                        Toast.makeText(getActivity(), "thumb 100", Toast.LENGTH_SHORT).show();
+                        // save thumbnail
+                        if (friend==null){
+                            // my profile update
+                            // pref에 thumbnail path 저장
+                            pref.setThumb(jsonObject.getString("thumb_blob"));
+                        } else {
+                            // sqlite 에 bolb 저장
+                            byte[] bytes = Base64.decode(jsonObject.getString("thumb_blob"), Base64.DEFAULT);
+                            friend.setImgBlob(bytes);
+                            db.updateFriend(friend);
+                        }
+
 
                     } else {
                         // TODO: 2017. 8. 9. 실패 경고
@@ -414,6 +540,8 @@ public class FriendTab extends Fragment implements View.OnClickListener {
                         return;
                     }
 
+                    adapter.setFriendArrayList(db.getAllFriends());
+                    adapter.notifyDataSetChanged();
 
                 } catch (JSONException e) {
                     e.printStackTrace();

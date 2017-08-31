@@ -196,8 +196,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 if (!msg.equals("")){ // TODO: 2017. 8. 22. 메세지 입력 안된 경우에는 전송안됨. 이때 전송 버튼 비활성화 할까 ?
                     //  send msg
                     new TcpAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,msg);
-                    et.setText("");
 //                handler.sendEmptyMessage(SENDING);
+                    et.setText("");
                 }
 
                 break;
@@ -228,6 +228,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(TAG, "doInBackground: tcpClient not initialized yet");
+                // TODO: 2017. 8. 31. 경고
+                // TODO: 2017. 8. 31. 이 경우 edittext가 빈칸이 되지 말아야 함.
             }
 
             return null;

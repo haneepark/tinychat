@@ -88,25 +88,23 @@ public class RoomTabAdapter extends BaseAdapter {
         // TODO: 2017. 8. 25. null 인 room 있으면 제외해야 ...
         roomArrayList = rooms;
         this.chatHashMap = chatHashMap;
-
-        Log.d(TAG, "setRoomArrayList: before: "+roomArrayList.toString());
-
-        // 최근 메세지 순으로 정렬
-        Collections.sort(roomArrayList, new Comparator<Room>() {
-            @Override
-            public int compare(Room room, Room t1) {
-                // a > b 이면 1
-                // a < b 이면 -1
-                // 같으면 0 ??
-                if (chatHashMap.containsKey(room.getRid()) && chatHashMap.containsKey(t1.getRid())){
-                    return  chatHashMap.get(t1.getRid()).getUnitTime().compareTo(chatHashMap.get(room.getRid()).getUnitTime());
-                } else {
-                    return 0;
+        if (roomArrayList.size()>1){// 항목이 하나 이상이면 최근 메세지 순으로 정렬
+            Log.d(TAG, "setRoomArrayList: before: "+roomArrayList.toString());
+            Collections.sort(roomArrayList, new Comparator<Room>() {
+                @Override
+                public int compare(Room room, Room t1) {
+                    // a > b 이면 1
+                    // a < b 이면 -1
+                    // 같으면 0 ??
+                    if (chatHashMap.containsKey(room.getRid()) && chatHashMap.containsKey(t1.getRid())){
+                        return  chatHashMap.get(t1.getRid()).getUnitTime().compareTo(chatHashMap.get(room.getRid()).getUnitTime());
+                    } else {
+                        return 0;
+                    }
                 }
-            }
-        });
-
-        Log.d(TAG, "setRoomArrayList: after: "+roomArrayList.toString());
+            });
+            Log.d(TAG, "setRoomArrayList: after: "+roomArrayList.toString());
+        }
     }
 
     @Override
