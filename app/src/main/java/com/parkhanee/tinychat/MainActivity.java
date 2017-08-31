@@ -40,15 +40,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        if (pref==null){ pref = MyPreferences.getInstance(context); }
 //        if (mySQLite==null){ mySQLite = MySQLite.getInstance(context); }
 
-//        // TODO: 2017. 8. 4. TEST
-//        pref.putString("1","12341234");
-//        pref.putString("2","11111111");
-//        pref.putString("3","12341234:22222222");
-//        pref.putString("4","11111111:12341234:22222222");
-//        pref.putString("5","22222222");
-
-
-
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false); // do not show default name text and instead, show the textView i included

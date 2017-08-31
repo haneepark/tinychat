@@ -95,6 +95,16 @@ public class MyTCPService extends IntentService {
         super("MyTCPService");
     }
 
+    public class MyBinder extends Binder {
+        MyTCPService getService(){
+            return MyTCPService.this;
+        }
+
+        MyTCPClient getClient(){
+            return MyTCPService.tcpClient;
+        }
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -118,16 +128,22 @@ public class MyTCPService extends IntentService {
         // false : 첫번째는 onBind-onUnBind 호출, 그 뒤로는 아예 호출되지 않음
     }
 
+    @Override
+    public boolean stopService(Intent name) {
+        Log.d(TAG, "stopService: ");
+        return super.stopService(name);
+    }
 
-/*    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-        Toast.makeText(this, "onTaskRemoved", Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "onTaskRemoved: ");
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (tcpClient.isRunning()){
+            tcpClient.stopClient();
+        }
+        Log.d(TAG, "onDestroy: ");
+        Toast.makeText(this, "서비스 onDestroy", Toast.LENGTH_SHORT).show();
+    }
 
-        Intent intent = new Intent("com.android.MY_TASK_KILLED");
-        sendBroadcast(intent);
-    }*/
 
 
     /**
@@ -336,57 +352,8 @@ public class MyTCPService extends IntentService {
         }
     }
 
-
-    @Override
-    public boolean stopService(Intent name) {
-        Log.d(TAG, "stopService: ");
-        return super.stopService(name);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (tcpClient.isRunning()){
-            tcpClient.stopClient();
-        }
-        Log.d(TAG, "onDestroy: ");
-        Toast.makeText(this, "서비스 onDestroy", Toast.LENGTH_SHORT).show();
-    }
-
-    private void sendMyNotification(PendingIntent pendingIntent, String title, String body,String date){
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-        Notification notification
-                = new Notification.Builder(getApplicationContext())
-                .setContentTitle(title)
-                .setContentText(body)
-                .setSmallIcon(R.drawable.ic_add_room)
-                .setTicker("새로운 메세지가 도착했습니다")
-                .setContentIntent(pendingIntent)
-                .setSubText(date)
-//                .setWhen(time)
-                .build();
-
-
-        notification.defaults = Notification.DEFAULT_SOUND;//소리추가
-        notification.flags = Notification.FLAG_ONLY_ALERT_ONCE; //알림 소리를 한번만 내도록
-        notification.flags = Notification.FLAG_AUTO_CANCEL;//확인하면 자동으로 알림이 제거 되도록
-
-        notificationManager.notify(999, notification);
-    }
-
     public String getRid(){
         return activeRoomId;
-    }
-
-    public class MyBinder extends Binder {
-        MyTCPService getService(){
-            return MyTCPService.this;
-        }
-
-        MyTCPClient getClient(){
-            return MyTCPService.tcpClient;
-        }
     }
 
     public interface OnNewMessageReceivedListener {
@@ -416,6 +383,27 @@ public class MyTCPService extends IntentService {
         Log.d(TAG, "unsetOnNewMessageRecievedListener: ");
         listeners.remove(listener);
         activeRoomId = null;
+    }
+
+    private void sendMyNotification(PendingIntent pendingIntent, String title, String body,String date){
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        Notification notification
+                = new Notification.Builder(getApplicationContext())
+                .setContentTitle(title)
+                .setContentText(body)
+                .setSmallIcon(R.drawable.tab_talk)
+                .setTicker("새로운 메세지가 도착했습니다")
+                .setContentIntent(pendingIntent)
+                .setSubText(date)
+//                .setWhen(time)
+                .build();
+
+        notification.defaults = Notification.DEFAULT_SOUND;//소리추가
+        notification.flags = Notification.FLAG_ONLY_ALERT_ONCE; //알림 소리를 한번만 내도록
+        notification.flags = Notification.FLAG_AUTO_CANCEL;//확인하면 자동으로 알림이 제거 되도록
+
+        notificationManager.notify(999, notification);
     }
 
 

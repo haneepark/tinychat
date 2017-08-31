@@ -71,7 +71,9 @@ public final class MyUtil {
         pref.logout();
         db.logout();
 
-        // TODO: 2017. 8. 11. pref, db close ?
+        // stop service
+        Intent ii = new Intent(context,MyTCPService.class);
+        context.stopService(ii);
 
         // TODO: 2017. 8. 12. 알림
         Toast.makeText(context, "로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
@@ -150,7 +152,7 @@ public final class MyUtil {
             }
 
         } else {
-            SimpleDateFormat whole = new SimpleDateFormat("yyyy년 MM월 dd", Locale.KOREA);
+            SimpleDateFormat whole = new SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA);
             result = whole.format(date);
         }
 //        Log.d(TAG, "UnixTimeToDate: "+unixTime+" --> "+result);
