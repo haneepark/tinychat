@@ -54,7 +54,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
                 return new MyViewHolder(v,viewType);
             case TYPE_MINE:
                 View v1 = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.recyclerview_my_chat,parent,false);
+                        .inflate(R.layout.recyclerview_chat_my,parent,false);
                 return new MyViewHolder(v1,viewType);
             case TYPE_DATE:
                 View v2 = LayoutInflater.from(parent.getContext())

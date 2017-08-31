@@ -49,7 +49,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:background="@android:color/transparent"
         android:text="Send">
     </Button>
 

@@ -350,6 +350,7 @@ public final class MySQLite {
                     String unixTime = cursor.getString(4);
                     if (unixTime1==null){ // 맨 처음 항목 뽑을 때
                         unixTime1 = unixTime;
+                        chatArrayList.add(new Chat(unixTime));
                     } else if(MyUtil.FindDateChangeWithUnixTime(unixTime1,unixTime)){// unixTime1 과 unixTime 사이에 날짜가 바뀌었으면 새로운 Chat 객체 저장
                         chatArrayList.add(new Chat(unixTime));
                     }
@@ -411,10 +412,6 @@ public final class MySQLite {
 
 
     }
-
-
-
-
 
     /**
     * 전체 데이터베이스 관리(즉 데이터베이스 생성 및 가져오기, 테이블생성, 버전관리) 하는 클래스
