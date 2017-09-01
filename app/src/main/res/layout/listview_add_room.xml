@@ -19,11 +19,13 @@
         android:id="@+id/tv_check"
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:paddingStart="70dp"
         android:paddingLeft="70dp"
+        android:paddingStart="70dp"
         android:paddingTop="23dp"
         android:text="TextView"
         android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"
-        />
+        android:paddingEnd="10dp"
+        android:paddingRight="10dp"
+        android:checked="false"/>
 
 </RelativeLayout>

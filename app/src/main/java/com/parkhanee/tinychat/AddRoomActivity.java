@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -135,6 +136,7 @@ public class AddRoomActivity extends AppCompatActivity {
         private ArrayList<Friend> friends = new ArrayList<>();
         private ArrayList<Friend> allFriends;
         private static final String TAG = "AddRoomAdapter";
+        private SparseBooleanArray booleans; // key-friend_id : value-checked
 
         @Override
         public int getCount() {
@@ -154,6 +156,11 @@ public class AddRoomActivity extends AppCompatActivity {
         public void setAllFriends(ArrayList<Friend> allFriends){
             this.allFriends = allFriends;
             friends = allFriends;
+            booleans = new SparseBooleanArray(allFriends.size());
+            for (int i =0; i< allFriends.size();i++){
+                booleans.put(Integer.parseInt(allFriends.get(i).getId()),false);
+            }
+//            Log.d(TAG, "setAllFriends: "+booleans.toString()); //setAllFriends: {11111111=false, 22222222=false, 42424242=false, 91433734=false}
         }
 
         public void clearItem(){
@@ -162,8 +169,30 @@ public class AddRoomActivity extends AppCompatActivity {
             this.notifyDataSetChanged();
         }
 
+        /**
+         * SparseBooleanArray 에서 선택된 항목의 개수를 세어서 btn_confirm의  UI update
+         * */
+        private void countBoolean(){
+            int count=0;
+            Log.d(TAG, "countBoolean: "+booleans.toString());
+            for (int i =0; i< allFriends.size();i++){
+                if (booleans.get(Integer.parseInt(allFriends.get(i).getId()))){
+                    count++;
+                }
+            }
+            String text_count = String.valueOf(count)+getString(R.string.add_room_btn);
+            btn_confirm.setText(text_count);
+            if (count>1){
+                // button active
+                btn_confirm.setBackgroundResource(R.color.colorAccent);
+            }else {
+                // button inactive
+                btn_confirm.setBackgroundResource(R.color.textGrey);
+            }
+        }
+
         @Override
-        public View getView(int i, View v, ViewGroup viewGroup) {
+        public View getView(final int i, View v, ViewGroup viewGroup) {
             LayoutInflater inflater = (LayoutInflater) AddRoomActivity.this.getSystemService(AddRoomActivity.LAYOUT_INFLATER_SERVICE);
             final ViewHolder holder;
             if (v == null) {
@@ -179,8 +208,31 @@ public class AddRoomActivity extends AppCompatActivity {
 
             if (friends.size() > 0) {
                 Friend friend = friends.get(i);
+                final int friend_id = Integer.parseInt(friend.getId());
 
                 holder.tv.setText(friend.getName());
+                holder.tv.setChecked(booleans.get(friend_id));
+                Log.d(TAG, "getView: "+friend_id+" "+booleans.get(friend_id));
+
+                holder.tv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (holder.tv.isChecked()){ // 체크 --> 해제
+                            holder.tv.setChecked(false);
+                            booleans.put(friend_id,false);
+                            holder.tv.setCheckMarkDrawable(null);
+
+                            countBoolean();
+
+                        } else { // 해제 --> 체크
+                            holder.tv.setChecked(true);
+                            booleans.put(friend_id,true);
+                            holder.tv.setCheckMarkDrawable(R.drawable.check3);
+
+                            countBoolean();
+                        }
+                    }
+                });
 
                 // set blob type image on imageView
                 if (friend.isBlobSet()){
@@ -213,18 +265,17 @@ public class AddRoomActivity extends AppCompatActivity {
                     ArrayList<Friend> filteredArrayList = new ArrayList<>();
 
                     if (charSequence == null || charSequence.length() == 0) {
-
                         // set the Original result to return
                         results.count = allFriends.size();
                         results.values = allFriends;
                     } else {
                         charSequence = charSequence.toString().toLowerCase();
-                        Log.d(TAG, "performFiltering: constraint " + charSequence);
-                        Log.d(TAG, "performFiltering: allFriend.size" + String.valueOf(allFriends.size()));
+//                        Log.d(TAG, "performFiltering: constraint " + charSequence);
+//                        Log.d(TAG, "performFiltering: allFriend.size" + String.valueOf(allFriends.size()));
                         for (int i = 0; i < allFriends.size(); i++) {
                             Friend f = allFriends.get(i);
                             String data = f.getName();
-                            Log.d(TAG, "performFiltering: data " + data);
+//                            Log.d(TAG, "performFiltering: data " + data);
                             if (data.toLowerCase().contains(charSequence.toString())) {
                                 filteredArrayList.add(f);
                             }
@@ -239,7 +290,7 @@ public class AddRoomActivity extends AppCompatActivity {
                 @Override
                 protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
                     friends = (ArrayList<Friend>) filterResults.values;
-                    Log.d(TAG, "publishResults: "+friends.toString());
+//                    Log.d(TAG, "publishResults: "+friends.toString());
                     notifyDataSetChanged();
                 }
             };
