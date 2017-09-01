@@ -1,5 +1,6 @@
 package com.parkhanee.tinychat;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
@@ -35,6 +36,7 @@ public class AddRoomActivity extends AppCompatActivity {
     MySQLite db=null;
     AddRoomAdapter adapter;
     Button btn_confirm;
+    boolean active=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +56,26 @@ public class AddRoomActivity extends AppCompatActivity {
         adapter.setAllFriends(db.getAllFriends());
         adapter.notifyDataSetChanged();
 
-        setSearchViews();
+        initViews();
     }
 
-    private void setSearchViews(){
+    private void initViews(){
         btn_confirm = (Button) findViewById(R.id.btn_addRoom);
         btn_confirm.setText("0"+getText(R.string.add_room_btn));
+        btn_confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (active){
+                    Intent intent = new Intent(AddRoomActivity.this,ChatActivity.class);
+                    // 참여자 정보 가져오기 : 단체방이고 empty room 인 경우 에만 참여자정보를 pref 가 아니라 인텐트에서 가져온다
+                    // ppl  -  2:68620823,11111111
+                    //   intent.putExtra
+                    startActivity(intent);
+                }
+            }
+        });
+
+        // 검색과 관련된 View 들 init
         et_search = (EditText) findViewById(R.id.et_search2);
         btn_search = (ImageButton) findViewById(R.id.btn_search2);
         btn_clear = (ImageButton) findViewById(R.id.cleanable_button_clear2);
@@ -184,9 +200,11 @@ public class AddRoomActivity extends AppCompatActivity {
             btn_confirm.setText(text_count);
             if (count>1){
                 // button active
+                active =true;
                 btn_confirm.setBackgroundResource(R.color.colorAccent);
             }else {
                 // button inactive
+                active=false;
                 btn_confirm.setBackgroundResource(R.color.textGrey);
             }
         }
@@ -212,6 +230,11 @@ public class AddRoomActivity extends AppCompatActivity {
 
                 holder.tv.setText(friend.getName());
                 holder.tv.setChecked(booleans.get(friend_id));
+                if (booleans.get(friend_id)){
+                    holder.tv.setCheckMarkDrawable(R.drawable.check3);
+                }else {
+                    holder.tv.setCheckMarkDrawable(null);
+                }
                 Log.d(TAG, "getView: "+friend_id+" "+booleans.get(friend_id));
 
                 holder.tv.setOnClickListener(new View.OnClickListener() {
@@ -235,6 +258,7 @@ public class AddRoomActivity extends AppCompatActivity {
                 });
 
                 // set blob type image on imageView
+                Log.d(TAG, "getView: "+i+" "+friend.toString());
                 if (friend.isBlobSet()){
                     byte[] byteArray = friend.getImgBlob();
                     Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
@@ -247,6 +271,8 @@ public class AddRoomActivity extends AppCompatActivity {
                     // set image
                     holder.img.setImageBitmap(Bitmap.createScaledBitmap(bmp, targetWidth,
                             targetHeight, false));
+                } else {
+                    holder.img.setImageResource(R.drawable.ic_profile);
                 }
             }
             return v;
