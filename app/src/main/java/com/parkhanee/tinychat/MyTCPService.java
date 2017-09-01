@@ -330,7 +330,9 @@ public class MyTCPService extends IntentService {
 
             String server_ip = getString(R.string.server_ip);
             String server_port = getString(R.string.server_tcp_port);
-            tcpClient = MyTCPClient.getInstance(handler,server_ip,server_port,id); // handler, serverIp, serverPort, userId
+
+            // tcpClient는 무조건 여기서만 초기화 되어야 하므로! 여기서 getInstance가 아니라 초기화를 하자.
+            tcpClient = new MyTCPClient(handler,server_ip,server_port,id); // handler, serverIp, serverPort, userId
         }
 //        return super.onStartCommand(intent, flags, startId);
         super.onStartCommand(intent, flags, startId);

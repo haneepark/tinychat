@@ -2,6 +2,7 @@ package com.parkhanee.tinychat;
 
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -63,16 +64,19 @@ public class MyTCPClient {
         server_ip = strings[0];
         server_port = strings[1];
         id = strings[2];
+        instance = this;
     }
 
-    public static synchronized MyTCPClient getInstance(Handler handler, String... strings){
+    @Nullable
+    public static synchronized MyTCPClient getInstance(){
         if (instance==null){
-            Log.d(TAG, "getInstance: return NEW instance");
-            instance = new MyTCPClient(handler, strings);
+            Log.d(TAG, "getInstance: is null");
+            return null;
         } else {
             Log.d(TAG, "getInstance: return existing instance");
+            return instance;
         }
-        return instance;
+
     }
 
     public void run() {
