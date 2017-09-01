@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ImageView
+        android:id="@+id/add_room_img"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="@dimen/listvew_margin"
+        android:background="@color/colorAccent"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/ic_profile"/>
+
+    <CheckedTextView
+        android:id="@+id/tv_check"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:paddingStart="70dp"
+        android:paddingLeft="70dp"
+        android:paddingTop="23dp"
+        android:text="TextView"
+        android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"
+        />
+
+</RelativeLayout>

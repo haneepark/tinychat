@@ -24,7 +24,6 @@
             android:maxWidth="230dp"
             android:padding="10dp"
             android:text=""/>
-
     </android.support.v7.widget.CardView>
 
     <TextView

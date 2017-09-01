@@ -141,7 +141,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(i);
                 break;
             case R.id.fab_room : //fab2
-                Toast.makeText(context, "fab2 selected", Toast.LENGTH_SHORT).show();
+                Intent ii = new Intent(context,AddRoomActivity.class);
+                startActivity(ii);
                 break;
         }
     }

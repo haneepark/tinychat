@@ -14,7 +14,6 @@
         android:layout_alignParentTop="true"
         android:layout_margin="@dimen/listvew_margin"
         android:background="@color/colorAccent"
-        android:padding="10dp"
         android:scaleType="fitXY"
         app:srcCompat="@drawable/ic_profile"/>
 

@@ -75,9 +75,6 @@ public class AddFriendActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         setSearchViews();
-
-
-
     }
 
     public void setSearchViews(){
@@ -386,7 +383,7 @@ public class AddFriendActivity extends AppCompatActivity {
                             if (data.toLowerCase().equals(constraint.toString())) { //startsWith(constraint.toString())) {
                                 FilteredArrList.add(
                                         new Friend(f.getId(), f.getNid(), f.getName(), f.getImgUrl(), f.getCreated()
-                                        )
+                                        ) // FIXME: 2017. 9. 1. new Friend(f)
                                 );
                             }
                         }

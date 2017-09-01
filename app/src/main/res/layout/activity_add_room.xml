@@ -52,7 +52,7 @@
         android:ems="10"
         android:hint="친구 이름으로 찾기"
         android:imeOptions="actionSearch"
-        android:inputType="number"
+        android:inputType="text"
         android:maxLines="1"
         android:paddingEnd="5dp"
         android:paddingLeft="10dp"
