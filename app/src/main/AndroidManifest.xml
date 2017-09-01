@@ -42,17 +42,19 @@
         </activity>
         <activity android:name=".ChatActivity">
         </activity>
+
         <service
             android:name=".MyTCPService"
             android:exported="true"
             android:stopWithTask="false">
         </service>
-        <receiver android:name=".MyBroadCastReceiver" >
+
+        <receiver android:name=".MyBroadCastReceiver">
             <intent-filter>
-                <action android:name="com.android.MY_TASK_KILLED" />
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+                <action android:name="com.android.MY_TASK_KILLED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
             </intent-filter>
         </receiver>
 
@@ -62,6 +64,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity android:name=".AddRoomActivity">
         </activity>
     </application>
 

@@ -56,7 +56,7 @@
             android:id="@+id/textView17"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="body "
+            android:text=""
             android:padding="10dp"
             android:maxWidth="230dp"/>
 

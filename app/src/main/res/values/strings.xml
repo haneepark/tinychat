@@ -5,6 +5,9 @@
     <string name="login_intro">Quick and simple messaging app</string>
     <string name="signup">SIGN UP FOR AN ACCOUNT</string>
     <string name="add_friend">"친구 추가하기"</string>
+    <string name="add_room">"대화방 만들기"</string>
+    <string name="add_room_btn">" 명 초대하여 대화 시작하기"</string>
+
 
     <string name="server_img_path">uploads/</string>
     <string name="server_url">http://13.124.124.168/</string>

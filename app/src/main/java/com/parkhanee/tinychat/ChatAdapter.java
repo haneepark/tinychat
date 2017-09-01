@@ -100,7 +100,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
                         int targetWidth = holder.imageView.getMeasuredWidth();
 
                         // set image
-                        holder.imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, targetWidth,
+                        holder.imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, targetWidth, // FIXME: 2017. 9. 1. OutOfMemoryError
                                 targetHeight, false));
                     }
 

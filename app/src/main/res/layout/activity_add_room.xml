@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.parkhanee.tinychat.AddRoomActivity">
+
+    <android.support.v7.widget.Toolbar
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:background="@color/colorPrimary"
+        android:titleTextColor="@color/colorFontPrimary"
+        app:titleMarginStart="60dp"
+        android:id="@+id/toolbar3">
+
+        <TextView
+            android:id="@+id/toolbar3_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:text="@string/add_room"
+            android:textColor="@color/colorFontPrimary"
+            android:textSize="22sp"
+            android:textStyle="normal|bold"/>
+    </android.support.v7.widget.Toolbar>
+
+    <TextView
+        android:id="@+id/add_room_bg"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/toolbar3"
+        android:background="@color/colorPrimary"
+        android:text="  "/>
+
+    <EditText
+        android:id="@+id/et_search2"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/toolbar3"
+        android:layout_margin="10dp"
+        android:layout_toLeftOf="@+id/btn_search2"
+        android:layout_toStartOf="@+id/btn_search2"
+        android:background="@color/backgroundGrey"
+        android:ems="10"
+        android:hint="친구 이름으로 찾기"
+        android:imeOptions="actionSearch"
+        android:inputType="number"
+        android:maxLines="1"
+        android:paddingEnd="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp"
+        android:paddingStart="10dp"
+        android:textColorHint="@color/textGrey"/>
+
+    <ImageButton
+        android:id="@+id/btn_search2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/toolbar3"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@android:color/transparent"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_search"
+        android:layout_alignTop="@+id/et_search2"/>
+
+
+    <ImageButton
+        android:id="@+id/cleanable_button_clear2"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignEnd="@+id/et_search2"
+        android:layout_alignRight="@+id/et_search2"
+        android:layout_alignTop="@+id/et_search2"
+        android:layout_margin="10dp"
+        android:background="@android:color/transparent"
+        android:padding="3dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_x"/>
+
+    <Button
+        android:id="@+id/btn_addRoom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/add_room_bg"
+        android:text="@string/add_room_btn"
+        android:layout_marginStart="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        />
+
+    <ListView
+        android:id="@+id/listview_add_room"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/btn_addRoom"/>
+
+</RelativeLayout>
