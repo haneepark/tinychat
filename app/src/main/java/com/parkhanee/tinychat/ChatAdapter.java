@@ -14,6 +14,7 @@ import com.parkhanee.tinychat.classbox.Chat;
 import com.parkhanee.tinychat.classbox.Friend;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by parkhanee on 2017. 8. 26..
@@ -21,13 +22,14 @@ import java.util.ArrayList;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> {
     ArrayList<Chat> chatArrayList = new ArrayList<>();
+    HashMap<String, Friend> userHashMap = new HashMap<>();
     Context context=null;
     private static final String TAG = "ChatAdapter";
     private String id;
 
     private static final int TYPE_MINE=1;
     private static final int TYPE_CHAT=2;
-    private static final int TYPE_DATE=3; // TODO: 2017. 8. 30. 날짜 알림 선 넣기 !!
+    private static final int TYPE_DATE=3; // 날짜 알림 선
 
 
     public ChatAdapter(Context context, String id, ArrayList<Chat> chatArrayList) {
@@ -74,8 +76,15 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
             case TYPE_CHAT:
                 holder.tv_body.setText(chat.getBody());
                 holder.tv_date.setText(chat.getDate(Chat.TYPE_TIME));
+                Friend friend;
 
-                Friend friend = holder.sqLite.getFriend(chat.getFrom());
+                if (userHashMap.containsKey(chat.getFrom())){
+                    friend = userHashMap.get(chat.getFrom());
+                }else {
+                    friend = holder.sqLite.getFriend(chat.getFrom());
+                    userHashMap.put(chat.getFrom(),friend);
+                }
+
                 if (friend!=null){
                     String name = friend.getName(); // 친구이름 찾아서 넣기
                     holder.tv_from.setText(name);

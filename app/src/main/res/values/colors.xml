@@ -10,4 +10,5 @@
     <color name="colorWarning">#e95f6d</color>
     <color name="backgroundDarkGrey">#333333</color>
     <color name="backgroundGrey2">#d8d8d8</color>
+    <color name="colorAccentTransparent">#6fa7ae</color>
 </resources>

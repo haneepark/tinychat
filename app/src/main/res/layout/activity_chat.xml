@@ -28,27 +28,30 @@
         android:scrollbars="vertical"
         android:layout_below="@+id/appBar"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/et_chat"/>
 
     <EditText
         android:id="@+id/et_chat"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="메세지를 입력 해 주세요"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_toLeftOf="@+id/btn_sendMsg"
-        android:layout_toStartOf="@+id/btn_sendMsg">
+        android:layout_toStartOf="@+id/btn_sendMsg"
+        android:hint="메세지를 입력 해 주세요"
+        >
     </EditText>
 
     <Button
         android:id="@+id/btn_sendMsg"
-        android:layout_width="70dp"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
+        android:layout_margin="3dp"
         android:text="Send">
     </Button>
 

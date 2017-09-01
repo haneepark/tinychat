@@ -131,7 +131,7 @@ public class FriendTab extends Fragment implements View.OnClickListener {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // TODO: 2017. 8. 31. send get_all_Friend request
+                // send get_all_Friend request
                onRefreshFriendListRequested();
 
             }

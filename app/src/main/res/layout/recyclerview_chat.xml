@@ -35,7 +35,10 @@
         android:layout_toRightOf="@+id/cardView"
         android:layout_toEndOf="@+id/cardView"
         android:layout_alignBottom="@id/cardView"
-        android:layout_margin="5dp"/>
+        android:layout_margin="5dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:textSize="12sp"/>
 
 
 
@@ -54,7 +57,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="body "
-            android:padding="10dp"/>
+            android:padding="10dp"
+            android:maxWidth="230dp"/>
 
 
 
