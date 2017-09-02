@@ -31,6 +31,7 @@ import com.parkhanee.tinychat.classbox.Friend;
 import java.util.ArrayList;
 
 public class AddRoomActivity extends AppCompatActivity {
+    private static final String TAG = "AddRoomActivity";
     EditText et_search;
     ImageButton btn_clear, btn_search;
     MySQLite db=null;
@@ -67,10 +68,33 @@ public class AddRoomActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (active){
                     Intent intent = new Intent(AddRoomActivity.this,ChatActivity.class);
-                    // 참여자 정보 가져오기 : 단체방이고 empty room 인 경우 에만 참여자정보를 pref 가 아니라 인텐트에서 가져온다
+                    // 참여자 정보 보내기 : 여기 경우처럼 단체방이고 empty room 인 경우 에만 참여자정보를 pref 가 아니라 인텐트로 보낸다
                     // ppl  -  2:68620823,11111111
                     //   intent.putExtra
-                    startActivity(intent);
+                    String string="";
+                    int size=0;
+                    for (int i=0; i<adapter.booleans.size();i++) {
+                        if (adapter.booleans.valueAt(i)){
+                            if (size>0) string+=",";
+                            string+=adapter.booleans.keyAt(i);
+                            size++;
+                        }
+                    }
+                    if (size>1){
+                        intent.putExtra("isPrivate",false);
+                        intent.putExtra("ppl",String.valueOf(size)+":"+string);
+                        Log.d(TAG, "onClick: ppl: "+String.valueOf(size)+":"+string);
+                        startActivity(intent);
+                        finish();
+                    } else if (size==1){
+                        intent.putExtra("isPrivate",true);
+                        intent.putExtra("id",string);
+                        startActivity(intent);
+                        finish();
+                    }else {
+                        Toast.makeText(AddRoomActivity.this, " 초대하는 사람 수가 모자람  ", Toast.LENGTH_SHORT).show();
+                    }
+
                 }
             }
         });
@@ -152,7 +176,7 @@ public class AddRoomActivity extends AppCompatActivity {
         private ArrayList<Friend> friends = new ArrayList<>();
         private ArrayList<Friend> allFriends;
         private static final String TAG = "AddRoomAdapter";
-        private SparseBooleanArray booleans; // key-friend_id : value-checked
+        SparseBooleanArray booleans; // key-friend_id : value-checked
 
         @Override
         public int getCount() {
@@ -198,7 +222,7 @@ public class AddRoomActivity extends AppCompatActivity {
             }
             String text_count = String.valueOf(count)+getString(R.string.add_room_btn);
             btn_confirm.setText(text_count);
-            if (count>1){
+            if (count>0){
                 // button active
                 active =true;
                 btn_confirm.setBackgroundResource(R.color.colorAccent);

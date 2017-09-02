@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -244,6 +245,9 @@ public final class MySQLite {
         } catch (CursorIndexOutOfBoundsException e) {
             e.printStackTrace();
             Log.d(TAG, "getFriendFromRid : is null");
+            return null;
+        } catch (SQLException d){
+            d.printStackTrace();
             return null;
         }
     }

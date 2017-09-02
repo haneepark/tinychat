@@ -43,12 +43,12 @@ public class MyRecyclerView extends RecyclerView {
 
 
         if (actualHeight > proposedheight && !shown){ //키보드 이제 보이는데 안보인다고 설정되어 있었던 경우
-            Log.d(TAG, "onMeasure: shown");
+            Log.d(TAG, "onMeasure: keyboard shown");
             shown=true;
             listener.onKeyboardStatusChangeCallback(shown);
         } else if (actualHeight <= proposedheight  && shown){ // 키보드 이제 안보이는데 보인다고 설정되어 있었던 경우
             // Keyboard is hidden
-            Log.d(TAG, "onMeasure: hidden");
+            Log.d(TAG, "onMeasure: keyboard hidden");
             shown=false;
             listener.onKeyboardStatusChangeCallback(shown);
         }

@@ -67,11 +67,10 @@ public class RoomTab extends Fragment implements View.OnClickListener, MyTCPServ
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                // TODO: 2017. 8. 4. go to ChatActivity
-//                Room room = (Room) adapterView.getItemAtPosition(position);
-//                Toast.makeText(getActivity(), "clicked " + room.getRid(), Toast.LENGTH_SHORT).show();
+                // go to ChatActivity
                 Intent i = new Intent(getActivity(),ChatActivity.class);
                 i.putExtra("rid",((Room)adapterView.getItemAtPosition(position)).getRid());
+                i.putExtra("isPrivate",((Room)adapterView.getItemAtPosition(position)).isPrivate());
                 startActivity(i);
             }
         });
@@ -123,7 +122,10 @@ public class RoomTab extends Fragment implements View.OnClickListener, MyTCPServ
     }
 
     @Override
-    public void onMessageReceivedCallback() {// refresh room ListView!
+    public void onMessageReceivedCallback(String rid) {// refresh room ListView!
+
+        // FIXME : 2017. 9. 2. rid 에 해당하는 방의 최근채팅, 방 프린트 순서 "만" 업데이트 하면 됨.
+
         if (pref.contains("rooms")){ // 채팅 방 존재
 
             ArrayList<Room> roomArrayList = pref.getAllRooms();

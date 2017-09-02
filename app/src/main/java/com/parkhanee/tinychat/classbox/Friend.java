@@ -9,8 +9,6 @@ public class Friend {
     private byte[] img_blob;
     private int  created;
 
-    // TODO: 2017. 8. 2. 일대일 RID ??
-
     public Friend (String id, String nid, String name,String rid, String img_url,byte[] img_blob,  int created ){
         this.id = id;
         this.nid = nid;
@@ -40,7 +38,7 @@ public class Friend {
         this.created = created; // 친구 된 시간 unixtime
     }
 
-    /**
+/*    *//**
      *
      * 근데 이 클래스의 인스턴스는 애초에 일회용인데.
      * 디비도 아니고 이걸 업데이트할 일이 있을까?
@@ -48,7 +46,7 @@ public class Friend {
      * update the friend instance information.
      * caution : id cannot be updated !
      * if id from paramater is differ from id from the instance, it fails update and return false.
-     * */
+     * *//*
     public boolean updateFriend (String id, String nid, String name, String img_url, byte[] img_blob, int created ){
         if (!this.id.equals(id)){
             return false;
@@ -82,7 +80,7 @@ public class Friend {
     public void updateImg(String img_url, byte[] img_blob) {
         this.img_url = img_url;
         this.img_blob = img_blob;
-    }
+    }*/
 
     public void setImgBlob(byte[] img_blob) {
         this.img_blob = img_blob;

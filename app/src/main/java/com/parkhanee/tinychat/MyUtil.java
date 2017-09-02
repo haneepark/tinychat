@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import static com.parkhanee.tinychat.MyTCPClient.JSON_INFO;
 import static com.parkhanee.tinychat.MyTCPClient.JSON_MSG;
+import static com.parkhanee.tinychat.MyTCPClient.JSON_NEW_ROOM;
 
 /**
  * Created by parkhanee on 2017. 7. 21..
@@ -87,7 +88,8 @@ public final class MyUtil {
     /**
      * return
      * null (on jsonException)
-     * or [ JSON_MSG , rid , id , body , unixTime , mid]
+     * or [ JSON_MSG , rid , id , body , unixTime , mid ]
+     * or [ JSON_NEW_ROOM , rid , id , body , unixTime , mid, ppl ]
      * or [ JSON_INFO , info ]
      * */
     public static List<String> readJSONObject(String source){
@@ -99,13 +101,24 @@ public final class MyUtil {
             JSONObject object = new JSONObject(source);
             if (object.has(JSON_MSG)){
                 JSONObject msgObject = object.getJSONObject(JSON_MSG);
-                result.clear();
-                result.add(0, JSON_MSG);
-                result.add(1,msgObject.getString("rid"));
-                result.add(2,msgObject.getString("id")); // 이 메세지 보낸사람 아이디
-                result.add(3,msgObject.getString("body"));
-                result.add(4,msgObject.getString("unixTime"));
-                result.add(5,msgObject.getString("mid"));
+
+                if (msgObject.has(JSON_NEW_ROOM)){
+                    result.add(0,JSON_NEW_ROOM);
+                    result.add(1,msgObject.getString("rid"));
+                    result.add(2,msgObject.getString("id")); // 이 메세지 보낸사람 아이디
+                    result.add(3,msgObject.getString("body"));
+                    result.add(4,msgObject.getString("unixTime"));
+                    result.add(5,msgObject.getString("mid"));
+                    result.add(6,msgObject.getString("ppl"));
+                } else {
+                    result.add(0, JSON_MSG);
+                    result.add(1,msgObject.getString("rid"));
+                    result.add(2,msgObject.getString("id")); // 이 메세지 보낸사람 아이디
+                    result.add(3,msgObject.getString("body"));
+                    result.add(4,msgObject.getString("unixTime"));
+                    result.add(5,msgObject.getString("mid"));
+                }
+
             } else if (object.has(JSON_INFO)){
                 result.clear();
                 result.add(0, JSON_INFO);

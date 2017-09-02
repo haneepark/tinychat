@@ -27,14 +27,14 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     EditText et;
     Context context = this;
-    Room room;
+    Room room; // is null when it's an empty room
 
     MyPreferences pref;
     MySQLite sqLite;
 
     String id; // 내 아이디
     Friend friend; // 일대일 방의  --> 친구 이름, 프로필 사진 가지고 메세지 보이기
-    String rid; // 채팅방 아이디
+    String rid=""; // 채팅방 아이디
 
     private MyRecyclerView mRecyclerView;
     private ChatAdapter mAdapter;
@@ -43,6 +43,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     boolean serviceBound=false;
     MyTCPService tcpService;
+
+    boolean isPrivate;
+    String ppl=null;
+    // null 이 아니면 새로운 단체방 만들기 중!
+    // AddRoomActivity 에서 ChatActivity로 넘어온 다음에 처음 채팅 보내서 다시 받기 전인 상태 !!
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,9 +80,40 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         mAdapter = new ChatAdapter(ChatActivity.this,id);
         mRecyclerView.setAdapter(mAdapter);
 
-        // 방 정보 설정하기 .
-        rid = getIntent().getStringExtra("rid");
-        room = pref.getRoomFromId(rid);
+        isPrivate = getIntent().getBooleanExtra("isPrivate",true);
+
+        /*
+         * 방 정보 설정하기.
+         *
+         * ChatActivity 에서부터 온 경우
+         *      1. 빈방 아님 && (개인방|단체방)
+         *
+         * AddRoomActivity 에서부터 온 경우
+         *      2. 단체방 && 빈방
+         *      3. 개인방 && (빈방|빈방아님)
+         *
+         * */
+
+        if (getIntent().hasExtra("rid")){ // 빈방 아님 && (개인방|단체방)
+
+            rid = getIntent().getStringExtra("rid");
+            room = pref.getRoomFromId(rid);
+
+        } else if (!isPrivate && getIntent().hasExtra("ppl")){  // 단체방 && 빈방
+            // 참여자 정보 가져오기 : 단체방이고 empty room 인 경우 에만 참여자정보를 pref 가 아니라 인텐트에서 가져온다
+            // ppl  -  2:68620823,11111111
+            this.ppl = getIntent().getStringExtra("ppl");
+            Log.d(TAG, "onCreate: ppl: "+ppl);
+
+            // TODO: 2017. 9. 1. 여기는 아직 rid 는 "" ,  room 은 null 임 !!
+
+        } else if (getIntent().hasExtra("id")){ // 개인방 && (빈방|빈방아님)
+            String friend_id = getIntent().getStringExtra("id");
+            friend = sqLite.getFriend(friend_id);
+            rid = friend.getRid();
+            room = pref.getRoomFromId(rid);
+            isPrivate=false;
+        }
 
         Log.d(TAG, "onCreate: rid: "+rid);
         if (room!=null){
@@ -88,12 +124,14 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
 
         // set up toolbar title
-        if (room==null){ // empty room (== not saved in pref)
-            if(sqLite.getFriendFromRid(rid)!=null) { // 일대일 방인데 방이 만들어진건 아닌 경우.
+        if (room==null | rid.equals("")){ // empty room (== not saved in pref)
+            if (rid.equals("")){ // 단체방
+                ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("empty room ! ");
+            } else if(sqLite.getFriendFromRid(rid)!=null) { // 일대일 방인데 방이 만들어진건 아닌 경우. // FIXME: 2017. 9. 1. 단체방일때 실행안함
                 String name = sqLite.getFriendFromRid(rid).getName();
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("empty room : "+name);
             } else {
-                ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("empty room ! ");
+                ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(" ?? ");
             }
         } else { // not an empty room
             if (room.isPrivate()){
@@ -120,11 +158,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(context, "onResume : rid is null ?? ", Toast.LENGTH_SHORT).show();
             Log.e(TAG, "onResume: rid is null?");
         }
+
         Intent intent = new Intent(ChatActivity.this,MyTCPService.class);
-//        intent.putExtra("chatActivityBound",true);
-//        intent.putExtra("rid",rid);
         bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE);
         serviceBound = true;
+
+
     }
 
 
@@ -144,6 +183,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             tcpService.unsetOnNewMessageRecievedListener(ChatActivity.this);
             serviceBound = false;
         }
+
     };
 
     /**
@@ -151,9 +191,20 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      * 그 후에 여기서! 로컬디비에서 새로 저장된 내용을 출력해서 액티비티에 그려줌.
      * */
     @Override
-    public void onMessageReceivedCallback() {
-
+    public void onMessageReceivedCallback(String rid) {
         Log.d(TAG, "onMessageReceivedCallback: ");
+
+        if (rid.equals("")){  // 단체 방 처음 만들 때
+            ppl=null;
+            this.rid = rid;
+
+
+            // rid제대로 설정
+            unbindService(serviceConnection);
+            Intent intent = new Intent(ChatActivity.this,MyTCPService.class);
+            bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE);
+            serviceBound = true;
+        }
 
         // 빈 방에서 보통 방이 되는 경우 toolbar title 설정
         if (room==null){
@@ -172,7 +223,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         // db에 방금 보낸 채팅을 넣는건 TCPService에서 했으므로, 여기서는 뷰 띄워주기만 하면 됨.
-        if (sqLite.getAllChatInARoom(rid)!=null){ // 여기서는 방금 하나 보냈으니까  null이 아닌게 정상
+        if (sqLite.getAllChatInARoom(rid)!=null){ // 여기서는 방금 하나 보냈으니까  null이 아닌게 정상 // FIXME: 2017. 9. 2. rid equals ""
             // specify an adapter (see also next example)
             mAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
             mAdapter.notifyDataSetChanged();
@@ -227,7 +278,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private class TcpAsyncTask extends AsyncTask<String, Void, Void> {
         private static final String TAG = "TcpAsyncTask";
         String msg;
-        boolean isSent=true;
+        boolean isSent=true; // false 이면 onPostExecute 에서 new async 실행
 
         @Override
         protected Void doInBackground(String... strings) {
@@ -238,11 +289,19 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
             if (tcpClient!=null){
                 if (tcpClient.isRunning()){
-                    tcpClient.sendMessage(MyTCPClient.JSON_MSG,rid,strings[0]);
-                    isSent=true;
+                    if (!isPrivate&&ppl!=null){
+                        // 단체방 새로 생성 request를 서버에 보냄
+                        // json type , 단체방 사람수와 아이디 목록, 처음 보내고자하는 메세지
+                        tcpClient.sendMessage(MyTCPClient.JSON_REQUEST,ppl,strings[0]);
+                        isSent=true; // 메세지 내용 까지 같이 보내니까 true.
+                        //ppl=null; // FIXME: 2017. 9. 2.  방 제대로 만들어진거 확인하고 ppl=null 설정 해야 함
+                    }else { // 메세지 전송
+                        tcpClient.sendMessage(MyTCPClient.JSON_MSG,rid,strings[0]);
+                        isSent=true;
+                    }
+
                 } else {
                     // tcpClient 인스턴스가 생성은 되었지만 아직 서버와 연결은 안된 상태이므로 기다렸다가 onPostExecute로 가서 새 async 실행.
-                    // 그런데 어떻게든 작업이 꼬여서 기다리는 async가 여러개 계속 생성되면 과부하 문제 생길 수 있겠다.
                     try {
                         Log.d(TAG, "doInBackground: tcpClient is not running, thus wait");
                         Thread.sleep(1000);
@@ -268,10 +327,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             Log.d(TAG, "onPostExecute: "+msg);
-            if (!isSent&&MyUtil.IsNetworkConnected(ChatActivity.this)){
-                Log.d(TAG, "onPostExecute: run new asyncTask");
-                new TcpAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,msg);
-            }
+            // FIXME: 2017. 9. 2.  async가 끊임없이 다시 시작되는 문제 ..
+//            if (!isSent&&MyUtil.IsNetworkConnected(ChatActivity.this)){
+//                Log.d(TAG, "onPostExecute: run new asyncTask");
+//                new TcpAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,msg);
+//            }
         }
     }
 

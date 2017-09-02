@@ -42,16 +42,19 @@ public class MyTCPClient {
     static final int ERROR = 6;
     static final int READY_TO_TALK = 7; // 사용자 아이디 식별 완료
     // 메세지
-    static final int SENT = 3; // 서버로 메세지를 오류없이 보냄                   // 항상 obj의 타입은 List<String> !!
-    static final int RECEIVED = 4;  // 서버로부터 다른 유저가 보낸 채팅 메세지 받음   // 항상 obj의 타입은 List<String> !!
+    static final int SENT = 3; // 서버로 메세지를 오류없이 보냄                   // 항상 msg obj의 타입은 List<String> !!
+    static final int RECEIVED = 4;  // 서버로부터 다른 유저가 보낸 채팅 메세지 받음   // 항상 msg obj의 타입은 List<String> !!
     static final int INFO = 8; // 서버로부터 알림 메세지 받음
+    static final int NEW_ROOM = 9; // 서버로부터 알림 메세지 받음
+
 
 
     // 서버에 tcp 주고받을 때  json 형식 이름
-    public static final String JSON_ID = "id";
-    public static final String JSON_MSG = "msg";
-    public static final String JSON_INFO = "info";
-
+    static final String JSON_ID = "id";
+    static final String JSON_MSG = "msg";
+    static final String JSON_INFO = "info";
+    static final String JSON_REQUEST = "request"; // 클라에서 서버에게 요청. e.g.단체방 생성
+    static final String JSON_NEW_ROOM = "ppl";
 
     /**
      * TCPClient class constructor, which is created in AsyncTasks after the button click.
@@ -116,21 +119,23 @@ public class MyTCPClient {
                      * Next it is retrieved by AsyncTask and passed to onPublishProgress method.
                      *
                      */
-                    // todo jsonObject 확인해서 MSG 이면 Async에 넘기고, INFO이면 여기서 처리.
+                    // jsonObject 확인해서 MSG 이면 Async에 넘기고, INFO이면 여기서 처리.
                     if (incomingMessage !=null){
                         Log.d(TAG, "run: incomingMessage != null");
                         List<String> result = MyUtil.readJSONObject(incomingMessage);
                         if (result != null){
                             if (result.get(0).equals(JSON_MSG)){ // 메세지 받은 경우
 
-                                // rid, id, body listener대신 handler에게 넘기기
-//                                listener.callbackMessageReceiver(result.get(1),result.get(2),result.get(3));
                                 Message m = new Message();
                                 m.obj = result;
-//                                m.obj = result.get(2) +" : "+ result.get(3) ;
                                 m.what = RECEIVED;
                                 handler.sendMessage(m);
 
+                            } else if(result.get(0).equals(JSON_NEW_ROOM)){ // 새 방 정보와 함께 메세지 받은 경우 (내가 보냈던 거일수도 있음.)
+                                Message m = new Message();
+                                m.obj = result;
+                                m.what = NEW_ROOM;
+                                handler.sendMessage(m);
                             } else if (result.get(0).equals(JSON_INFO)){
 
                                 Log.d(TAG, "run: json_info");
@@ -189,7 +194,6 @@ public class MyTCPClient {
                         break;
                     case JSON_MSG:
                         JSONObject msgObject = new JSONObject();
-                        // TODO: 2017. 8. 26. unix time !!
                         Date date = new Date();
                         long unixTime = date.getTime()/1000;
                         Log.d(TAG, "sendMessage: unitTime " +unixTime );
@@ -214,6 +218,28 @@ public class MyTCPClient {
                         break;
                     case JSON_INFO:
                         object.put(JSON_INFO,message);
+                        break;
+                    case JSON_REQUEST:
+                        // type : json type , rid : 단체방 사람수와 아이디 목록, message : 처음 보내고자하는 메세지
+
+                        JSONObject requestObject = new JSONObject();
+                        Date date1 = new Date();
+                        long unixTime1 = date1.getTime()/1000;
+                        requestObject.put("unixTime",String.valueOf(unixTime1));
+                        requestObject.put(JSON_NEW_ROOM,rid); // "ppl" : "3:68620823,11111111,22222222"
+                        requestObject.put("body",message);
+                        requestObject.put("id",id); // 아래에 핸들러에게 보낼 때 경우 때문에 넣음.
+
+                        int randomNum1 = 0;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                            randomNum1 = ThreadLocalRandom.
+                                    current().nextInt(0, 1000 + 1); // generage random within 10 to 100
+                        }
+                        String mid1 = String.valueOf(randomNum1)+unixTime1;
+                        requestObject.put("mid",mid1);
+
+                        object.put(JSON_REQUEST,requestObject);
+
                         break;
                 }
                 message = object.toString();
@@ -250,9 +276,6 @@ public class MyTCPClient {
         }
     }
 
-    public void sendRequest(){
-
-    }
 
     public void stopClient(){
 
