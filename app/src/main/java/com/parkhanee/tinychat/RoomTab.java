@@ -109,6 +109,7 @@ public class RoomTab extends Fragment implements View.OnClickListener, MyTCPServ
         super.onStop();
         if (serviceBound){
             Log.d(TAG, "onStop: unbindService");
+            tcpService.unsetOnNewMessageRecievedListener(RoomTab.this,MyTCPService.roomTabOnBindRID);
             getActivity().unbindService(serviceConnection);
             serviceBound = false;
         }
@@ -150,14 +151,14 @@ public class RoomTab extends Fragment implements View.OnClickListener, MyTCPServ
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             MyTCPService.MyBinder myBinder = (MyTCPService.MyBinder) iBinder;
             tcpService = myBinder.getService();
-            tcpService.setOnNewMessageRecievedListener(RoomTab.this,null);
+            tcpService.setOnNewMessageRecievedListener(RoomTab.this,MyTCPService.roomTabOnBindRID);
             // tcpClient = myBinder.getClient();
             serviceBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            tcpService.unsetOnNewMessageRecievedListener(RoomTab.this);
+//            tcpService.unsetOnNewMessageRecievedListener(RoomTab.this,MyTCPService.roomTabOnBindRID);
             serviceBound = false;
         }
     };

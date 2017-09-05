@@ -180,7 +180,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            tcpService.unsetOnNewMessageRecievedListener(ChatActivity.this);
+            Toast.makeText(context, "unbind", Toast.LENGTH_SHORT).show();
+//            tcpService.unsetOnNewMessageRecievedListener(ChatActivity.this);
             serviceBound = false;
         }
 
@@ -238,8 +239,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStop() {
         super.onStop();
+        Toast.makeText(context, "onStop", Toast.LENGTH_SHORT).show();
         if (serviceBound){
             Log.d(TAG, "onStop: unbind service: rid: "+rid);
+            tcpService.unsetOnNewMessageRecievedListener(ChatActivity.this,rid);
             unbindService(serviceConnection);
             serviceBound = false;
         }
