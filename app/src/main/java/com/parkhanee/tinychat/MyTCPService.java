@@ -27,6 +27,7 @@ import static com.parkhanee.tinychat.MyTCPClient.INFO;
 import static com.parkhanee.tinychat.MyTCPClient.NEW_ROOM;
 import static com.parkhanee.tinychat.MyTCPClient.READY_TO_TALK;
 import static com.parkhanee.tinychat.MyTCPClient.RECEIVED;
+import static com.parkhanee.tinychat.MyTCPClient.SEDNING;
 import static com.parkhanee.tinychat.MyTCPClient.SENT;
 import static com.parkhanee.tinychat.MyTCPClient.SHUTDOWN;
 
@@ -84,9 +85,9 @@ public class MyTCPService extends IntentService {
 
     private IBinder binder = new MyBinder();
 
-    String activeRoomId=null;
+    String activeRoomId="";
     private final ArrayList<OnNewMessageReceivedListener> listeners = new ArrayList<>();
-    private static final String roomTabOnBindRID="roomTabOnBindRID";
+    public static final String roomTabOnBindRID="roomTabOnBindRID";
 
     public MyTCPService(String name) {
         super(name);
@@ -142,7 +143,7 @@ public class MyTCPService extends IntentService {
             tcpClient.stopClient();
         }
         Log.d(TAG, "onDestroy: ");
-        Toast.makeText(this, "서비스 onDestroy", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "서비스 onDestroy", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -152,7 +153,7 @@ public class MyTCPService extends IntentService {
      * */
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-        Toast.makeText(this, "서비스 onStartCommand", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "서비스 onStartCommand", Toast.LENGTH_SHORT).show();
 
         Log.d(TAG, "onStartCommand: ");
 
@@ -182,6 +183,7 @@ public class MyTCPService extends IntentService {
 
                     switch (msg.what){
                         case RECEIVED :  //  친구에게서 채팅메세지 도착
+                            Toast.makeText(MyTCPService.this, "RECEIVED", Toast.LENGTH_SHORT).show();
 
                             @SuppressWarnings("unchecked")
                             List<String> result = (List<String>) msg.obj;
@@ -210,7 +212,7 @@ public class MyTCPService extends IntentService {
 
                                 // pref의 방목록에 없으면 새로운방 등록
                                 if (!pref.isRoomSet(rid)){
-                                    // TODO: 2017. 9. 2. 단체방
+                                    // 일대일 방 만!  단체방 등록은 여기가 아니라 NEW_ROOM 에서.
                                     Room room = new Room(rid,1,from,MyTCPService.this);
                                     pref.addRoom(room);
                                 }
@@ -223,11 +225,18 @@ public class MyTCPService extends IntentService {
 
                                 // 방금 도착한 메세지의 rid와 activeRoomId를 비교해서 같으면 노티 대신에 ChatActivity에 알린다 ! -->  UI update
                                 // 또는 RoomTab에 bind되어 있는 걸 확인하고 그쪽으로 알림.                                  -->  UI update
-                                if (rid.equals(activeRoomId) | activeRoomId.equals(roomTabOnBindRID)){
+
+                                if (rid.equals(activeRoomId)){
                                     for (OnNewMessageReceivedListener listener : listeners){
                                         listener.onMessageReceivedCallback(rid);
                                     }
-                                } else if (!rid.equals(activeRoomId) ){
+                                } else {
+
+                                    if (activeRoomId.equals(roomTabOnBindRID)){
+                                        for (OnNewMessageReceivedListener listener : listeners){
+                                            listener.onMessageReceivedCallback(rid);
+                                        }
+                                    }
 
                                     String date = MyUtil.UnixTimeToCustomDate(unixTime);
                                     String from_name = sqLite.getFriendName(from); // 보낸 사람 이름
@@ -244,12 +253,14 @@ public class MyTCPService extends IntentService {
                             else {
                                 // Log.e(TAG, "handleMessage: 내가 보낸 메세지인데 RECEIVED로 옴");
                                 // 무시
-                                // TODO: 2017. 9. 2. 보통은 무시하지만 ! 새로 방 만들었을 경우!!여기서 처리 아니면 tcpClient 에서 다른 flag!!
+                                // TODO: 2017. 9. 2. 내가 보낸 메세지. 단체방에서 방 처음만들때 보내는 메세지 빼고는 전부 여기로 옴.
                                 Toast.makeText(MyTCPService.this, "rid"+result.get(1)+" body"+result.get(3), Toast.LENGTH_SHORT).show();
+
                             }
 
                             break;
                         case NEW_ROOM :
+                            Toast.makeText(MyTCPService.this, "NEW ROOM", Toast.LENGTH_SHORT).show();
                             @SuppressWarnings("unchecked")
                             List<String> result2 = (List<String>) msg.obj;
                             String rid2 = result2.get(1);
@@ -318,7 +329,8 @@ public class MyTCPService extends IntentService {
                         Toast.makeText(MyTCPService.this, "ready to talk", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: ready to talk");
                             break;
-                        case SENT : // tcpClient에서 sendMessage메서드를 완료함. (내가 채팅 메세지 보냄)
+                        case SENT : // 메세지 전송 성공.  내가 보냈던 메세지를 서버로부터 돌려받음.
+                            Toast.makeText(MyTCPService.this, "SENT", Toast.LENGTH_SHORT).show();
 
                             // TODO: 2017. 8. 25. 채팅 액티비티에서 특정 메세지가 전송 완료 되었다는 거 알려주기.
                             // 채팅액티비티가 메세지를 보내기 시작 할 때 mid 만들어서
@@ -360,9 +372,13 @@ public class MyTCPService extends IntentService {
                                 }
                             }
 
-                            Toast.makeText(MyTCPService.this, "sent : "+body, Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(MyTCPService.this, "sent : "+body, Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: sent: "+body);
 
+                            break;
+                        case SEDNING : // 서버로 오류없이 보냄. tcpClient에서 sendMessage메서드를 완료함. (내가 채팅 메세지 보냄)
+                            Toast.makeText(MyTCPService.this, "SEDNING", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "handleMessage: sending");
                             break;
                         case INFO : // 서버의 알림 메세지 도착
                             Log.d(TAG, "handleMessage: info");
@@ -400,7 +416,7 @@ public class MyTCPService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        Toast.makeText(this, "onHandleIntent "+ tcpClient.isRunning(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "onHandleIntent "+ tcpClient.isRunning(), Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onHandleIntent: tcpClient.isRunning() ? "+ tcpClient.isRunning());
 
         if (!tcpClient.isRunning()){
@@ -429,20 +445,19 @@ public class MyTCPService extends IntentService {
      *
      * */
     public void setOnNewMessageRecievedListener(OnNewMessageReceivedListener listener, String rid){
-//        Toast.makeText(this, "set listener", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "set listener", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "setOnNewMessageRecievedListener: ");
         listeners.add(listener);
-        if (rid==null){
-            activeRoomId = roomTabOnBindRID;
-        } else {
-            activeRoomId = rid;
-        }
+        activeRoomId = rid;
     }
 
-    public void unsetOnNewMessageRecievedListener(OnNewMessageReceivedListener listener){
+    public void unsetOnNewMessageRecievedListener(OnNewMessageReceivedListener listener, String rid){
+        Toast.makeText(this, "unset listner"+rid, Toast.LENGTH_SHORT).show();
         Log.d(TAG, "unsetOnNewMessageRecievedListener: ");
         listeners.remove(listener);
-        activeRoomId = null;
+        if (activeRoomId.equals(rid)){
+            activeRoomId = "";
+        }
     }
 
     private void sendMyNotification(PendingIntent pendingIntent, String title, String body,String date){

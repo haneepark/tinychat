@@ -35,22 +35,23 @@ public class MyTCPClient {
     private String server_ip, server_port, id;
     private Socket socket;
 
-    // 연결 상태
-    static final int CONNECTING = 1; // 서버와 소켓 연결 시도 중
-    static final int CONNECTED = 0; // 서버와 소켓 연결 완료
-    static final int SHUTDOWN = 5;
-    static final int ERROR = 6;
-    static final int READY_TO_TALK = 7; // 사용자 아이디 식별 완료
-    // 메세지
-    static final int SENT = 3; // 서버로 메세지를 오류없이 보냄                   // 항상 msg obj의 타입은 List<String> !!
-    static final int RECEIVED = 4;  // 서버로부터 다른 유저가 보낸 채팅 메세지 받음   // 항상 msg obj의 타입은 List<String> !!
-    static final int INFO = 8; // 서버로부터 알림 메세지 받음
-    static final int NEW_ROOM = 9; // 서버로부터 알림 메세지 받음
-
+     // Handler Flag
+        // 연결 상태
+        static final int CONNECTING = 1; // 서버와 소켓 연결 시도 중
+        static final int CONNECTED = 0; // 서버와 소켓 연결 완료
+        static final int SHUTDOWN = 5;
+        static final int ERROR = 6;
+        static final int READY_TO_TALK = 7; // 사용자 아이디 식별 완료
+        // 메세지
+        static final int SENT = 3; // 서버로부터 내가 보낸 메세지 돌려받아서 제대로 보낸것까지 확인 됨.  // 항상 msg obj의 타입은 List<String> !!
+        static final int SEDNING = 10; // 서버로 메세지를 오류없이 보냄
+        static final int RECEIVED = 4;  // 서버로부터 다른 유저가 보낸 채팅 메세지 받음   // 항상 msg obj의 타입은 List<String> !!
+        static final int INFO = 8; // 서버로부터 알림 메세지 받음
+        static final int NEW_ROOM = 9; // 서버로부터 알림 메세지 받음
 
 
     // 서버에 tcp 주고받을 때  json 형식 이름
-    static final String JSON_ID = "id";
+    private static final String JSON_ID = "id";
     static final String JSON_MSG = "msg";
     static final String JSON_INFO = "info";
     static final String JSON_REQUEST = "request"; // 클라에서 서버에게 요청. e.g.단체방 생성
@@ -128,7 +129,11 @@ public class MyTCPClient {
 
                                 Message m = new Message();
                                 m.obj = result;
-                                m.what = RECEIVED;
+                                if (result.get(2).equals(id)){ // 내가 보냈던 메세지
+                                    m.what = SENT;
+                                }else { // 받은 메세지
+                                    m.what = RECEIVED;
+                                }
                                 handler.sendMessage(m);
 
                             } else if(result.get(0).equals(JSON_NEW_ROOM)){ // 새 방 정보와 함께 메세지 받은 경우 (내가 보냈던 거일수도 있음.)
@@ -251,7 +256,7 @@ public class MyTCPClient {
                 if (type.equals(JSON_MSG)){
                     Message msg = new Message();
                     msg.obj = MyUtil.readJSONObject(message);
-                    msg.what = SENT;
+                    msg.what = SEDNING;
                     handler.sendMessage(msg);
                 }
 
