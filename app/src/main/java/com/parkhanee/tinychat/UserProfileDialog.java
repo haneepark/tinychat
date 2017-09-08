@@ -205,8 +205,8 @@ public class UserProfileDialog extends DialogFragment {
                                 Intent i =  new Intent(getActivity(),ChatActivity.class);
                                 // 채팅방 정보 번들로 넘겨주기 !
                                 i.putExtra("rid",builder.getRid());
-                                // TODO: 2017. 8. 22.   builder.getFriendId() ?
-                                // TODO: 2017. 8. 22. chatActivity 에서 intent로 friend-id받아야. .. 하나 ?
+                                i.putExtra("isPrivate",true);
+                                i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                 startActivity(i);
                                 dismiss();
                             } else {

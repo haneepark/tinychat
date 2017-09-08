@@ -71,6 +71,7 @@ public class RoomTab extends Fragment implements View.OnClickListener, MyTCPServ
                 Intent i = new Intent(getActivity(),ChatActivity.class);
                 i.putExtra("rid",((Room)adapterView.getItemAtPosition(position)).getRid());
                 i.putExtra("isPrivate",((Room)adapterView.getItemAtPosition(position)).isPrivate());
+                i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(i);
             }
         });

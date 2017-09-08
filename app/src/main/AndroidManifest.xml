@@ -40,7 +40,9 @@
             android:name=".AddFriendActivity"
             android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".ChatActivity">
+        <activity android:name=".ChatActivity"
+                  android:launchMode="singleTop"
+                  android:screenOrientation="portrait">
         </activity>
 
         <service

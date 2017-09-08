@@ -45,9 +45,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     MyTCPService tcpService;
 
     boolean isPrivate;
-    String ppl=null;
-    // null 이 아니면 새로운 단체방 만들기 중!
-    // AddRoomActivity 에서 ChatActivity로 넘어온 다음에 처음 채팅 보내서 다시 받기 전인 상태 !!
+    String ppl=null; // null 이 아니면 새로운 단체방 만들기 중!
+                     // AddRoomActivity 에서 ChatActivity로 넘어온 다음에 처음 채팅 보내서 다시 받기 전인 상태 !!
+
+    Intent newIntent=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +66,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             pref = MyPreferences.getInstance(context);
         }
         if (sqLite==null){ sqLite = MySQLite.getInstance(ChatActivity.this); }
-        id = pref.getId();
 
         et = (EditText) findViewById(R.id.et_chat);
         (findViewById(R.id.btn_sendMsg)).setOnClickListener(this);
@@ -77,10 +77,30 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setOnKeyboardStatusChangeListener(this);
+    } // onCreate 에는 여러 채팅방이 이 액티비티로 실행될 때 공통으로 써도 상관없는 요소들을 초기화시킴.
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        newIntent=intent;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (newIntent==null){
+            newIntent = getIntent();
+        }
+
+        Toast.makeText(context, "onResume"+newIntent.getStringExtra("rid"), Toast.LENGTH_SHORT).show();
+
+        Log.d(TAG, "onResume: "+newIntent.getStringExtra("rid"));
+
+        id = pref.getId();
         mAdapter = new ChatAdapter(ChatActivity.this,id);
         mRecyclerView.setAdapter(mAdapter);
 
-        isPrivate = getIntent().getBooleanExtra("isPrivate",true);
+        isPrivate = newIntent.getBooleanExtra("isPrivate",true);
 
         /*
          * 방 정보 설정하기.
@@ -94,32 +114,32 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
          *
          * */
 
-        if (getIntent().hasExtra("rid")){ // 빈방 아님 && (개인방|단체방)
+        if (newIntent.hasExtra("rid")){ // 빈방 아님 && (개인방|단체방)
 
-            rid = getIntent().getStringExtra("rid");
+            rid = newIntent.getStringExtra("rid");
             room = pref.getRoomFromId(rid);
-
-        } else if (!isPrivate && getIntent().hasExtra("ppl")){  // 단체방 && 빈방
+            if (room!=null) friend = room.getParticipant();
+            Log.d(TAG, "onResume: 1");
+        } else if (!isPrivate && newIntent.hasExtra("ppl")){  // 단체방 && 빈방
+            // 여기는 아직 rid 는 "" ,  room 은 null 임 !!
             // 참여자 정보 가져오기 : 단체방이고 empty room 인 경우 에만 참여자정보를 pref 가 아니라 인텐트에서 가져온다
             // ppl  -  2:68620823,11111111
-            this.ppl = getIntent().getStringExtra("ppl");
-            Log.d(TAG, "onCreate: ppl: "+ppl);
+            this.ppl = newIntent.getStringExtra("ppl");
+            Log.d(TAG, "onResume: ppl: "+ppl);
 
-            // TODO: 2017. 9. 1. 여기는 아직 rid 는 "" ,  room 은 null 임 !!
-
-        } else if (getIntent().hasExtra("id")){ // 개인방 && (빈방|빈방아님)
-            String friend_id = getIntent().getStringExtra("id");
+        } else if (newIntent.hasExtra("id")){ // 개인방 && (빈방|빈방아님)
+            String friend_id = newIntent.getStringExtra("id");
             friend = sqLite.getFriend(friend_id);
             rid = friend.getRid();
             room = pref.getRoomFromId(rid);
             isPrivate=false;
         }
 
-        Log.d(TAG, "onCreate: rid: "+rid);
+        Log.d(TAG, "onResume: rid: "+rid);
         if (room!=null){
-            Log.d(TAG, "onCreate: room: "+room.toString());
+            Log.d(TAG, "onResume: room: "+room.toString());
         } else {
-            Log.d(TAG, "onCreate: room: "+null);
+            Log.d(TAG, "onResume: room: "+null);
         }
 
 
@@ -134,26 +154,24 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(" ?? ");
             }
         } else { // not an empty room
+            Log.d(TAG, "onResume: 2");
             if (room.isPrivate()){
-                friend = room.getParticipant();
+                Log.d(TAG, "onResume: 3");
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(friend.getName());
             } else {
+                Log.d(TAG, "onResume: 4");
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
             }
 
             if (sqLite.getAllChatInARoom(rid)!=null){
+                Log.d(TAG, "onResume: 5");
                 // specify an adapter (see also next example)
                 mAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
                 mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+                mAdapter.notifyDataSetChanged();
             }
-
         }
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume: ");
         if (rid==null){
             Toast.makeText(context, "onResume : rid is null ?? ", Toast.LENGTH_SHORT).show();
             Log.e(TAG, "onResume: rid is null?");
@@ -162,7 +180,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = new Intent(ChatActivity.this,MyTCPService.class);
         bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE);
         serviceBound = true;
-
 
     }
 
@@ -239,7 +256,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStop() {
         super.onStop();
-        Toast.makeText(context, "onStop", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "onStop: ");
         if (serviceBound){
             Log.d(TAG, "onStop: unbind service: rid: "+rid);
             tcpService.unsetOnNewMessageRecievedListener(ChatActivity.this,rid);

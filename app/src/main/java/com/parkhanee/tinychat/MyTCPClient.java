@@ -116,9 +116,8 @@ public class MyTCPClient {
                     String incomingMessage = in.readLine();
 
                     /**
-                     * Incoming message is passed to MessageCallback object.
-                     * Next it is retrieved by AsyncTask and passed to onPublishProgress method.
-                     *
+                     * Incoming message is passed to Handler.
+                     * Then it is retrieved by MyTCPService and passed to ChatActivity, RoomTab, or Notification via NewMessageCallbackListener.
                      */
                     // jsonObject 확인해서 MSG 이면 Async에 넘기고, INFO이면 여기서 처리.
                     if (incomingMessage !=null){

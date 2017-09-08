@@ -68,6 +68,7 @@ public class AddRoomActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (active){
                     Intent intent = new Intent(AddRoomActivity.this,ChatActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     // 참여자 정보 보내기 : 여기 경우처럼 단체방이고 empty room 인 경우 에만 참여자정보를 pref 가 아니라 인텐트로 보낸다
                     // ppl  -  2:68620823,11111111
                     //   intent.putExtra

@@ -243,11 +243,11 @@ public class MyTCPService extends IntentService {
 
                                     // 노티 띄우기
                                     Intent intent = new Intent(MyTCPService.this, ChatActivity.class);
-                                    // TODO: 2017. 8. 29. intent FLAG !
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                     intent.putExtra("rid",rid);
                                     PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
-                                    sendMyNotification(pendingIntent,from_name,body,date);
+                                    sendMyNotification(pendingIntent,from_name,body+" "+rid,date);
                                 }
                             }
                             else {
@@ -304,6 +304,7 @@ public class MyTCPService extends IntentService {
                                 // 노티 띄우기
                                 Intent intent = new Intent(MyTCPService.this, ChatActivity.class);
                                 intent.putExtra("rid",rid2);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 PendingIntent pendingIntent = PendingIntent.getActivity(MyTCPService.this, 0, intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
                                 sendMyNotification(pendingIntent,from_name,body2,date);
@@ -445,14 +446,14 @@ public class MyTCPService extends IntentService {
      *
      * */
     public void setOnNewMessageRecievedListener(OnNewMessageReceivedListener listener, String rid){
-        Toast.makeText(this, "set listener", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "set listener "+rid, Toast.LENGTH_SHORT).show();
         Log.d(TAG, "setOnNewMessageRecievedListener: ");
         listeners.add(listener);
         activeRoomId = rid;
     }
 
     public void unsetOnNewMessageRecievedListener(OnNewMessageReceivedListener listener, String rid){
-        Toast.makeText(this, "unset listner"+rid, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "unset listner"+rid, Toast.LENGTH_SHORT).show();
         Log.d(TAG, "unsetOnNewMessageRecievedListener: ");
         listeners.remove(listener);
         if (activeRoomId.equals(rid)){
