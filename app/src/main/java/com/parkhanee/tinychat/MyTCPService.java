@@ -22,8 +22,9 @@ import java.util.List;
 
 import static com.parkhanee.tinychat.MyTCPClient.CONNECTED;
 import static com.parkhanee.tinychat.MyTCPClient.CONNECTING;
-import static com.parkhanee.tinychat.MyTCPClient.ERROR;
+import static com.parkhanee.tinychat.MyTCPClient.CONNECTION_ERROR;
 import static com.parkhanee.tinychat.MyTCPClient.INFO;
+import static com.parkhanee.tinychat.MyTCPClient.MSG_ERROR;
 import static com.parkhanee.tinychat.MyTCPClient.NEW_ROOM;
 import static com.parkhanee.tinychat.MyTCPClient.READY_TO_TALK;
 import static com.parkhanee.tinychat.MyTCPClient.RECEIVED;
@@ -218,7 +219,7 @@ public class MyTCPService extends IntentService {
                                 }
 
                                 // SQLite에 메세지 등록
-                                if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime))){ // addChat실패하면
+                                if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime,0))){ // addChat실패하면
                                     Toast.makeText(MyTCPService.this, "addChat failed", Toast.LENGTH_SHORT).show();
                                 }
 
@@ -286,7 +287,7 @@ public class MyTCPService extends IntentService {
                             }
 
                             // 새로운 메세지 로컬디비에 넣기
-                            if (!sqLite.addChat(new Chat(mid2,rid2,from2,body2,unixTime2))){ // addChat실패하면
+                            if (!sqLite.addChat(new Chat(mid2,rid2,from2,body2,unixTime2,0))){ // addChat실패하면
                                 Toast.makeText(MyTCPService.this, "addChat failed", Toast.LENGTH_SHORT).show();
                             }
 
@@ -333,10 +334,6 @@ public class MyTCPService extends IntentService {
                         case SENT : // 메세지 전송 성공.  내가 보냈던 메세지를 서버로부터 돌려받음.
                             Toast.makeText(MyTCPService.this, "SENT", Toast.LENGTH_SHORT).show();
 
-                            // TODO: 2017. 8. 25. 채팅 액티비티에서 특정 메세지가 전송 완료 되었다는 거 알려주기.
-                            // 채팅액티비티가 메세지를 보내기 시작 할 때 mid 만들어서
-                            // async --> tcpClient --> 여기 차례로 mid를 전달하고
-                            // 마지막으로 여기서 액티비티에게 mid 알려주면서 얘가 다 전송완료 됐어 라고 알려주어야 겠다..
 
                             @SuppressWarnings("unchecked")
                             List<String> result1 = (List<String>) msg.obj;
@@ -355,14 +352,18 @@ public class MyTCPService extends IntentService {
                                     pref.addRoom(room);
                                 }
 
+                                // TODO: 2017. 8. 25. 채팅 액티비티에서 특정 메세지가 전송 완료 되었다는 거 알려주기.
+                                // 채팅액티비티가 메세지를 보내기 시작 할 때 mid 만들어서
+                                // async --> tcpClient --> 여기 차례로 mid를 전달하고
+                                // 마지막으로 여기서 액티비티에게 mid 알려주면서 얘가 다 전송완료 됐어 라고 알려주어야 겠다..
 
                                 // SQLite에 메세지 등록
-                                if (!sqLite.addChat(new Chat(mid,rid,from,body,unixTime))){ // addChat 실패하면
-                                    Toast.makeText(MyTCPService.this, "addChat failed", Toast.LENGTH_SHORT).show();
-                                    Log.e(TAG, "handleMessage: SENT: addChat failed" );
+                                if (!sqLite.updateChat(mid,0)){ // addChat 실패하면
+                                    Toast.makeText(MyTCPService.this, "updateChat failed", Toast.LENGTH_SHORT).show();
+                                    Log.e(TAG, "handleMessage: SENT: updateChat failed" );
                                 } else {
-//                                    Toast.makeText(MyTCPService.this, "addChat OK", Toast.LENGTH_SHORT).show();
-                                    Log.d(TAG, "handleMessage: SENT: addChat OK");
+                                    Toast.makeText(MyTCPService.this, "updateChat OK", Toast.LENGTH_SHORT).show();
+                                    Log.d(TAG, "handleMessage: SENT: updateChat OK");
                                 }
 
                             }
@@ -396,8 +397,13 @@ public class MyTCPService extends IntentService {
 //                            Toast.makeText(MyTCPService.this, "shutdown", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: shutdown");
                             break;
-                        case ERROR :
-//                            Toast.makeText(MyTCPService.this, "error", Toast.LENGTH_SHORT).show();
+                        case MSG_ERROR :
+                            // 특정 메세지 하나 전송 실패
+                            String messageId = msg.obj.toString();
+                            sqLite.updateChat(messageId,2);
+                            break;
+                        case CONNECTION_ERROR :
+                            Toast.makeText(MyTCPService.this, "connection error", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: error");
                             break;
                         default:

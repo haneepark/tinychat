@@ -20,6 +20,7 @@ import com.parkhanee.tinychat.classbox.Chat;
 import com.parkhanee.tinychat.classbox.Friend;
 import com.parkhanee.tinychat.classbox.Room;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -43,11 +44,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private MyRecyclerView mRecyclerView;
     private ChatAdapter chatAdapter;
     Toolbar toolbar;
-
-    // Sending Chat Recycler View
-    private MyRecyclerView mRecyclerView2;
-    private ChatSendingAdapter chatSendingAdapter;
-
 
     boolean serviceBound=false;
     MyTCPService tcpService;
@@ -85,14 +81,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setOnKeyboardStatusChangeListener(this);
-
-        mRecyclerView2 = (MyRecyclerView) findViewById(R.id.chat_recycler2);
-        LinearLayoutManager mLayoutManager2 = new LinearLayoutManager(this);
-        mLayoutManager2.setOrientation(LinearLayoutManager.VERTICAL);
-        mRecyclerView2.setLayoutManager(mLayoutManager2);
-        chatSendingAdapter = new ChatSendingAdapter();
-        mRecyclerView2.setAdapter(chatSendingAdapter);
-        mRecyclerView2.setOnKeyboardStatusChangeListener(this);
     } // onCreate 에는 여러 채팅방이 이 액티비티로 실행될 때 공통으로 써도 상관없는 요소들을 초기화시킴.
 
     @Override
@@ -108,16 +96,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             newIntent = getIntent();
         }
 
-        Toast.makeText(context, "onResume"+newIntent.getStringExtra("rid"), Toast.LENGTH_SHORT).show();
-
-        Log.d(TAG, "onResume: "+newIntent.getStringExtra("rid"));
+        Log.d(TAG, "onResume: rid:"+newIntent.getStringExtra("rid"));
 
         id = pref.getId();
-        chatAdapter = new ChatAdapter(ChatActivity.this,id);
+        chatAdapter = new ChatAdapter(ChatActivity.this,id,newIntent.getStringExtra("rid"));
         mRecyclerView.setAdapter(chatAdapter);
-
-        // TODO: 2017. 9. 8. pref.getAllSendingChat()
-        // mRecyclerView2.sendingChat()
 
         isPrivate = newIntent.getBooleanExtra("isPrivate",true);
 
@@ -138,7 +121,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             rid = newIntent.getStringExtra("rid");
             room = pref.getRoomFromId(rid);
             if (room!=null) friend = room.getParticipant();
-            Log.d(TAG, "onResume: 1");
         } else if (!isPrivate && newIntent.hasExtra("ppl")){  // 단체방 && 빈방
             // 여기는 아직 rid 는 "" ,  room 은 null 임 !!
             // 참여자 정보 가져오기 : 단체방이고 empty room 인 경우 에만 참여자정보를 pref 가 아니라 인텐트에서 가져온다
@@ -173,21 +155,22 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(" ?? ");
             }
         } else { // not an empty room
-            Log.d(TAG, "onResume: 2");
             if (room.isPrivate()){
-                Log.d(TAG, "onResume: 3");
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText(friend.getName());
             } else {
-                Log.d(TAG, "onResume: 4");
                 ((TextView)toolbar.findViewById(R.id.my_tool_bar_title)).setText("그룹채팅");
             }
 
             if (sqLite.getAllChatInARoom(rid)!=null){
-                Log.d(TAG, "onResume: 5");
-                // specify an adapter (see also next example)
-                chatAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
+                ArrayList<Chat> chats = sqLite.getAllChatInARoom(rid);
+                if (sqLite.getAllSendingChatInARoom(rid)!=null){
+                    chats.addAll(sqLite.getAllSendingChatInARoom(rid));
+                }
+                if (sqLite.getAllFailedChatInARoom(rid)!=null){
+                    chats.addAll(sqLite.getAllFailedChatInARoom(rid));
+                }
+                chatAdapter.setChatArrayList(chats);
                 mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
-                chatAdapter.notifyDataSetChanged();
             }
         }
 
@@ -257,14 +240,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        // sending message Recycler View 에서 보내는 중 메세지 없애기
-        chatSendingAdapter.deleteSendingChat(mid);
-
         // db에 방금 보낸 채팅을 넣는건 TCPService에서 했으므로, 여기서는 뷰 띄워주기만 하면 됨.
         if (sqLite.getAllChatInARoom(rid)!=null){ // 여기서는 방금 하나 보냈으니까  null이 아닌게 정상 // FIXME: 2017. 9. 2. rid equals ""
             // specify an adapter (see also next example)
-            chatAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
-            chatAdapter.notifyDataSetChanged();
+            ArrayList<Chat> chats = sqLite.getAllChatInARoom(rid);
+            if (sqLite.getAllSendingChatInARoom(rid)!=null){
+                chats.addAll(sqLite.getAllSendingChatInARoom(rid));
+            }
+            if (sqLite.getAllFailedChatInARoom(rid)!=null){
+                chats.addAll(sqLite.getAllFailedChatInARoom(rid));
+            }
+            chatAdapter.setChatArrayList(chats);
             mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
         } else {
             Log.d(TAG, "onMessageReceivedCallback: chat is null?");
@@ -290,14 +276,14 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_sendMsg : // 메세지 "전송" 버튼
                 String msg = et.getText().toString();
                 if (!msg.equals("")){ // TODO: 2017. 8. 22. 메세지 입력 안된 경우에는 전송안됨. 이때 전송 버튼 비활성화 할까 ?
-                   if ( MyUtil.IsNetworkConnected(ChatActivity.this)){
+//                   if ( MyUtil.IsNetworkConnected(ChatActivity.this)){
                        //  send msg
                        new TcpAsyncTask(msg).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                        et.setText("");
-                   } else {
-                       // TODO: 2017. 9. 1. 경고
-                       Toast.makeText(context, "인터넷에 연결되어있지 않음", Toast.LENGTH_SHORT).show();
-                   }
+//                   } else {
+//                       // TODO: 2017. 9. 1. 경고
+//                       Toast.makeText(context, "인터넷에 연결되어있지 않음", Toast.LENGTH_SHORT).show();
+//                   }
 
                 }
 
@@ -316,7 +302,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private class TcpAsyncTask extends AsyncTask<String, Void, Void> {
+    class TcpAsyncTask extends AsyncTask<String, Void, Void> {
         private static final String TAG = "TcpAsyncTask";
         String msg="empty message";
         boolean isSent=true; // false 이면 onPostExecute 에서 new async 실행
@@ -343,9 +329,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
             String mid = String.valueOf(randomNum)+rid+unixTime;
 
-            chat = new Chat(mid,rid,id,msg,unixTime);
+            chat = new Chat(mid,rid,id,msg,unixTime,1);
 
-            chatSendingAdapter.sendingChat(chat);
+            sqLite.addSendingChat(chat,1);
             Log.d(TAG, "onPreExecute: "+chat.toString());
         }
 
@@ -396,10 +382,39 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             super.onPostExecute(aVoid);
             Log.d(TAG, "onPostExecute: "+msg);
             // FIXME: 2017. 9. 2.  async가 끊임없이 다시 시작되는 문제 ..
-//            if (!isSent&&MyUtil.IsNetworkConnected(ChatActivity.this)){
+            if (!isSent){
+                sqLite.updateChat(chat.getMid(),2); // 전송 실패
+                Log.d(TAG, "onPostExecute: update chat");
 //                Log.d(TAG, "onPostExecute: run new asyncTask");
 //                new TcpAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,msg);
-//            }
+            }
+
+            // 전송중/전송실패 메세지 생겼으므로 메세지 목록 다시 뽑음
+            if (sqLite.getAllChatInARoom(rid)!=null){
+                // specify an adapter (see also next example)
+                ArrayList<Chat> chats = sqLite.getAllChatInARoom(rid);
+                if (sqLite.getAllSendingChatInARoom(rid)!=null){
+                    chats.addAll(sqLite.getAllSendingChatInARoom(rid));
+                }
+                if (sqLite.getAllFailedChatInARoom(rid)!=null){
+                    chats.addAll(sqLite.getAllFailedChatInARoom(rid));
+                }
+                chatAdapter.setChatArrayList(chats);
+                mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+            } else {
+                ArrayList<Chat> chats = new ArrayList<>();
+                if (sqLite.getAllSendingChatInARoom(rid)!=null){
+                    chats.addAll(sqLite.getAllSendingChatInARoom(rid));
+                }
+                if (sqLite.getAllFailedChatInARoom(rid)!=null){
+                    chats.addAll(sqLite.getAllFailedChatInARoom(rid));
+                }
+
+                if (chats.size()>0){
+                    chatAdapter.setChatArrayList(chats);
+                }
+
+            }
         }
     }
 

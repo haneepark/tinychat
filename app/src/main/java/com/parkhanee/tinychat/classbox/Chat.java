@@ -15,6 +15,11 @@ public class Chat {
     private String mid, rid, from, body, unixTime;
     private String  custom, time, date;    // sqLite 에 저장 안함
 
+    private int type;
+    static final int TYPE_COMPLETE=0;
+    static final int TYPE_SENDING=1;
+    static final int TYPE_FAIL=2;
+
     // 시간 표시하는 타입
     public static final int TYPE_CUSTOM=11; // 현재 시간과 비교해서 보기좋게 표기
     public static final int TYPE_TIME=12; // HH:mm 시,분만 표기
@@ -23,18 +28,23 @@ public class Chat {
     // Chat RecyclerView에 표시하기 위한 날짜 객체
     private boolean dateObject=false;
 
-    public Chat(String mid, String rid, String from, String body, String unixTime){
+    public Chat(String mid, String rid, String from, String body, String unixTime, int type){
         this.mid = mid;
         this.rid = rid;
         this.from = from;
         this.body =body;
         this.unixTime = unixTime;
+        this.type = type;
     }
 
     public Chat(String unixTime){
         dateObject=true;
         this.unixTime = unixTime;
 
+    }
+
+    public int getType() {
+        return type;
     }
 
     public String getMid() {
@@ -99,6 +109,7 @@ public class Chat {
             ", from='" + from + '\'' +
             ", body='" + body + '\'' +
             ", unixTime ='" + unixTime + '\'' +
+            ", type ='" + type + '\'' +
             ", date ='" + date + '\'' +
             '}';
     }

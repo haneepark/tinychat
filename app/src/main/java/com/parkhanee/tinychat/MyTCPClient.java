@@ -42,15 +42,15 @@ public class MyTCPClient {
         static final int CONNECTING = 1; // 서버와 소켓 연결 시도 중
         static final int CONNECTED = 0; // 서버와 소켓 연결 완료
         static final int SHUTDOWN = 5;
-        static final int ERROR = 6;
+        static final int CONNECTION_ERROR = 6;
         static final int READY_TO_TALK = 7; // 사용자 아이디 식별 완료
         // 메세지
-        static final int SENT = 3; // 서버로부터 내가 보낸 메세지 돌려받아서 제대로 보낸것까지 확인 됨.  // 항상 msg obj의 타입은 List<String> !!
+        static final int SENT = 3; // 서버로부터 내가 보낸 메세지 돌려받아서 제대로 보낸것까지 다 확인 됨.  // 항상 msg obj의 타입은 List<String> !!
         static final int SEDNING = 10; // 서버로 메세지를 오류없이 보냄
         static final int RECEIVED = 4;  // 서버로부터 다른 유저가 보낸 채팅 메세지 받음   // 항상 msg obj의 타입은 List<String> !!
         static final int INFO = 8; // 서버로부터 알림 메세지 받음
         static final int NEW_ROOM = 9; // 서버로부터 알림 메세지 받음
-
+        static final int MSG_ERROR = 11;
 
     // 서버에 tcp 주고받을 때  json 형식 이름
     private static final String JSON_ID = "id";
@@ -175,7 +175,7 @@ public class MyTCPClient {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                handler.sendEmptyMessage(ERROR);
+                handler.sendEmptyMessage(CONNECTION_ERROR);
                 stopClient();
                 // TODO: 2017. 8. 31. run 실행중에 인터넷 끊기면  in.readline에서 exception 나와서 여기로 옴.
                 // 그런데 서버에서 사용자 나가는 것을 감지하지 못함. 상관없나.. ?
@@ -184,13 +184,22 @@ public class MyTCPClient {
         } catch (IOException e1) {
             e1.printStackTrace();
             Log.d(TAG, "run : 서버와 연결 실패");
-            handler.sendEmptyMessage(ERROR);
+            handler.sendEmptyMessage(CONNECTION_ERROR);
         }
 
     }
 
     // 서버에 메세지 전송
     public void sendMessage(String type,String rid, String message){
+        Date date = new Date();
+        long unixTime = date.getTime()/1000;
+        int randomNum = 0;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            randomNum = ThreadLocalRandom.
+                    current().nextInt(0, 1000 + 1); // generage random within 10 to 100
+        }
+        String mid = String.valueOf(randomNum)+rid+unixTime;
+
         if (out != null && !out.checkError()){
             try {
                 JSONObject object = new JSONObject();
@@ -200,23 +209,12 @@ public class MyTCPClient {
                         break;
                     case JSON_MSG:
                         JSONObject msgObject = new JSONObject();
-                        Date date = new Date();
-                        long unixTime = date.getTime()/1000;
+
                         Log.d(TAG, "sendMessage: unitTime " +unixTime );
                         msgObject.put("unixTime",String.valueOf(unixTime));
                         msgObject.put("rid",rid);
                         msgObject.put("body",message);
                         msgObject.put("id",id); // 아래에 핸들러에게 보낼 때 경우 때문에 넣음.
-
-                        int randomNum = 0;
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                            randomNum = ThreadLocalRandom.
-                                    current().nextInt(0, 1000 + 1); // generage random within 10 to 100
-                        }
-                        String mid = String.valueOf(randomNum)+rid+unixTime;
-
-                        Log.d(TAG, "sendMessage: mid "+mid);
-
                         msgObject.put("mid",mid);
 
                         object.put(JSON_MSG,msgObject);
@@ -229,23 +227,12 @@ public class MyTCPClient {
                         // type : json type , rid : 단체방 사람수와 아이디 목록, message : 처음 보내고자하는 메세지
 
                         JSONObject requestObject = new JSONObject();
-                        Date date1 = new Date();
-                        long unixTime1 = date1.getTime()/1000;
-                        requestObject.put("unixTime",String.valueOf(unixTime1));
+                        requestObject.put("unixTime",String.valueOf(unixTime));
                         requestObject.put(JSON_NEW_ROOM,rid); // "ppl" : "3:68620823,11111111,22222222"
                         requestObject.put("body",message);
                         requestObject.put("id",id); // 아래에 핸들러에게 보낼 때 경우 때문에 넣음.
-
-                        int randomNum1 = 0;
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                            randomNum1 = ThreadLocalRandom.
-                                    current().nextInt(0, 1000 + 1); // generage random within 10 to 100
-                        }
-                        String mid1 = String.valueOf(randomNum1)+unixTime1;
-                        requestObject.put("mid",mid1);
-
+                        requestObject.put("mid",mid);
                         object.put(JSON_REQUEST,requestObject);
-
                         break;
                 }
                 message = object.toString();
@@ -266,18 +253,21 @@ public class MyTCPClient {
             } catch (JSONException e) {
                 e.printStackTrace();
                 Message msg = new Message();
-                msg.what = ERROR;
-                msg.obj = "fail to send message due to json exception";
+                msg.what = MSG_ERROR;
+                msg.obj = mid;
                 handler.sendMessage(msg);
                 Log.d(TAG, "sendMessage: fail to send message due to json exception");
             }
 
 
         } else {
-            Message msg = new Message();
-            msg.what = ERROR;
-            msg.obj = "fail to send message due to printwriter error";
-            handler.sendMessage(msg);
+            if (type.equals(JSON_MSG)|type.equals(JSON_NEW_ROOM)){
+                Message msg = new Message();
+                msg.what = MSG_ERROR;
+                msg.obj = mid;
+                handler.sendMessage(msg);
+            }
+
             Log.d(TAG, "sendMessage: fail to send message due to printwriter error");
         }
     }
@@ -310,15 +300,17 @@ public class MyTCPClient {
             } catch (JSONException e) {
                 e.printStackTrace();
                 Message msg = new Message();
-                msg.what = ERROR;
-                msg.obj = "fail to send message due to json exception";
+                msg.what = MSG_ERROR;
+                msg.obj = chat.getMid();
+                // TODO: 2017. 9. 8. mid같이보내서 sqlite 처리
                 handler.sendMessage(msg);
                 Log.d(TAG, "sendMessage: fail to send message due to json exception");
             }
         } else {
             Message msg = new Message();
-            msg.what = ERROR;
-            msg.obj = "fail to send message due to printwriter error";
+            msg.what = MSG_ERROR;
+            msg.obj = chat.getMid();
+            // TODO: 2017. 9. 8. mid같이보내서 sqlite 처리
             handler.sendMessage(msg);
             Log.d(TAG, "sendMessage: fail to send message due to printwriter error");
         }

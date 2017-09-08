@@ -252,64 +252,6 @@ public final class MySQLite {
         }
     }
 
-
-    /**
-     * room table 의 상수들 정의.
-     * 테이블 이름과 컬럼들의 이름을 정의한다.
-     */
-    /*
-    private static final class RoomTable implements BaseColumns {
-        static final String TABLE_NAME = "room";
-        static final String RID = "rid";
-        static final String PPL = "ppl";
-    }
-
-    public boolean addRoom(Room room){
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(RoomTable.RID, room.getRid());
-        contentValues.put(RoomTable.PPL, room.getPpl());
-        mySQLiteDatabase.insert(FriendTable.TABLE_NAME, null, contentValues);
-        return true;
-    }
-
-    public Room getRoom(String rid) {
-        Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ RoomTable.TABLE_NAME+" where "+ RoomTable.RID+"="+rid+";", null );
-        if (cursor != null)
-            cursor.moveToFirst();
-
-            Room room = new Room(
-                    cursor.getString(0), //rid
-                    cursor.getInt(1) // ppl
-            );
-
-        Log.d(TAG, "getRoom: "+room.toString());
-        return room;
-    }
-
-    // TODO: 2017. 8. 2.  ArrayList OR List ????
-    // TODO: 2017. 8. 2. 방 순서
-    public ArrayList<Room> getAllRooms() {
-        ArrayList<Room> rooms = new ArrayList<Room>();
-
-        // 1. build the query
-        Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ RoomTable.TABLE_NAME, null );
-
-        // 2. go over each row, build room and add it to arraylist
-        if (cursor.moveToFirst()) {
-            do {
-                Room room = new Room(
-                        cursor.getString(0), //rid
-                        cursor.getInt(1) // ppl
-                );
-                rooms.add(room);
-            } while (cursor.moveToNext());
-        }
-        Log.d(TAG, "getAllRooms: "+rooms.toString());
-        return rooms;
-    }
-
-    */
-
     private static final class ChatTable implements BaseColumns {
         static final String TABLE_NAME = "chat";
         static final String MID = "mid"; // PK
@@ -317,6 +259,10 @@ public final class MySQLite {
         static final String ID = "id"; // 보낸사람 id
         static final String BODY = "body";
         static final String UNIXTIME = "unixTime";
+        static final String TYPE = "type"; // 0:전송완료 1:전송중 2:전송실패
+        static final int TYPE_COMPLETE = 0;
+        static final int TYPE_SENDING = 1;
+        static final int TYPE_FAIL = 2;
     }
 
     public boolean addChat(Chat chat){
@@ -327,6 +273,7 @@ public final class MySQLite {
             contentValues.put(ChatTable.ID, chat.getFrom());
             contentValues.put(ChatTable.BODY, chat.getBody());
             contentValues.put(ChatTable.UNIXTIME, chat.getUnitTime());
+            contentValues.put(ChatTable.TYPE, ChatTable.TYPE_COMPLETE);
             mySQLiteDatabase.insert(ChatTable.TABLE_NAME, null, contentValues);
             return true;
         } catch (SQLiteConstraintException e) {
@@ -335,14 +282,157 @@ public final class MySQLite {
         }
     }
 
+    /**
+     * 메세지 보낼 때는 addChat 대신에  addSendingChat --> updateChat
+     * @param type  0:전송완료 1:전송중 2:전송실패
+     * */
+    public boolean addSendingChat(Chat chat, int type){
+        try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(ChatTable.MID, chat.getMid());
+            contentValues.put(ChatTable.RID, chat.getRid());
+            contentValues.put(ChatTable.ID, chat.getFrom());
+            contentValues.put(ChatTable.BODY, chat.getBody());
+            contentValues.put(ChatTable.UNIXTIME, chat.getUnitTime());
+            contentValues.put(ChatTable.TYPE, type);
+            mySQLiteDatabase.insert(ChatTable.TABLE_NAME, null, contentValues);
+            return true;
+        } catch (SQLiteConstraintException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // TODO: 2017. 9. 8.   보내는 중인 메세지 다 찾아서 전송 실패로 바꿔주기 !!
+
+
+    public boolean updateChat(Chat chat, int type){
+        try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(ChatTable.MID, chat.getMid());
+            contentValues.put(ChatTable.RID, chat.getRid());
+            contentValues.put(ChatTable.ID, chat.getFrom());
+            contentValues.put(ChatTable.BODY, chat.getBody());
+            contentValues.put(ChatTable.UNIXTIME, chat.getUnitTime());
+            contentValues.put(ChatTable.TYPE, type);
+            mySQLiteDatabase.update(ChatTable.TABLE_NAME, contentValues,ChatTable.MID+" = ? ",new String[] { chat.getMid() } );
+            Log.d(TAG, "failSendingChat: "+chat.toString());
+            return true;
+        } catch (SQLiteConstraintException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 메세지 보낼 때는 addChat 대신에  addSendingChat --> updateChat
+     * @param type  0:전송완료 1:전송중 2:전송실패
+     * */
+    public boolean updateChat(String mid, int type){
+
+        try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(ChatTable.MID, mid);
+            contentValues.put(ChatTable.TYPE, type);
+            mySQLiteDatabase.update(ChatTable.TABLE_NAME, contentValues,ChatTable.MID+" = ? ",new String[] { mid } );
+            Log.d(TAG, "updateChat: "+mid+" "+type);
+            return true;
+        } catch (SQLiteConstraintException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 사용자가 전송실패한 메세지 "삭제" 누른 경우
+    public boolean deleteSendingChat(String mid){
+        mySQLiteDatabase.delete(ChatTable.TABLE_NAME,
+                ChatTable.MID+" = ?",
+                new String[] { String.valueOf(mid) });
+        Log.d(TAG, "deleteSendingChat: "+String.valueOf(mid));
+        return true;
+    }
+
     @Nullable
-    public ArrayList<Chat> getAllChatInARoom(String rid){ // todo chat 객체사이에 날짜가 바뀔 때 날짜객체 넣어주기 ??
+    public ArrayList<Chat> getAllSendingChatInARoom(String rid){
+        ArrayList<Chat> chatArrayList = new ArrayList<>();
+
+        try {
+            Cursor cursor =  mySQLiteDatabase.rawQuery(
+                    "select * from "+ ChatTable.TABLE_NAME +
+                            " where "+ ChatTable.RID+"="+rid +
+                            " and "+ChatTable.TYPE+"="+ChatTable.TYPE_SENDING+
+                            " order by "+ChatTable.UNIXTIME+ " ;"
+                    , null ); // 최신역순으로 출력
+
+            if (cursor.moveToFirst()) {
+                do {
+                    String mid=cursor.getString(0);
+                    String from = cursor.getString(2);
+                    String body = cursor.getString(3);
+                    String unixTime = cursor.getString(4);
+                    int type = cursor.getInt(5);
+                    Chat chat = new Chat(mid, rid, from, body, unixTime,type);
+                    chatArrayList.add(chat);
+                } while (cursor.moveToNext());
+            }
+
+            Log.d(TAG, "getAllSendingChatInARoom: chat개수: "+chatArrayList.size());
+
+            cursor.close();
+            return chatArrayList;
+
+        } catch (CursorIndexOutOfBoundsException e) {
+            Log.d(TAG, "getAllChatInARoom: CursorIndexOutOfBoundsException");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Nullable
+    public ArrayList<Chat> getAllFailedChatInARoom(String rid){
+        ArrayList<Chat> chatArrayList = new ArrayList<>();
+
+        try {
+            Cursor cursor =  mySQLiteDatabase.rawQuery(
+                    "select * from "+ ChatTable.TABLE_NAME +
+                            " where "+ ChatTable.RID+"="+rid +
+                            " and "+ChatTable.TYPE+"="+ChatTable.TYPE_FAIL+
+                            " order by "+ChatTable.UNIXTIME+ " ;"
+                    , null ); // 최신역순으로 출력
+
+            if (cursor.moveToFirst()) {
+                do {
+                    String mid=cursor.getString(0);
+                    String from = cursor.getString(2);
+                    String body = cursor.getString(3);
+                    String unixTime = cursor.getString(4);
+                    int type = cursor.getInt(5);
+                    Chat chat = new Chat(mid, rid, from, body, unixTime,type);
+                    chatArrayList.add(chat);
+                } while (cursor.moveToNext());
+            }
+
+            Log.d(TAG, "getAllSendingChatInARoom: chat개수: "+chatArrayList.size());
+
+            cursor.close();
+            return chatArrayList;
+
+        } catch (CursorIndexOutOfBoundsException e) {
+            Log.d(TAG, "getAllChatInARoom: CursorIndexOutOfBoundsException");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Nullable
+    public ArrayList<Chat> getAllChatInARoom(String rid){
         ArrayList<Chat> chatArrayList = new ArrayList<>();
 
         try {
             Cursor cursor =  mySQLiteDatabase.rawQuery(
                     "select * from "+ ChatTable.TABLE_NAME +
                     " where "+ ChatTable.RID+"="+rid +
+                            " and "+ChatTable.TYPE+"="+ChatTable.TYPE_COMPLETE+
                     " order by "+ChatTable.UNIXTIME+ " ;"
                     , null ); // 최신역순으로 출력
 
@@ -353,19 +443,21 @@ public final class MySQLite {
                     String from = cursor.getString(2);
                     String body = cursor.getString(3);
                     String unixTime = cursor.getString(4);
+                    int type = cursor.getInt(5);
                     if (unixTime1==null){ // 맨 처음 항목 뽑을 때
                         unixTime1 = unixTime;
                         chatArrayList.add(new Chat(unixTime));
                     } else if(MyUtil.FindDateChangeWithUnixTime(unixTime1,unixTime)){// unixTime1 과 unixTime 사이에 날짜가 바뀌었으면 새로운 Chat 객체 저장
                         chatArrayList.add(new Chat(unixTime));
                     }
-                    Chat chat = new Chat(mid, rid, from, body, unixTime);
+                    Chat chat = new Chat(mid, rid, from, body, unixTime,type);
                     chatArrayList.add(chat);
                     unixTime1 = unixTime;
                 } while (cursor.moveToNext());
             }
 
             Log.d(TAG, "getAllChatInARoom: chat개수: "+chatArrayList.size());
+            Log.d(TAG, "getAllChatInARoom: "+chatArrayList.toString());
 
             cursor.close();
             return chatArrayList;
@@ -385,9 +477,10 @@ public final class MySQLite {
             String rid=room.getRid();
             try { // 방마다 max(unixtime) 인 chat 하나씩 select
                 Cursor cursor =  mySQLiteDatabase.rawQuery(
-                        "SELECT "+ChatTable.MID+", "+ChatTable.RID+", "+ChatTable.ID+", "+ChatTable.BODY+", MAX(" +ChatTable.UNIXTIME+") AS "+ChatTable.UNIXTIME+
+                        "SELECT "+ChatTable.MID+", "+ChatTable.RID+", "+ChatTable.ID+", "+ChatTable.BODY+", MAX(" +ChatTable.UNIXTIME+") AS "+ChatTable.UNIXTIME+", "+ChatTable.TYPE+
                                 " FROM "+ ChatTable.TABLE_NAME +
-                                " WHERE "+ ChatTable.RID+"="+rid + " ;"
+                                " WHERE "+ ChatTable.RID+"="+rid +
+                                    " and "+ChatTable.TYPE+"="+ChatTable.TYPE_COMPLETE+" ;"
                         , null ); // 최신역순으로 출력
 
                 if (cursor.moveToFirst()) {
@@ -396,7 +489,8 @@ public final class MySQLite {
                             cursor.getString(1), //rid
                             cursor.getString(2), //from
                             cursor.getString(3), //body
-                            cursor.getString(4) //unixtime
+                            cursor.getString(4), //unixtime
+                            cursor.getInt(5) // type
                     );
                     chatHashMap.put(rid,chat);
                 }
@@ -414,8 +508,6 @@ public final class MySQLite {
         }
 
         return chatHashMap;
-
-
     }
 
     /**
@@ -450,7 +542,6 @@ public final class MySQLite {
         }
 
         private void createFriendTable(SQLiteDatabase db) {
-            // TODO: 2017. 8. 2. save Thumbnail image into a new column with blob type
             db.execSQL(
                     "CREATE TABLE " + FriendTable.TABLE_NAME + " ("
 //                    + FriendTable._ID + " INTEGER PRIMARY KEY,"
@@ -462,15 +553,9 @@ public final class MySQLite {
                     + FriendTable.IMG_BLOB + " BLOB,"
                     + FriendTable.CREATED + " INTEGER );"
             );
-
-//            // sample friend
-//            db.execSQL("INSERT INTO FRIEND VALUES ( '91433734', '01091433734', '규백','1', '','', 1501659026 )");
-//            db.execSQL("INSERT INTO FRIEND VALUES ( '11111111', '01011111111', '일일일', '', 1501659469 )");
-
         }
 
         private void createChatTable(SQLiteDatabase db) {
-            // TODO: 2017. 8. 2. save Thumbnail image into a new column with blob type
             db.execSQL(
                     "CREATE TABLE " + ChatTable.TABLE_NAME + " ("
 //                    + FriendTable._ID + " INTEGER PRIMARY KEY,"
@@ -478,13 +563,9 @@ public final class MySQLite {
                             + ChatTable.RID + " TEXT,"
                             + ChatTable.ID + " TEXT,"
                             + ChatTable.BODY + " TEXT,"
-                            + ChatTable.UNIXTIME + " TEXT );"
+                            + ChatTable.UNIXTIME + " TEXT,"
+                            + ChatTable.TYPE + " INTEGER );"
             );
-//
-//            db.execSQL("INSERT INTO "+ChatTable.TABLE_NAME+" VALUES ( '1', '1', '11111111','안녕안녕 메세지', '1501659026' )");
-//            db.execSQL("INSERT INTO "+ChatTable.TABLE_NAME+" VALUES ( '2', '1', '11111111','안녕안녕 메세지2222', '1501659048' )");
-//            db.execSQL("INSERT INTO "+ChatTable.TABLE_NAME+" VALUES ( '3', '1', '11111111','하핳', '1501659704' )");
         }
     }
-
 }
