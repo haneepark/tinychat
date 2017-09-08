@@ -31,8 +31,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/cardView2"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:layout_margin="5dp"
         android:layout_toLeftOf="@id/cardView2"
         android:layout_toStartOf="@id/cardView2"
@@ -40,5 +38,37 @@
         android:textAlignment="textEnd"
         android:gravity="end"
         android:textSize="12sp"/>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_alignBottom="@id/textView13"
+        android:layout_toLeftOf="@+id/textView13"
+        android:layout_toStartOf="@+id/textView13"
+        android:indeterminate="false"
+        android:saveEnabled="false"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:id="@+id/resend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/cardView2"
+        android:layout_toLeftOf="@+id/textView13"
+        android:layout_toStartOf="@+id/textView13"
+        android:visibility="gone"
+        />
+
+    <ImageButton
+        android:id="@+id/delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/cardView2"
+        android:layout_toLeftOf="@+id/resend"
+        android:layout_toStartOf="@+id/resend"
+        android:visibility="gone"
+        />
+
 
 </RelativeLayout>

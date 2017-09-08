@@ -124,7 +124,7 @@ public class RoomTab extends Fragment implements View.OnClickListener, MyTCPServ
     }
 
     @Override
-    public void onMessageReceivedCallback(String rid) {// refresh room ListView!
+    public void onMessageReceivedCallback(String rid,String mid) {// refresh room ListView!
 
         // FIXME : 2017. 9. 2. rid 에 해당하는 방의 최근채팅, 방 프린트 순서 "만" 업데이트 하면 됨.
 

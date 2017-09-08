@@ -20,6 +20,9 @@ import com.parkhanee.tinychat.classbox.Chat;
 import com.parkhanee.tinychat.classbox.Friend;
 import com.parkhanee.tinychat.classbox.Room;
 
+import java.util.Date;
+import java.util.concurrent.ThreadLocalRandom;
+
 
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener, MyRecyclerView.OnKeyboardStatusChangeListener, MyTCPService.OnNewMessageReceivedListener {
 
@@ -36,10 +39,15 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     Friend friend; // 일대일 방의  --> 친구 이름, 프로필 사진 가지고 메세지 보이기
     String rid=""; // 채팅방 아이디
 
+    // Chat Recycler View
     private MyRecyclerView mRecyclerView;
-    private ChatAdapter mAdapter;
-    private LinearLayoutManager mLayoutManager;
+    private ChatAdapter chatAdapter;
     Toolbar toolbar;
+
+    // Sending Chat Recycler View
+    private MyRecyclerView mRecyclerView2;
+    private ChatSendingAdapter chatSendingAdapter;
+
 
     boolean serviceBound=false;
     MyTCPService tcpService;
@@ -73,10 +81,18 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         // recycler view
         mRecyclerView = (MyRecyclerView) findViewById(R.id.chat_recycler);
         // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setOnKeyboardStatusChangeListener(this);
+
+        mRecyclerView2 = (MyRecyclerView) findViewById(R.id.chat_recycler2);
+        LinearLayoutManager mLayoutManager2 = new LinearLayoutManager(this);
+        mLayoutManager2.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView2.setLayoutManager(mLayoutManager2);
+        chatSendingAdapter = new ChatSendingAdapter();
+        mRecyclerView2.setAdapter(chatSendingAdapter);
+        mRecyclerView2.setOnKeyboardStatusChangeListener(this);
     } // onCreate 에는 여러 채팅방이 이 액티비티로 실행될 때 공통으로 써도 상관없는 요소들을 초기화시킴.
 
     @Override
@@ -97,8 +113,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onResume: "+newIntent.getStringExtra("rid"));
 
         id = pref.getId();
-        mAdapter = new ChatAdapter(ChatActivity.this,id);
-        mRecyclerView.setAdapter(mAdapter);
+        chatAdapter = new ChatAdapter(ChatActivity.this,id);
+        mRecyclerView.setAdapter(chatAdapter);
+
+        // TODO: 2017. 9. 8. pref.getAllSendingChat()
+        // mRecyclerView2.sendingChat()
 
         isPrivate = newIntent.getBooleanExtra("isPrivate",true);
 
@@ -166,9 +185,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             if (sqLite.getAllChatInARoom(rid)!=null){
                 Log.d(TAG, "onResume: 5");
                 // specify an adapter (see also next example)
-                mAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
-                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
-                mAdapter.notifyDataSetChanged();
+                chatAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
+                mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+                chatAdapter.notifyDataSetChanged();
             }
         }
 
@@ -209,14 +228,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
      * 그 후에 여기서! 로컬디비에서 새로 저장된 내용을 출력해서 액티비티에 그려줌.
      * */
     @Override
-    public void onMessageReceivedCallback(String rid) {
+    public void onMessageReceivedCallback(String rid,String mid) {
         Log.d(TAG, "onMessageReceivedCallback: ");
 
         if (rid.equals("")){  // 단체 방 처음 만들 때
             ppl=null;
             this.rid = rid;
-
-
             // rid제대로 설정
             unbindService(serviceConnection);
             Intent intent = new Intent(ChatActivity.this,MyTCPService.class);
@@ -240,12 +257,15 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
+        // sending message Recycler View 에서 보내는 중 메세지 없애기
+        chatSendingAdapter.deleteSendingChat(mid);
+
         // db에 방금 보낸 채팅을 넣는건 TCPService에서 했으므로, 여기서는 뷰 띄워주기만 하면 됨.
         if (sqLite.getAllChatInARoom(rid)!=null){ // 여기서는 방금 하나 보냈으니까  null이 아닌게 정상 // FIXME: 2017. 9. 2. rid equals ""
             // specify an adapter (see also next example)
-            mAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
-            mAdapter.notifyDataSetChanged();
-            mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+            chatAdapter.setChatArrayList(sqLite.getAllChatInARoom(rid));
+            chatAdapter.notifyDataSetChanged();
+            mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
         } else {
             Log.d(TAG, "onMessageReceivedCallback: chat is null?");
         }
@@ -272,7 +292,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 if (!msg.equals("")){ // TODO: 2017. 8. 22. 메세지 입력 안된 경우에는 전송안됨. 이때 전송 버튼 비활성화 할까 ?
                    if ( MyUtil.IsNetworkConnected(ChatActivity.this)){
                        //  send msg
-                       new TcpAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,msg);
+                       new TcpAsyncTask(msg).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                        et.setText("");
                    } else {
                        // TODO: 2017. 9. 1. 경고
@@ -285,24 +305,52 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    // 두개의 리사이클러뷰의 리스너 모두 여기로 옴
     @Override
     public void onKeyboardStatusChangeCallback(boolean shown) { // keyboard hide/shown 상태 바뀔 때 마다 실행
         if (shown){
             // 키보드가 보이면 레이아웃 위로 밀어줌
-            if (mAdapter.getItemCount()>2){ // 기존 채팅이 두개 이상 존재 하는 경우
-                mRecyclerView.scrollToPosition(mAdapter.getItemCount() - 1);
+            if (chatAdapter.getItemCount()>2){ // 기존 채팅이 두개 이상 존재 하는 경우
+                mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
             }
         }
     }
 
     private class TcpAsyncTask extends AsyncTask<String, Void, Void> {
         private static final String TAG = "TcpAsyncTask";
-        String msg;
+        String msg="empty message";
         boolean isSent=true; // false 이면 onPostExecute 에서 new async 실행
+        Chat chat;
+
+        public TcpAsyncTask(String msg) {
+            super();
+            this.msg = msg;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            Date date = new Date();
+            long time = date.getTime()/1000;
+            Log.d(TAG, "sendMessage: unitTime " +time );
+            String unixTime = String.valueOf(time);
+
+            int randomNum = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                randomNum = ThreadLocalRandom.
+                        current().nextInt(0, 1000 + 1); // generage random within 10 to 100
+            }
+            String mid = String.valueOf(randomNum)+rid+unixTime;
+
+            chat = new Chat(mid,rid,id,msg,unixTime);
+
+            chatSendingAdapter.sendingChat(chat);
+            Log.d(TAG, "onPreExecute: "+chat.toString());
+        }
 
         @Override
         protected Void doInBackground(String... strings) {
-            msg = strings[0];
             MyTCPClient tcpClient = null;
 
                 tcpClient = MyTCPClient.getInstance();
@@ -316,7 +364,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                         isSent=true; // 메세지 내용 까지 같이 보내니까 true.
                         //ppl=null; // FIXME: 2017. 9. 2.  방 제대로 만들어진거 확인하고 ppl=null 설정 해야 함
                     }else { // 메세지 전송
-                        tcpClient.sendMessage(MyTCPClient.JSON_MSG,rid,strings[0]);
+                        tcpClient.sendMessage(chat);
                         isSent=true;
                     }
 

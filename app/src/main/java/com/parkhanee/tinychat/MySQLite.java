@@ -333,7 +333,6 @@ public final class MySQLite {
             e.printStackTrace();
             return false;
         }
-
     }
 
     @Nullable

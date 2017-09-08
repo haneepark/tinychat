@@ -111,7 +111,7 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
     };
 
     @Override
-    public void onMessageReceivedCallback(String rid) {
+    public void onMessageReceivedCallback(String rid, String mid) {
         tv.setText("new message");
     }
 }

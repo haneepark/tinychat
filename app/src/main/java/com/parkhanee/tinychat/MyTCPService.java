@@ -228,13 +228,13 @@ public class MyTCPService extends IntentService {
 
                                 if (rid.equals(activeRoomId)){
                                     for (OnNewMessageReceivedListener listener : listeners){
-                                        listener.onMessageReceivedCallback(rid);
+                                        listener.onMessageReceivedCallback(rid,mid);
                                     }
                                 } else {
 
                                     if (activeRoomId.equals(roomTabOnBindRID)){
                                         for (OnNewMessageReceivedListener listener : listeners){
-                                            listener.onMessageReceivedCallback(rid);
+                                            listener.onMessageReceivedCallback(rid,mid);
                                         }
                                     }
 
@@ -294,7 +294,7 @@ public class MyTCPService extends IntentService {
                             if (from2.equals(id)){ // 내가 보냈던 메세지라면 전송 완료 처리, 노티 x
                                 // roomTab 또는 activeChatActivity 로 알림 보냄.
                                 for (OnNewMessageReceivedListener listener : listeners){
-                                    listener.onMessageReceivedCallback(rid2);
+                                    listener.onMessageReceivedCallback(rid2,mid2);
                                 }
                             } else { // 다른사람에게 온 메세지라면 노티 처리
 
@@ -313,7 +313,7 @@ public class MyTCPService extends IntentService {
                             // roomTab이 바인드되어있다면 리스너 통해서 알리기
                             if (activeRoomId.equals(roomTabOnBindRID)){
                                 for (OnNewMessageReceivedListener listener : listeners){
-                                    listener.onMessageReceivedCallback(rid2);
+                                    listener.onMessageReceivedCallback(rid2,mid2);
                                 }
                             }
 
@@ -369,7 +369,7 @@ public class MyTCPService extends IntentService {
 
                             if (rid.equals(activeRoomId) | activeRoomId.equals(roomTabOnBindRID)){
                                 for (OnNewMessageReceivedListener listener : listeners){
-                                    listener.onMessageReceivedCallback(rid);
+                                    listener.onMessageReceivedCallback(rid,mid);
                                 }
                             }
 
@@ -380,6 +380,14 @@ public class MyTCPService extends IntentService {
                         case SEDNING : // 서버로 오류없이 보냄. tcpClient에서 sendMessage메서드를 완료함. (내가 채팅 메세지 보냄)
                             Toast.makeText(MyTCPService.this, "SEDNING", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: sending");
+//                            List<String> result12 = (List<String>) msg.obj;
+//                            String rid12 = result12.get(1);
+////                             TODO: 2017. 9. 8. sending listener ??
+//                            if (rid12.equals(activeRoomId) | activeRoomId.equals(roomTabOnBindRID)){
+//                                for (OnNewMessageReceivedListener listener : listeners){
+//                                    listener.onMessageReceivedCallback(rid12);
+//                                }
+//                            }
                             break;
                         case INFO : // 서버의 알림 메세지 도착
                             Log.d(TAG, "handleMessage: info");
@@ -434,7 +442,7 @@ public class MyTCPService extends IntentService {
     }
 
     public interface OnNewMessageReceivedListener {
-        void onMessageReceivedCallback(String rid);
+        void onMessageReceivedCallback(String rid, String mid);
     }
 
     /**

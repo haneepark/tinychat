@@ -223,7 +223,6 @@ public final class MyPreferences {
             Log.d(TAG, "addRoom: 2 ppl"+rid+" : "+count+":"+ppl);
         }
         return true;
-
     }
 
     public ArrayList<Room> getAllRooms(){

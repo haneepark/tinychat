@@ -21,9 +21,9 @@ import java.util.HashMap;
  */
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> {
-    ArrayList<Chat> chatArrayList = new ArrayList<>();
-    HashMap<String, Friend> userHashMap = new HashMap<>();
-    Context context=null;
+    private ArrayList<Chat> chatArrayList = new ArrayList<>();
+    private HashMap<String, Friend> userHashMap = new HashMap<>();
+    private Context context=null;
     private static final String TAG = "ChatAdapter";
     private String id;
 
@@ -31,12 +31,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
     private static final int TYPE_CHAT=2;
     private static final int TYPE_DATE=3; // 날짜 알림 선
 
-
-    public ChatAdapter(Context context, String id, ArrayList<Chat> chatArrayList) {
-        this.context = context;
-        this.chatArrayList = chatArrayList;
-        this.id = id;
-    }
 
     public ChatAdapter(Context context,String id){
         this.context = context;

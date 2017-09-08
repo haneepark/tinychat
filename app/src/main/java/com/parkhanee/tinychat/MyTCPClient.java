@@ -5,6 +5,8 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.parkhanee.tinychat.classbox.Chat;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -271,6 +273,48 @@ public class MyTCPClient {
             }
 
 
+        } else {
+            Message msg = new Message();
+            msg.what = ERROR;
+            msg.obj = "fail to send message due to printwriter error";
+            handler.sendMessage(msg);
+            Log.d(TAG, "sendMessage: fail to send message due to printwriter error");
+        }
+    }
+
+    // 메세지 보낼 때
+    public void sendMessage(Chat chat){
+        if (out != null && !out.checkError()){
+            try {
+
+                JSONObject object = new JSONObject();
+                JSONObject msgObject = new JSONObject();
+                msgObject.put("unixTime",chat.getUnitTime());
+                msgObject.put("rid",chat.getRid());
+                msgObject.put("body",chat.getBody());
+                msgObject.put("id",id); // 아래에 핸들러에게 보낼 때 경우 때문에 넣음.
+                msgObject.put("mid",chat.getMid());
+                object.put(JSON_MSG,msgObject);
+
+                String message = object.toString();
+
+                out.println(message);
+                out.flush(); // TODO: 2017. 8. 19. flush ?
+
+                Message msg = new Message();
+                msg.obj = MyUtil.readJSONObject(message);
+                msg.what = SEDNING;
+                handler.sendMessage(msg);
+                Log.d(TAG, "sendMessage: "+message);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Message msg = new Message();
+                msg.what = ERROR;
+                msg.obj = "fail to send message due to json exception";
+                handler.sendMessage(msg);
+                Log.d(TAG, "sendMessage: fail to send message due to json exception");
+            }
         } else {
             Message msg = new Message();
             msg.what = ERROR;
