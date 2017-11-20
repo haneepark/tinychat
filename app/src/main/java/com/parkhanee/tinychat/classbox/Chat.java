@@ -67,6 +67,10 @@ public class Chat {
         return unixTime;
     }
 
+    public void setType(int type) {
+        this.type = type;
+    }
+
     /**
      * @param type [TYPE_TIME] : 채팅방에 메세지 옆에 표시되는, 메세지 도착한 시간. e.g. 13:50
      *              [TYPE_DATE] : 년월일 표기. e.g. 2017년 08월 19일

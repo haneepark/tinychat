@@ -90,6 +90,8 @@ public class MyTCPService extends IntentService {
     private final ArrayList<OnNewMessageReceivedListener> listeners = new ArrayList<>();
     public static final String roomTabOnBindRID="roomTabOnBindRID";
 
+    private final ArrayList<OnSendingMessageErrorListener> errorListeners = new ArrayList<>();
+
     public MyTCPService(String name) {
         super(name);
     }
@@ -396,15 +398,27 @@ public class MyTCPService extends IntentService {
                         case SHUTDOWN : // 소켓 연결 종료
 //                            Toast.makeText(MyTCPService.this, "shutdown", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "handleMessage: shutdown");
+                            sqLite.updateSendingChatToFail();
+                            for (OnSendingMessageErrorListener listener : errorListeners ){
+                                listener.onSendingMessageErrorCallback();
+                            }
                             break;
                         case MSG_ERROR :
                             // 특정 메세지 하나 전송 실패
                             String messageId = msg.obj.toString();
                             sqLite.updateChat(messageId,2);
+                            for (OnSendingMessageErrorListener listener : errorListeners ){
+                                listener.onSendingMessageErrorCallback();
+                            }
                             break;
                         case CONNECTION_ERROR :
+                            // TODO: 2017. 9. 9. listener 통해서 메세지 전송실패한거 알려야..
+                            sqLite.updateSendingChatToFail();
+                            for (OnSendingMessageErrorListener listener : errorListeners ){
+                                listener.onSendingMessageErrorCallback();
+                            }
                             Toast.makeText(MyTCPService.this, "connection error", Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "handleMessage: error");
+                            Log.d(TAG, "handleMessage: connection error");
                             break;
                         default:
                             Log.d(TAG, "handleMessage: default? "+msg.what+" "+msg.obj);
@@ -473,6 +487,21 @@ public class MyTCPService extends IntentService {
         if (activeRoomId.equals(rid)){
             activeRoomId = "";
         }
+    }
+
+    public interface OnSendingMessageErrorListener {
+        // 이게 호출되면 모든 sending Message를 fail로 바꾸고 리스트뷰 업데이트
+        void onSendingMessageErrorCallback();
+    }
+
+    public void setOnSendingMessageErrorListener (OnSendingMessageErrorListener listener){
+        Log.d(TAG, "setOnSendingMessageErrorListener: ");
+        errorListeners.add(listener);
+    }
+
+    public void unsetOnSendingMessageErrorListener (OnSendingMessageErrorListener listener){
+        Log.d(TAG, "unsetOnSendingMessageErrorListener: ");
+        errorListeners.remove(listener);
     }
 
     private void sendMyNotification(PendingIntent pendingIntent, String title, String body,String date){

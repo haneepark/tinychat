@@ -30,14 +30,14 @@ public final class MySQLite {
     private static final String TAG = "MySQLite";
     private Context applicationContext; // use Application Context not Activity Context
     private SQLiteDatabase mySQLiteDatabase;
-    private static MySQLiteHelper mySQLiteHelper; // TODO: 2017. 8. 2. static?
+    private static MySQLiteHelper mySQLiteHelper;
 
     // 맨 처음 한번만 호출되는 생성자.
     // MySQLite 객체와 아래 세 개의 객체는 모두 맨 처음 한번만 생성되어 싱글톤으로 사용 됨.
     private MySQLite(Context context){
         applicationContext = context.getApplicationContext();
         mySQLiteHelper = getMySQLiteHelper();
-        // TODO: 2017. 8. 2. getWritableDatabase must be called in Background Thread !!?
+        // TODO: 2017. 8. 2. getWritableDatabase must be called in Background Thread ?
         mySQLiteDatabase = getMySQLiteDatabase();
     }
 
@@ -57,7 +57,7 @@ public final class MySQLite {
         return mySQLiteHelper;
     }
 
-    public void logout(){
+    void logout(){
         // 여기서 drop table만 해버리면 로그아웃 했다가 다시 로그인 할때 테이블이 없어서 에러 남. 없앴다가 미리 다시 만듦.
         mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ FriendTable.TABLE_NAME);
         mySQLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ ChatTable.TABLE_NAME);
@@ -70,7 +70,7 @@ public final class MySQLite {
     }
 
     // MySQLite 생성자에서 호출
-    public SQLiteDatabase getMySQLiteDatabase(){
+    private SQLiteDatabase getMySQLiteDatabase(){
         if (!isOpen()){
             mySQLiteDatabase = mySQLiteHelper.getWritableDatabase();
         }
@@ -106,7 +106,7 @@ public final class MySQLite {
 
     }
 
-    public boolean addFriend (Friend friend) {
+    boolean addFriend (Friend friend) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(FriendTable.ID, friend.getId());
         contentValues.put(FriendTable.NID, friend.getNid());
@@ -136,6 +136,7 @@ public final class MySQLite {
                     cursor.getInt(6) // created
             );
             Log.d(TAG, "getFriend: "+friend.toString());
+            cursor.close();
             return friend;
         } catch (CursorIndexOutOfBoundsException e){
             e.printStackTrace();
@@ -150,11 +151,13 @@ public final class MySQLite {
             cursor.moveToFirst();
         String name = null;  //name
         try {
+            assert cursor != null;
             name = cursor.getString(2);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+        cursor.close();
         Log.d(TAG, "getFriendName : "+ name);
         return name;
     }
@@ -165,10 +168,11 @@ public final class MySQLite {
             cursor.moveToFirst();
             String rid = cursor.getString(3);  //name
         Log.d(TAG, "getFriendRid : "+ rid);
+        cursor.close();
         return rid;
     }
 
-    public boolean updateFriend (Friend friend) {
+    boolean updateFriend (Friend friend) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(FriendTable.ID, friend.getId());
         contentValues.put(FriendTable.NID, friend.getNid());
@@ -194,10 +198,9 @@ public final class MySQLite {
         return true;
     }
 
-    // TODO: 2017. 8. 2.  ArrayList OR List ????
     // TODO: 2017. 8. 2. 친구 순서
-    public ArrayList<Friend> getAllFriends() {
-        ArrayList<Friend> friends = new ArrayList<Friend>();
+    ArrayList<Friend> getAllFriends() {
+        ArrayList<Friend> friends = new ArrayList<>();
 
         // 1. build the query
         Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ FriendTable.TABLE_NAME, null );
@@ -217,15 +220,16 @@ public final class MySQLite {
 
                 friends.add(friend);
             } while (cursor.moveToNext());
+            cursor.close();
         }
         Log.d(TAG, "getAllFriends: "+friends.toString());
         return friends;
     }
 
     @Nullable
-    public Friend getFriendFromRid(String rid){
+    Friend getFriendFromRid(String rid){
         Cursor cursor =  mySQLiteDatabase.rawQuery( "select * from "+ FriendTable.TABLE_NAME+" where "+ FriendTable.RID+"="+rid+";", null );
-        Friend friend = null;
+        Friend friend;
         try {
             if (cursor != null)
                 cursor.moveToFirst();
@@ -240,6 +244,7 @@ public final class MySQLite {
                     );
 
             Log.d(TAG, "getFriendFromRid : "+ friend.toString());
+            cursor.close();
             return friend;
 
         } catch (CursorIndexOutOfBoundsException e) {
@@ -265,7 +270,7 @@ public final class MySQLite {
         static final int TYPE_FAIL = 2;
     }
 
-    public boolean addChat(Chat chat){
+    boolean addChat(Chat chat){
         try {
             ContentValues contentValues = new ContentValues();
             contentValues.put(ChatTable.MID, chat.getMid());
@@ -286,7 +291,7 @@ public final class MySQLite {
      * 메세지 보낼 때는 addChat 대신에  addSendingChat --> updateChat
      * @param type  0:전송완료 1:전송중 2:전송실패
      * */
-    public boolean addSendingChat(Chat chat, int type){
+    boolean addSendingChat(Chat chat, int type){
         try {
             ContentValues contentValues = new ContentValues();
             contentValues.put(ChatTable.MID, chat.getMid());
@@ -303,10 +308,24 @@ public final class MySQLite {
         }
     }
 
-    // TODO: 2017. 9. 8.   보내는 중인 메세지 다 찾아서 전송 실패로 바꿔주기 !!
+    /**
+     * 보내는 중인 메세지 다 찾아서 전송 실패로 바꿔주기
+     */
+    boolean updateSendingChatToFail(){
+        try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(ChatTable.TYPE, ChatTable.TYPE_FAIL);
+            mySQLiteDatabase.update(ChatTable.TABLE_NAME, contentValues,ChatTable.TYPE+" = ? ", new String[] {String.valueOf(ChatTable.TYPE_SENDING)} );
+            Log.d(TAG, "updateSendingChatToFail: ");
+            return true;
+        } catch (SQLiteConstraintException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 
-    public boolean updateChat(Chat chat, int type){
+    boolean updateChat(Chat chat, int type){
         try {
             ContentValues contentValues = new ContentValues();
             contentValues.put(ChatTable.MID, chat.getMid());
@@ -328,7 +347,7 @@ public final class MySQLite {
      * 메세지 보낼 때는 addChat 대신에  addSendingChat --> updateChat
      * @param type  0:전송완료 1:전송중 2:전송실패
      * */
-    public boolean updateChat(String mid, int type){
+    boolean updateChat(String mid, int type){
 
         try {
             ContentValues contentValues = new ContentValues();
@@ -344,7 +363,7 @@ public final class MySQLite {
     }
 
     // 사용자가 전송실패한 메세지 "삭제" 누른 경우
-    public boolean deleteSendingChat(String mid){
+    boolean deleteSendingChat(String mid){
         mySQLiteDatabase.delete(ChatTable.TABLE_NAME,
                 ChatTable.MID+" = ?",
                 new String[] { String.valueOf(mid) });
@@ -353,7 +372,7 @@ public final class MySQLite {
     }
 
     @Nullable
-    public ArrayList<Chat> getAllSendingChatInARoom(String rid){
+    ArrayList<Chat> getAllSendingChatInARoom(String rid){
         ArrayList<Chat> chatArrayList = new ArrayList<>();
 
         try {
@@ -389,7 +408,7 @@ public final class MySQLite {
     }
 
     @Nullable
-    public ArrayList<Chat> getAllFailedChatInARoom(String rid){
+    ArrayList<Chat> getAllFailedChatInARoom(String rid){
         ArrayList<Chat> chatArrayList = new ArrayList<>();
 
         try {
@@ -425,7 +444,7 @@ public final class MySQLite {
     }
 
     @Nullable
-    public ArrayList<Chat> getAllChatInARoom(String rid){
+    ArrayList<Chat> getAllChatInARoom(String rid){
         ArrayList<Chat> chatArrayList = new ArrayList<>();
 
         try {
@@ -445,7 +464,7 @@ public final class MySQLite {
                     String unixTime = cursor.getString(4);
                     int type = cursor.getInt(5);
                     if (unixTime1==null){ // 맨 처음 항목 뽑을 때
-                        unixTime1 = unixTime;
+//                        unixTime1 = unixTime;
                         chatArrayList.add(new Chat(unixTime));
                     } else if(MyUtil.FindDateChangeWithUnixTime(unixTime1,unixTime)){// unixTime1 과 unixTime 사이에 날짜가 바뀌었으면 새로운 Chat 객체 저장
                         chatArrayList.add(new Chat(unixTime));
@@ -470,7 +489,7 @@ public final class MySQLite {
     }
 
     @Nullable
-    public HashMap<String,Chat> getRecentChatInRooms(ArrayList<Room> rooms){
+    HashMap<String,Chat> getRecentChatInRooms(ArrayList<Room> rooms){
         HashMap<String,Chat> chatHashMap = new HashMap<>();
 
         for (Room room : rooms){

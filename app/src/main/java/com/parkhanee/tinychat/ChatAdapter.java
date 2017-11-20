@@ -22,7 +22,6 @@ import com.parkhanee.tinychat.classbox.Friend;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by parkhanee on 2017. 8. 26..
@@ -48,6 +47,15 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
 
     public void setChatArrayList(ArrayList<Chat> chatArrayList) {
         this.chatArrayList = chatArrayList;
+        notifyDataSetChanged();
+    }
+
+    void setSendingMessageToFail(){
+        for (Chat chat : chatArrayList){
+            if (chat.getType()==1){
+                chat.setType(2);
+            }
+        }
         notifyDataSetChanged();
     }
 
@@ -126,13 +134,17 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
                     holder.cardView.setVisibility(View.VISIBLE);
                     holder.my_date.setText("");
 
-                    holder.resend.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Toast.makeText(context, "resend", Toast.LENGTH_SHORT).show();
-                            new TcpAsyncTask(chat,holder.sqLite).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        }
-                    });
+                    if (chat.getRid().equals("")){ // 방 처음 만들때 보내는 메세지
+                        holder.resend.setVisibility(View.GONE);
+                    } else {
+                        holder.resend.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Toast.makeText(context, "resend", Toast.LENGTH_SHORT).show();
+                                new TcpAsyncTask(chat,holder.sqLite).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            }
+                        });
+                    }
 
                     holder.delete.setOnClickListener(new View.OnClickListener() {
                         @Override

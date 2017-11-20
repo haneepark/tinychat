@@ -16,7 +16,7 @@
         android:paddingLeft="10dp"
         android:paddingStart="10dp"
         android:paddingTop="1dp"
-        android:text="my profile"/>
+        android:text="내 프로필"/>
 
     <RelativeLayout
         android:id="@+id/myprofile"
@@ -59,7 +59,7 @@
         android:paddingLeft="10dp"
         android:paddingStart="10dp"
         android:paddingTop="1dp"
-        android:text="friends"/>
+        android:text="친구 목록"/>
 
 
 </RelativeLayout>
