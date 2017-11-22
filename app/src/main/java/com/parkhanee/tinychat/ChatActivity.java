@@ -415,7 +415,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                     if (!isPrivate&&ppl!=null){
                         // 단체방 새로 생성 request를 서버에 보냄
                         // json type , 단체방 사람수와 아이디 목록, 처음 보내고자하는 메세지
-                        tcpClient.sendMessage(MyTCPClient.JSON_REQUEST,ppl,strings[0]);
+                        if(strings.length ==0){
+                            tcpClient.sendMessage(MyTCPClient.JSON_REQUEST,ppl,"hello");
+                        } else {
+                            tcpClient.sendMessage(MyTCPClient.JSON_REQUEST,ppl,strings[0]);
+                        }
+
                         isSent=true; // 메세지 내용 까지 같이 보내니까 true.
                         //ppl=null; // FIXME: 2017. 9. 2.  방 제대로 만들어진거 확인하고 ppl=null 설정 해야 함
                     }else { // 메세지 전송
