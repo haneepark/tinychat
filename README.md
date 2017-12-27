@@ -10,6 +10,25 @@ Screenshots
 <img width="217" src="https://user-images.githubusercontent.com/23310187/34243461-350b5298-e664-11e7-8a7a-29862ae6034a.png">
 </div>
 
+Skills
+-------
+Server
+
+- Language : Java(TCP server), PHP(Web server)
+- Server : Nginx 1.10.3
+- Environment : AWS EC2, Ubuntu 16.04
+- DataBase : Redis
+- Library : Jedis, Maven, Predis, Json
+- Tool : Eclipse
+
+
+Client
+
+- Language : Java
+- OS : Android
+- DataBase : SQLite, Shared Preferences
+- Library : Volley, Glide, RecyclerView, CardView
+- Tool : Android Studio
 
 Logbook (개발일지)
 ---------------
